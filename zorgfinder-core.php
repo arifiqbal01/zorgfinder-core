@@ -7,11 +7,20 @@
  * Text Domain: zorgfinder-core
  */
 
-if (!defined('ABSPATH')) exit;
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
 require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/bootstrap/helpers.php';
+require_once __DIR__ . '/bootstrap/setup.php';
 
-// Bootstrapping
-use ZorgFinder\Core;
-
-Core::get_instance();
+/**
+ * --------------------------------------------------------------------------
+ * Initialize Core (handled automatically in setup.php)
+ * --------------------------------------------------------------------------
+ *
+ * We intentionally do NOT call Core::get_instance() directly here.
+ * setup.php handles plugin initialization on the `plugins_loaded` hook,
+ * keeping this file minimal and free of boot logic.
+ */

@@ -2,64 +2,51 @@
 namespace ZorgFinder\Database;
 
 use ZorgFinder\Traits\SingletonTrait;
+use ZorgFinder\Database\Migrations\MigrationRunner;
 
+/**
+ * DBManager handles all ZorgFinder database operations:
+ * - Running migrations
+ * - Initializing custom tables
+ * - Tracking DB version for automatic upgrades
+ */
 class DBManager {
     use SingletonTrait;
 
-    /** @var \wpdb */
-    private $db;
-
-    public function __construct() {
-        global $wpdb;
-        $this->db = $wpdb;
+    /**
+     * Initialize database services.
+     */
+    protected function __construct() {
+        add_action('plugins_loaded', [$this, 'maybe_run_migrations']);
     }
 
-    public function fetch_all(string $table): array {
-        $tbl = $this->db->prefix . esc_sql($table);
-        $sql = "SELECT * FROM {$tbl}";
-        return (array) $this->db->get_results( $sql, ARRAY_A );
+    /**
+     * Run all ZorgFinder migrations.
+     * Called manually during plugin activation or upgrades.
+     */
+    public function run_migrations(): void {
+        $runner = new MigrationRunner();
+        $runner->run();
+        update_option('zorgfinder_db_version', ZORGFINDER_VERSION);
     }
 
-    public function fetch_one(string $table, int $id): array {
-        $tbl = $this->db->prefix . esc_sql($table);
-        $sql = $this->db->prepare( "SELECT * FROM {$tbl} WHERE id = %d", $id );
-        return (array) $this->db->get_row( $sql, ARRAY_A );
+    /**
+     * Run seeders manually (optional for dev/demo data).
+     */
+    public function run_seeders(): void {
+        $seeder_class = '\\ZorgFinder\\Database\\Seeders\\DemoSeeder';
+        if (class_exists($seeder_class)) {
+            (new $seeder_class())->run();
+        }
     }
 
-    public function get_favourites(int $user_id): array {
-        $tbl = $this->db->prefix . 'zf_favourites';
-        $sql = $this->db->prepare( "SELECT provider_id FROM {$tbl} WHERE user_id = %d", $user_id );
-        return (array) $this->db->get_results( $sql, ARRAY_A );
-    }
-
-    public function add_favourite(int $user_id, int $provider_id): bool {
-        $tbl = $this->db->prefix . 'zf_favourites';
-        $result = $this->db->insert(
-            $tbl,
-            [
-                'user_id'     => $user_id,
-                'provider_id' => $provider_id,
-                'created_at'  => current_time('mysql'),
-            ],
-            [
-                '%d', '%d', '%s'
-            ]
-        );
-        return (bool) $result;
-    }
-
-    public function remove_favourite(int $user_id, int $provider_id): bool {
-        $tbl = $this->db->prefix . 'zf_favourites';
-        $result = $this->db->delete(
-            $tbl,
-            [
-                'user_id'     => $user_id,
-                'provider_id' => $provider_id,
-            ],
-            [
-                '%d', '%d'
-            ]
-        );
-        return (bool) $result;
+    /**
+     * Check if DB migrations need to run (on version change).
+     */
+    public function maybe_run_migrations(): void {
+        $current_db_version = get_option('zorgfinder_db_version');
+        if ($current_db_version !== ZORGFINDER_VERSION) {
+            $this->run_migrations();
+        }
     }
 }
