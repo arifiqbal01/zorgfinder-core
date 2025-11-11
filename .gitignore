@@ -1,0 +1,19 @@
+# Composer dependencies
+/vendor/
+
+# Node dependencies (if you later add JS build tools)
+node_modules/
+
+# Local environment & system files
+.env
+.DS_Store
+
+# Build artifacts
+*.zip
+*.tar.gz
+
+# Logs and caches
+*.log
+.cache/
+.idea/
+.vscode/
