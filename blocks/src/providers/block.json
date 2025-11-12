@@ -1,0 +1,12 @@
+{
+  "apiVersion": 2,
+  "name": "zorgfinder/providers",
+  "title": "ZorgFinder Providers",
+  "category": "widgets",
+  "icon": "groups",
+  "description": "Display a list of healthcare providers from ZorgFinder.",
+  "keywords": ["zorgfinder", "providers", "healthcare"],
+  "textdomain": "zorgfinder",
+  "editorScript": "file:./index.js",
+  "style": "file:./style.scss"
+}

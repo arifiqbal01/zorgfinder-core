@@ -8,31 +8,19 @@ use ZorgFinder\API\{
     CompareController,
     FavouritesController
 };
+use ZorgFinder\Blocks\BlockRegistrar; // ← import the registrar
 
-/**
- * The main orchestrator for the ZorgFinder Core plugin.
- *
- * Responsibilities:
- * - Bootstraps core services (DB, REST controllers)
- * - Initializes submodules
- * - Loads only when WordPress is ready
- */
 final class Core {
     use SingletonTrait;
 
-    /**
-     * Boot sequence
-     */
     protected function __construct() {
         $this->boot();
     }
 
-    /**
-     * Bootstraps the plugin core
-     */
     private function boot(): void {
         $this->load_database();
         $this->register_api_routes();
+        $this->register_blocks();
     }
 
     /**
@@ -51,5 +39,12 @@ final class Core {
             (new CompareController())->register_routes();
             (new FavouritesController())->register_routes();
         });
+    }
+
+    /**
+     * Register Gutenberg blocks
+     */
+    private function register_blocks(): void {
+         new \ZorgFinder\Blocks\BlockRegistrar();
     }
 }

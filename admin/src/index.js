@@ -8,7 +8,8 @@ import Providers from './pages/Providers';
 import Reviews from './pages/Reviews';
 import Appointments from './pages/Appointments';
 import Favourites from './pages/Favourites';
-import './style.css';
+import '../../shared-styles/dist/global.css';
+
 
 const App = () => (
   <div className="flex h-screen overflow-hidden bg-gray-50 text-gray-800">

@@ -3,6 +3,7 @@
 
 # Node dependencies (if you later add JS build tools)
 node_modules/
+build/
 
 # Local environment & system files
 .env

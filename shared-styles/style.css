@@ -1,0 +1,178 @@
+/* ================================================
+   ZORGFINDER GLOBAL ROOT THEME (Admin + Frontend)
+   ================================================ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ================================================
+   1. Root Variables — Universal Design Tokens
+   ================================================ */
+:root {
+  /* COLORS */
+  --zf-color-bg: #f9fafb;
+  --zf-color-bg-surface: #ffffff;
+  --zf-color-bg-alt: #f3f4f6;
+  --zf-color-border: #e5e7eb;
+  --zf-color-text: #1e293b;
+  --zf-color-text-muted: #64748b;
+  --zf-color-accent: #2563eb;
+  --zf-color-accent-hover: #1d4ed8;
+  --zf-color-success: #16a34a;
+  --zf-color-warning: #f59e0b;
+  --zf-color-error: #dc2626;
+
+  /* TYPOGRAPHY */
+  --zf-font-body: 'Inter', system-ui, sans-serif;
+  --zf-font-heading: 'Inter', system-ui, sans-serif;
+  --zf-font-size-base: 16px;
+  --zf-line-height: 1.6;
+
+  /* SPACING & RADIUS */
+  --zf-radius: 0.5rem;
+  --zf-spacing: 1rem;
+
+  /* SHADOWS & TRANSITIONS */
+  --zf-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --zf-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.08);
+  --zf-transition: 0.25s ease-in-out;
+}
+
+/* ================================================
+   2. Base Layer (Applies Everywhere)
+   ================================================ */
+html,
+body {
+  font-family: var(--zf-font-body);
+  font-size: var(--zf-font-size-base);
+  line-height: var(--zf-line-height);
+  color: var(--zf-color-text);
+  background-color: var(--zf-color-bg);
+}
+
+/* Smooth scrolling & consistent scrollbars */
+html {
+  scroll-behavior: smooth;
+}
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ================================================
+   3. WordPress Admin Page Fixes (ZorgFinder)
+   ================================================ */
+body.wp-admin.toplevel_page_zorgfinder-dashboard #wpcontent {
+  padding-left: 0 !important;
+}
+body.wp-admin.toplevel_page_zorgfinder-dashboard,
+body.wp-admin.toplevel_page_zorgfinder-dashboard #wpwrap,
+body.wp-admin.toplevel_page_zorgfinder-dashboard #wpcontent,
+body.wp-admin.toplevel_page_zorgfinder-dashboard #wpbody-content {
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+body.wp-admin.toplevel_page_zorgfinder-dashboard #zorgfinder-admin-app {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 32px); /* admin bar offset */
+  overflow: hidden;
+  background: var(--zf-color-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Make only main area scrollable inside React app */
+#zorgfinder-admin-app main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* ================================================
+   4. Gutenberg & Frontend Block Styling
+   ================================================ */
+
+/* Typography defaults for blocks */
+.wp-block,
+.editor-styles-wrapper {
+  font-family: var(--zf-font-body);
+  line-height: var(--zf-line-height);
+  color: var(--zf-color-text);
+}
+
+/* Block heading consistency */
+.wp-block-heading,
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--zf-font-heading);
+  font-weight: 600;
+  color: var(--zf-color-text);
+  margin-bottom: 0.5em;
+}
+
+/* Paragraph & links */
+p {
+  margin-bottom: 1rem;
+  color: var(--zf-color-text-muted);
+}
+a {
+  color: var(--zf-color-accent);
+  transition: color var(--zf-transition);
+}
+a:hover {
+  color: var(--zf-color-accent-hover);
+}
+
+/* Buttons (frontend + admin) */
+.zf-btn,
+.wp-block-button__link {
+  background-color: var(--zf-color-accent);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: var(--zf-radius);
+  border: none;
+  font-weight: 500;
+  transition: background var(--zf-transition);
+}
+.zf-btn:hover,
+.wp-block-button__link:hover {
+  background-color: var(--zf-color-accent-hover);
+}
+
+/* Cards & panels */
+.zf-card,
+.wp-block-group {
+  background: var(--zf-color-bg-surface);
+  border: 1px solid var(--zf-color-border);
+  border-radius: var(--zf-radius);
+  box-shadow: var(--zf-shadow-sm);
+  padding: var(--zf-spacing);
+}
+
+/* Alerts or notices */
+.zf-alert {
+  border-left: 4px solid var(--zf-color-accent);
+  background: var(--zf-color-bg-alt);
+  padding: 0.75rem 1rem;
+  border-radius: var(--zf-radius);
+}
+
+/* ================================================
+   5. Optional Dark Mode
+   ================================================ */
+[data-theme='dark'] {
+  --zf-color-bg: #0f172a;
+  --zf-color-bg-surface: #1e293b;
+  --zf-color-text: #e2e8f0;
+  --zf-color-text-muted: #94a3b8;
+  --zf-color-border: #334155;
+  --zf-color-accent: #3b82f6;
+  --zf-color-accent-hover: #2563eb;
+}
