@@ -1,19 +1,57 @@
 <?php
 namespace ZorgFinder\Traits;
 
-trait SingletonTrait {
-    private static $instance = null;
+/**
+ * Provides a strict, reusable singleton pattern for all ZorgFinder core classes.
+ *
+ * Usage:
+ *   class Core {
+ *       use SingletonTrait;
+ *   }
+ *   $core = Core::get_instance();
+ */
+trait SingletonTrait
+{
+    /**
+     * The single instance of the class.
+     *
+     * @var static|null
+     */
+    private static ?self $instance = null;
 
-    public static function get_instance() {
+    /**
+     * Returns the single instance of the class.
+     *
+     * @return static
+     */
+    final public static function get_instance(): static
+    {
         if (null === static::$instance) {
             static::$instance = new static();
+
+            if (method_exists(static::$instance, 'boot')) {
+                static::$instance->boot();
+            }
         }
+
         return static::$instance;
     }
 
-    final private function __clone() {}
+    /**
+     * Protected constructor — prevents direct instantiation.
+     */
+    final protected function __construct() {}
 
-    final public function __wakeup() {
-        throw new \Exception("Cannot unserialize singleton");
+    /**
+     * Prevent cloning the singleton instance.
+     */
+    final private function __clone(): void {}
+
+    /**
+     * Prevent unserializing the singleton instance.
+     */
+    final public function __wakeup(): void
+    {
+        throw new \Exception(static::class . ' is a singleton. Cannot unserialize.');
     }
 }
