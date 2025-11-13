@@ -5236,6 +5236,37 @@ const CalendarDays = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__["defau
 
 /***/ }),
 
+/***/ "./node_modules/lucide-react/dist/esm/icons/eye.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/lucide-react/dist/esm/icons/eye.js ***!
+  \*********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Eye)
+/* harmony export */ });
+/* harmony import */ var _createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../createLucideIcon.js */ "./node_modules/lucide-react/dist/esm/createLucideIcon.js");
+/**
+ * @license lucide-react v0.320.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+
+
+
+const Eye = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__["default"])("Eye", [
+  ["path", { d: "M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z", key: "rwhkz3" }],
+  ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
+]);
+
+
+//# sourceMappingURL=eye.js.map
+
+
+/***/ }),
+
 /***/ "./node_modules/lucide-react/dist/esm/icons/heart.js":
 /*!***********************************************************!*\
   !*** ./node_modules/lucide-react/dist/esm/icons/heart.js ***!
@@ -5337,6 +5368,40 @@ const Star = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__["default"])("S
 
 
 //# sourceMappingURL=star.js.map
+
+
+/***/ }),
+
+/***/ "./node_modules/lucide-react/dist/esm/icons/trash-2.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/lucide-react/dist/esm/icons/trash-2.js ***!
+  \*************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Trash2)
+/* harmony export */ });
+/* harmony import */ var _createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../createLucideIcon.js */ "./node_modules/lucide-react/dist/esm/createLucideIcon.js");
+/**
+ * @license lucide-react v0.320.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+
+
+
+const Trash2 = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__["default"])("Trash2", [
+  ["path", { d: "M3 6h18", key: "d0wm0j" }],
+  ["path", { d: "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6", key: "4alrt4" }],
+  ["path", { d: "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2", key: "v07s0e" }],
+  ["line", { x1: "10", x2: "10", y1: "11", y2: "17", key: "1uufr5" }],
+  ["line", { x1: "14", x2: "14", y1: "11", y2: "17", key: "xtxkd" }]
+]);
+
+
+//# sourceMappingURL=trash-2.js.map
 
 
 /***/ }),
@@ -8737,6 +8802,37 @@ const Table = ({
 
 /***/ }),
 
+/***/ "./src/hooks/useFetch.js":
+/*!*******************************!*\
+  !*** ./src/hooks/useFetch.js ***!
+  \*******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   useFetch: () => (/* binding */ useFetch)
+/* harmony export */ });
+const useFetch = async (url, options = {}) => {
+  const headers = {
+    "Content-Type": "application/json",
+    "X-WP-Nonce": zorgFinderApp.nonce,
+    ...(options.headers || {})
+  };
+  const response = await fetch(url, {
+    ...options,
+    headers
+  });
+  const json = await response.json();
+  return {
+    ok: response.ok,
+    status: response.status,
+    data: json.data,
+    raw: json
+  };
+};
+
+/***/ }),
+
 /***/ "./src/pages/Appointments.jsx":
 /*!************************************!*\
   !*** ./src/pages/Appointments.jsx ***!
@@ -8814,6 +8910,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _components_Table__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/Table */ "./src/components/Table.jsx");
 /* harmony import */ var _components_Modal__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/Modal */ "./src/components/Modal.jsx");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/eye.js");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/trash-2.js");
+/* harmony import */ var _hooks_useFetch__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../hooks/useFetch */ "./src/hooks/useFetch.js");
+
+
 
 
 
@@ -8822,14 +8923,20 @@ const Providers = () => {
   const [providers, setProviders] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
   const [showModal, setShowModal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
   const [editing, setEditing] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
-  const [form, setForm] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+  const emptyForm = {
     name: "",
+    slug: "",
     type_of_care: "",
+    indication_type: "",
+    organization_type: "",
+    religion: "",
+    has_hkz: 0,
     email: "",
     phone: "",
     website: "",
     address: ""
-  });
+  };
+  const [form, setForm] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(emptyForm);
   const fetchProviders = async () => {
     const res = await fetch("/wp-json/zorg/v1/providers");
     const json = await res.json();
@@ -8854,26 +8961,40 @@ const Providers = () => {
   }, p.website?.replace(/^https?:\/\//, "")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
     className: "truncate max-w-[200px] text-gray-600"
   }, p.address)]);
+
+  // SAVE (POST or PUT)
   const handleSave = async e => {
     e.preventDefault();
     const method = editing ? "PUT" : "POST";
     const url = editing ? `/wp-json/zorg/v1/providers/${editing.id}` : `/wp-json/zorg/v1/providers`;
-    await fetch(url, {
+    const payload = {
+      ...form,
+      has_hkz: form.has_hkz ? 1 : 0
+    };
+    const result = await (0,_hooks_useFetch__WEBPACK_IMPORTED_MODULE_5__.useFetch)(url, {
       method,
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(form)
+      body: JSON.stringify(payload)
     });
+    if (!result.ok) {
+      alert("Failed to save provider");
+      console.error(result);
+      return;
+    }
     setShowModal(false);
     setEditing(null);
     fetchProviders();
   };
+
+  // DELETE
   const handleDelete = async id => {
     if (!confirm("Delete this provider?")) return;
-    await fetch(`/wp-json/zorg/v1/providers/${id}`, {
+    const result = await (0,_hooks_useFetch__WEBPACK_IMPORTED_MODULE_5__.useFetch)(`/wp-json/zorg/v1/providers/${id}`, {
       method: "DELETE"
     });
+    if (!result.ok) {
+      alert("Failed to delete");
+      return;
+    }
     fetchProviders();
   };
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
@@ -8883,22 +9004,35 @@ const Providers = () => {
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
     className: "text-2xl font-semibold text-gray-800"
   }, "Providers"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-    onClick: () => setShowModal(true),
+    onClick: () => {
+      setEditing(null);
+      setForm(emptyForm);
+      setShowModal(true);
+    },
     className: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm"
   }, "+ Add Provider")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Table__WEBPACK_IMPORTED_MODULE_1__["default"], {
     columns: columns,
     data: data,
-    actions: index => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    actions: index => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+      className: "flex gap-3 items-center"
+    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
       onClick: () => {
         setEditing(providers[index]);
-        setForm(providers[index]);
+        setForm({
+          ...providers[index],
+          has_hkz: providers[index].has_hkz ? 1 : 0
+        });
         setShowModal(true);
       },
       className: "text-blue-600 hover:text-blue-800"
-    }, "\u270F\uFE0F"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_3__["default"], {
+      size: 18
+    })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
       onClick: () => handleDelete(providers[index].id),
       className: "text-red-500 hover:text-red-700"
-    }, "\uD83D\uDDD1\uFE0F"))
+    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      size: 18
+    })))
   }), showModal && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Modal__WEBPACK_IMPORTED_MODULE_2__["default"], {
     title: editing ? "Edit Provider" : "Add Provider",
     onClose: () => {
@@ -8913,52 +9047,121 @@ const Providers = () => {
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
     type: "text",
     placeholder: "Name",
-    value: form.name || "",
+    value: form.name,
     onChange: e => setForm({
       ...form,
       name: e.target.value
     }),
-    className: "border border-gray-300 rounded-md w-full p-2",
+    className: "border border-gray-300 rounded-md p-2",
     required: true
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
     type: "text",
-    placeholder: "Type of Care",
-    value: form.type_of_care || "",
+    placeholder: "Slug (optional)",
+    value: form.slug,
+    onChange: e => setForm({
+      ...form,
+      slug: e.target.value
+    }),
+    className: "border border-gray-300 rounded-md p-2"
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
+    value: form.type_of_care,
     onChange: e => setForm({
       ...form,
       type_of_care: e.target.value
     }),
-    className: "border border-gray-300 rounded-md w-full p-2"
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    className: "border border-gray-300 rounded-md p-2"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: ""
+  }, "Select Type of Care"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "disability"
+  }, "Disability"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "GGZ"
+  }, "GGZ"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "youth"
+  }, "Youth"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "elderly"
+  }, "Elderly")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
+    value: form.indication_type,
+    onChange: e => setForm({
+      ...form,
+      indication_type: e.target.value
+    }),
+    className: "border border-gray-300 rounded-md p-2"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: ""
+  }, "Select Indication Type"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "PGB"
+  }, "PGB"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "ZIN"
+  }, "ZIN")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
+    value: form.organization_type,
+    onChange: e => setForm({
+      ...form,
+      organization_type: e.target.value
+    }),
+    className: "border border-gray-300 rounded-md p-2"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: ""
+  }, "Select Organization"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "BV"
+  }, "BV"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "Stichting"
+  }, "Stichting")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
+    value: form.religion,
+    onChange: e => setForm({
+      ...form,
+      religion: e.target.value
+    }),
+    className: "border border-gray-300 rounded-md p-2"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: ""
+  }, "Select Religion"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "Islamic"
+  }, "Islamic"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "Jewish"
+  }, "Jewish"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "Christian"
+  }, "Christian"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "None"
+  }, "None")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "flex items-center gap-2 mt-2"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    type: "checkbox",
+    checked: form.has_hkz == 1,
+    onChange: e => setForm({
+      ...form,
+      has_hkz: e.target.checked ? 1 : 0
+    })
+  }), "HKZ Certified"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
     type: "email",
     placeholder: "Email",
-    value: form.email || "",
+    value: form.email,
     onChange: e => setForm({
       ...form,
       email: e.target.value
     }),
-    className: "border border-gray-300 rounded-md w-full p-2"
+    className: "border border-gray-300 rounded-md p-2"
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
     type: "text",
     placeholder: "Phone",
-    value: form.phone || "",
+    value: form.phone,
     onChange: e => setForm({
       ...form,
       phone: e.target.value
     }),
-    className: "border border-gray-300 rounded-md w-full p-2"
+    className: "border border-gray-300 rounded-md p-2"
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
     type: "url",
     placeholder: "Website",
-    value: form.website || "",
+    value: form.website,
     onChange: e => setForm({
       ...form,
       website: e.target.value
     }),
-    className: "border border-gray-300 rounded-md w-full p-2"
+    className: "border border-gray-300 rounded-md p-2"
   })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("textarea", {
     placeholder: "Address",
-    value: form.address || "",
+    value: form.address,
     onChange: e => setForm({
       ...form,
       address: e.target.value
@@ -8973,7 +9176,7 @@ const Providers = () => {
       setShowModal(false);
       setEditing(null);
     },
-    className: "px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-gray-700"
+    className: "px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md"
   }, "Cancel"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
     type: "submit",
     className: "px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white"

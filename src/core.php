@@ -8,7 +8,7 @@ use ZorgFinder\API\{
     CompareController,
     FavouritesController
 };
-use ZorgFinder\Blocks\BlockRegistrar; // ← import the registrar
+use ZorgFinder\Blocks\BlockRegistrar;
 
 final class Core {
     use SingletonTrait;

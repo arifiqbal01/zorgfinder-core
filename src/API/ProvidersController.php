@@ -18,7 +18,7 @@ class ProvidersController extends BaseController
             ],
         ]);
 
-        // GET /providers/{id} (single)
+        // GET /providers/{id}
         register_rest_route($this->namespace, '/providers/(?P<id>\d+)', [
             [
                 'methods'  => 'GET',
@@ -36,7 +36,7 @@ class ProvidersController extends BaseController
             ],
         ]);
 
-        // PATCH or PUT /providers/{id} (update)
+        // PUT/PATCH /providers/{id} (update)
         register_rest_route($this->namespace, '/providers/(?P<id>\d+)', [
             [
                 'methods'  => ['PUT', 'PATCH'],
@@ -62,14 +62,11 @@ class ProvidersController extends BaseController
     {
         global $wpdb;
         $table = $wpdb->prefix . 'zf_providers';
-        $type  = $request->get_param('type_of_care');
-        $query = "SELECT * FROM $table WHERE 1=1";
 
-        if ($type) {
-            $query .= $wpdb->prepare(" AND type_of_care = %s", $type);
-        }
+        $query = "SELECT * FROM $table WHERE deleted_at IS NULL";
 
         $providers = $wpdb->get_results($query, ARRAY_A);
+
         return $this->respond($providers);
     }
 
@@ -82,7 +79,10 @@ class ProvidersController extends BaseController
         $id = (int) $request->get_param('id');
         $table = $wpdb->prefix . 'zf_providers';
 
-        $provider = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $id), ARRAY_A);
+        $provider = $wpdb->get_row(
+            $wpdb->prepare("SELECT * FROM $table WHERE id = %d AND deleted_at IS NULL", $id),
+            ARRAY_A
+        );
 
         if (!$provider) {
             return $this->error('Provider not found', 404);
@@ -92,16 +92,22 @@ class ProvidersController extends BaseController
     }
 
     /**
-     * POST /providers (Admin)
+     * POST /providers (create)
      */
     public function create_provider(WP_REST_Request $request): WP_REST_Response|WP_Error
     {
         global $wpdb;
         $table = $wpdb->prefix . 'zf_providers';
 
+        // Auto slug generation
+        $slug = sanitize_title($request->get_param('slug'));
+        if (empty($slug)) {
+            $slug = sanitize_title($request->get_param('name'));
+        }
+
         $data = [
             'name'              => sanitize_text_field($request->get_param('name')),
-            'slug'              => sanitize_title($request->get_param('slug')),
+            'slug'              => $slug,
             'type_of_care'      => sanitize_text_field($request->get_param('type_of_care')),
             'indication_type'   => sanitize_text_field($request->get_param('indication_type')),
             'organization_type' => sanitize_text_field($request->get_param('organization_type')),
@@ -113,6 +119,7 @@ class ProvidersController extends BaseController
             'website'           => esc_url_raw($request->get_param('website')),
             'created_at'        => current_time('mysql'),
             'updated_at'        => current_time('mysql'),
+            'deleted_at'        => null,
         ];
 
         $inserted = $wpdb->insert($table, $data);
@@ -122,30 +129,41 @@ class ProvidersController extends BaseController
         }
 
         $id = $wpdb->insert_id;
-        $provider = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $id), ARRAY_A);
+
+        $provider = $wpdb->get_row(
+            $wpdb->prepare("SELECT * FROM $table WHERE id = %d", $id),
+            ARRAY_A
+        );
 
         return $this->respond([
-            'message' => 'Provider created successfully',
+            'message'  => 'Provider created successfully',
             'provider' => $provider,
         ], 201);
     }
 
     /**
-     * PATCH /providers/{id} (Admin)
+     * PUT/PATCH /providers/{id}
      */
     public function update_provider(WP_REST_Request $request): WP_REST_Response|WP_Error
     {
         global $wpdb;
-        $id = (int) $request->get_param('id');
         $table = $wpdb->prefix . 'zf_providers';
+        $id = (int) $request->get_param('id');
 
-        $existing = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $id));
-        if (!$existing) {
+        $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM $table WHERE id = %d", $id));
+        if (!$exists) {
             return $this->error('Provider not found', 404);
+        }
+
+        // Slug logic
+        $slug = sanitize_title($request->get_param('slug'));
+        if (empty($slug)) {
+            $slug = sanitize_title($request->get_param('name'));
         }
 
         $fields = [
             'name'              => sanitize_text_field($request->get_param('name')),
+            'slug'              => $slug,
             'type_of_care'      => sanitize_text_field($request->get_param('type_of_care')),
             'indication_type'   => sanitize_text_field($request->get_param('indication_type')),
             'organization_type' => sanitize_text_field($request->get_param('organization_type')),
@@ -158,38 +176,44 @@ class ProvidersController extends BaseController
             'updated_at'        => current_time('mysql'),
         ];
 
-        $fields = array_filter($fields, fn($v) => $v !== null && $v !== '');
-
+        // IMPORTANT: Do NOT filter out empty strings (ENUM + Checkbox)
         $updated = $wpdb->update($table, $fields, ['id' => $id]);
 
         if ($updated === false) {
             return $this->error('Failed to update provider', 500);
         }
 
-        $provider = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $id), ARRAY_A);
+        $provider = $wpdb->get_row(
+            $wpdb->prepare("SELECT * FROM $table WHERE id = %d", $id),
+            ARRAY_A
+        );
 
         return $this->respond([
-            'message' => 'Provider updated successfully',
+            'message'  => 'Provider updated successfully',
             'provider' => $provider,
         ]);
     }
 
     /**
-     * DELETE /providers/{id} (Admin)
+     * DELETE /providers/{id} — soft delete
      */
     public function delete_provider(WP_REST_Request $request): WP_REST_Response|WP_Error
     {
         global $wpdb;
-        $id = (int) $request->get_param('id');
         $table = $wpdb->prefix . 'zf_providers';
+        $id = (int) $request->get_param('id');
 
         $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM $table WHERE id = %d", $id));
         if (!$exists) {
             return $this->error('Provider not found', 404);
         }
 
-        // Soft delete: mark deleted (add a flag or use updated_at as marker)
-        $deleted = $wpdb->update($table, ['name' => '[DELETED]'], ['id' => $id]);
+        // Proper soft delete
+        $deleted = $wpdb->update(
+            $table,
+            ['deleted_at' => current_time('mysql')],
+            ['id' => $id]
+        );
 
         if ($deleted === false) {
             return $this->error('Failed to delete provider', 500);
@@ -199,12 +223,12 @@ class ProvidersController extends BaseController
     }
 
     /**
-     * Permission: only admins or editors
+     * Permission check (Admin/Editor only)
      */
     public function require_admin(): bool|\WP_Error
     {
         if (!current_user_can('edit_others_posts')) {
-            return new \WP_Error(
+            return new WP_Error(
                 'rest_forbidden',
                 __('You do not have permission to modify providers.', 'zorgfinder-core'),
                 ['status' => 403]
