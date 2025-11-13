@@ -12,17 +12,19 @@ import '../../shared-styles/dist/global.css';
 
 
 const App = () => (
-  <div className="flex h-screen overflow-hidden bg-gray-50 text-gray-800">
-    {/* Sidebar stays fixed */}
+  <div className="flex w-full h-full bg-gray-50 text-gray-800 overflow-hidden">
+    
+    {/* Sidebar */}
     <Sidebar />
 
-    {/* Right Section (Header + Scrollable Content) */}
-    <div className="flex flex-col flex-1 min-h-0">
+    {/* Right side */}
+    <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+      
       {/* Fixed Header */}
       <Header />
 
-      {/* Scrollable content area */}
-      <main className="flex-1 overflow-y-auto p-6">
+      {/* Scrollable main content */}
+      <main className="flex-1 overflow-y-auto px-6 py-6">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/providers" element={<Providers />} />
@@ -31,9 +33,11 @@ const App = () => (
           <Route path="/favourites" element={<Favourites />} />
         </Routes>
       </main>
+
     </div>
   </div>
 );
+
 
 const mount = document.getElementById('zorgfinder-admin-app');
 if (mount) {

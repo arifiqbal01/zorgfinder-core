@@ -59,16 +59,53 @@ class ProvidersController extends BaseController
      * GET /providers
      */
     public function get_providers(WP_REST_Request $request): WP_REST_Response|WP_Error
-    {
-        global $wpdb;
-        $table = $wpdb->prefix . 'zf_providers';
+{
+    global $wpdb;
+    $table = $wpdb->prefix . 'zf_providers';
 
-        $query = "SELECT * FROM $table WHERE deleted_at IS NULL";
+    // Base query: only active providers
+    $query = "SELECT * FROM $table WHERE deleted_at IS NULL";
 
-        $providers = $wpdb->get_results($query, ARRAY_A);
-
-        return $this->respond($providers);
+    // 🔍 SEARCH (name, email, phone, slug)
+    if ($search = $request->get_param('search')) {
+        $like = '%' . $wpdb->esc_like($search) . '%';
+        $query .= $wpdb->prepare("
+            AND (
+                name LIKE %s OR
+                email LIKE %s OR
+                phone LIKE %s OR
+                slug LIKE %s
+            )
+        ", $like, $like, $like, $like);
     }
+
+    // 🔽 ENUM FILTERS (safe & dynamic)
+    $enumFilters = [
+        'type_of_care',
+        'indication_type',
+        'organization_type',
+        'religion',
+    ];
+
+    foreach ($enumFilters as $field) {
+        $value = $request->get_param($field);
+        if (!empty($value)) {
+            $query .= $wpdb->prepare(" AND $field = %s", $value);
+        }
+    }
+
+    $hkz = $request->get_param('has_hkz');
+        if ($hkz == 1) {
+            $query .= " AND has_hkz = 1";
+        }
+
+
+    // Execute query
+    $providers = $wpdb->get_results($query, ARRAY_A);
+
+    return $this->respond($providers);
+}
+
 
     /**
      * GET /providers/{id}

@@ -2,6 +2,7 @@
   "name": "zorgfinder-shared-styles",
   "private": true,
   "scripts": {
+    "start": "tailwindcss -i ./style.css -o ./dist/global.css --watch",
     "build": "tailwindcss -i ./style.css -o ./dist/global.css --minify"
   },
   "devDependencies": {

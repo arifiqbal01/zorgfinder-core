@@ -69,32 +69,34 @@ html {
 /* ================================================
    3. WordPress Admin Page Fixes (ZorgFinder)
    ================================================ */
-body.wp-admin.toplevel_page_zorgfinder-dashboard #wpcontent {
-  padding-left: 0 !important;
-}
+b/* Make WP admin not break layout */
 body.wp-admin.toplevel_page_zorgfinder-dashboard,
 body.wp-admin.toplevel_page_zorgfinder-dashboard #wpwrap,
 body.wp-admin.toplevel_page_zorgfinder-dashboard #wpcontent,
 body.wp-admin.toplevel_page_zorgfinder-dashboard #wpbody-content {
   height: 100vh !important;
   overflow: hidden !important;
-}
-body.wp-admin.toplevel_page_zorgfinder-dashboard #zorgfinder-admin-app {
-  position: relative;
-  width: 100%;
-  height: calc(100vh - 32px); /* admin bar offset */
-  overflow: hidden;
-  background: var(--zf-color-bg);
-  display: flex;
-  flex-direction: column;
+  padding: 0 !important;
 }
 
-/* Make only main area scrollable inside React app */
+/* React app container: fills whole screen properly */
+#zorgfinder-admin-app {
+  width: 100%;
+  height: calc(100vh - 32px); /* admin bar offset */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--zf-color-bg);
+}
+
+/* The main scrollable area INSIDE the React app */
 #zorgfinder-admin-app main {
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow-y: hidden;
+  overflow-x: hidden; /* NO horizontal scroll here */
+  padding: 24px;      /* Global content spacing */
 }
+
 
 /* ================================================
    4. Gutenberg & Frontend Block Styling
@@ -184,3 +186,4 @@ a:hover {
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-in-out;
 }
+
