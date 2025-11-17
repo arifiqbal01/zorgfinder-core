@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronDown, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 const Filters = ({ schema = [], filters, setFilters }) => {
   const clearAll = () => {
@@ -9,68 +9,75 @@ const Filters = ({ schema = [], filters, setFilters }) => {
   };
 
   return (
-    <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center gap-2 flex-nowrap">
-
+    <div
+      className="
+        w-full bg-white rounded-xl border border-gray-200 shadow-sm
+        p-3 md:p-4
+        flex flex-wrap items-center gap-3
+      "
+    >
       {schema.map((field) => {
         const value = filters[field.key] ?? "";
 
-        // SEARCH (compact pill)
+       /* --------------------------------
+        * SEARCH — dynamic placeholder, no icon
+        * -------------------------------- */
         if (field.type === "search") {
+          const placeholder =
+            field.placeholder ||
+            `Search ${field.resource || "items"}…`; // fallback
+
           return (
             <div
               key={field.key}
-              className="flex items-center bg-gray-50 border border-gray-200 rounded-full shadow-sm px-4 h-10 shrink-0"
+              className="w-full md:w-64"
             >
-              <Search size={16} className="text-gray-400 mr-2" />
-
-            <input
-              type="text"
-              placeholder={field.placeholder || "Search..."}
-              value={value}
-              onChange={(e) =>
-                setFilters({ ...filters, [field.key]: e.target.value })
-              }
-              className="
-                bg-transparent
-                border-none
-                outline-none
-                shadow-none
-                rounded-none
-                appearance-none
-                focus:outline-none
-                focus:border-none
-                focus:shadow-none
-                focus:ring-0
-                text-sm
-                min-w-[180px]
-                placeholder-gray-400
-              "
-            />
-
-
+              <input
+                placeholder={placeholder}
+                value={value}
+                onChange={(e) =>
+                  setFilters({ ...filters, [field.key]: e.target.value })
+                }
+                className="
+                  input
+                  h-10
+                  text-sm
+                  pl-4 pr-3
+                "
+              />
             </div>
           );
         }
 
-        // SELECT (compact pill)
+
+        /* --------------------------------
+         * SELECT — pill styled, no arrows
+         * -------------------------------- */
         if (field.type === "select") {
-          const label = value
-            ? field.options.find((o) => o.value === value)?.label
-            : field.placeholder || "Select";
+          const label =
+            value &&
+            field.options.find((o) => o.value === value)?.label;
 
           return (
             <div
               key={field.key}
-              className="relative flex items-center bg-gray-50 border border-gray-200 rounded-full shadow-sm px-6 pr-14 h-10 shrink-0"
+              className="
+                relative flex items-center
+                bg-gray-50 border border-gray-200
+                rounded-full shadow-sm
+                px-4 h-9 text-sm cursor-pointer
+              "
             >
               <select
                 value={value}
                 onChange={(e) =>
                   setFilters({ ...filters, [field.key]: e.target.value })
                 }
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                className="
+                  absolute inset-0 w-full h-full opacity-0 cursor-pointer
+                "
               >
-                <option value="">{field.placeholder || "Select"}</option>
+                <option value="">{field.placeholder}</option>
                 {field.options?.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
@@ -78,24 +85,27 @@ const Filters = ({ schema = [], filters, setFilters }) => {
                 ))}
               </select>
 
-              <span className="text-sm text-gray-700 truncate pointer-events-none">
-                {label}
+              <span className="pointer-events-none text-gray-700 truncate">
+                {label || field.placeholder}
               </span>
-
-              <ChevronDown
-                size={16}
-                className="text-gray-400 absolute right-3 pointer-events-none"
-              />
             </div>
           );
         }
 
-        // CHECKBOX (compact pill)
+        /* --------------------------------
+         * CHECKBOX — pill style
+         * -------------------------------- */
         if (field.type === "checkbox") {
           return (
             <label
               key={field.key}
-              className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full shadow-sm px-4 h-10 text-sm cursor-pointer shrink-0"
+              className="
+                flex items-center gap-2
+                bg-gray-50 border border-gray-200
+                rounded-full shadow-sm
+                px-4 h-9 text-sm cursor-pointer
+                select-none
+              "
             >
               <input
                 type="checkbox"
@@ -116,13 +126,20 @@ const Filters = ({ schema = [], filters, setFilters }) => {
         return null;
       })}
 
-      {/* CLEAR ALL (compact pill) */}
+      {/* CLEAR BUTTON */}
       <button
         onClick={clearAll}
-        className="ml-auto flex items-center gap-2 bg-gray-100 border border-gray-200 rounded-full shadow-sm text-sm px-4 h-10 shrink-0"
+        className="
+          ml-auto
+          flex items-center gap-2
+          bg-gray-100 border border-gray-200
+          rounded-full shadow-sm
+          px-4 h-9 text-sm
+          hover:bg-gray-200 transition
+        "
       >
-        <X size={16} />
-        Clear All
+        <X size={14} />
+        Clear
       </button>
     </div>
   );

@@ -1,189 +1,326 @@
-/* ================================================
-   ZORGFINDER GLOBAL ROOT THEME (Admin + Frontend)
-   ================================================ */
+/* ==========================================================================
+   global.css — ZorgFinder root theme (admin + frontend)
+   Replaces existing shared-styles/dist/global.css
+   ========================================================================== */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ================================================
-   1. Root Variables — Universal Design Tokens
-   ================================================ */
+/* ==========================================================================
+   1) DESIGN TOKENS (Chakra-Style Scales)
+   ========================================================================== */
+
 :root {
-  /* COLORS */
-  --zf-color-bg: #f9fafb;
-  --zf-color-bg-surface: #ffffff;
-  --zf-color-bg-alt: #f3f4f6;
-  --zf-color-border: #e5e7eb;
-  --zf-color-text: #1e293b;
-  --zf-color-text-muted: #64748b;
-  --zf-color-accent: #2563eb;
-  --zf-color-accent-hover: #1d4ed8;
-  --zf-color-success: #16a34a;
-  --zf-color-warning: #f59e0b;
-  --zf-color-error: #dc2626;
+  /* Colors */
+  --zf-colors-bg: #f9fafb;
+  --zf-colors-surface: #ffffff;
+  --zf-colors-alt: #f3f4f6;
+  --zf-colors-border: #e5e7eb;
+  --zf-colors-text: #1e293b;
+  --zf-colors-muted: #64748b;
+  --zf-colors-accent: #2563eb;
 
-  /* TYPOGRAPHY */
-  --zf-font-body: 'Inter', system-ui, sans-serif;
-  --zf-font-heading: 'Inter', system-ui, sans-serif;
-  --zf-font-size-base: 16px;
-  --zf-line-height: 1.6;
+  /* Radius scale */
+  --zf-radius-sm: 4px;
+  --zf-radius-md: 8px;
+  --zf-radius-lg: 12px;
 
-  /* SPACING & RADIUS */
-  --zf-radius: 0.5rem;
-  --zf-spacing: 1rem;
+  /* Spacing scale */
+  --zf-space-1: 4px;
+  --zf-space-2: 8px;
+  --zf-space-3: 12px;
+  --zf-space-4: 16px;
+  --zf-space-5: 20px;
+  --zf-space-6: 24px;
 
-  /* SHADOWS & TRANSITIONS */
-  --zf-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --zf-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.08);
-  --zf-transition: 0.25s ease-in-out;
+  /* Shadows */
+  --zf-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --zf-shadow-md: 0 3px 5px rgba(0,0,0,0.08);
+
+  /* Transition */
+  --zf-transition: 0.20s ease;
+
+  /* Layout */
+  --zf-page-gutter: 24px;
+  --zf-sidebar-width: 240px;
+
+  /* WP Admin bar height (desktop default) */
+  --wp-admin-bar-height: 32px;
 }
 
-/* ================================================
-   2. Base Layer (Applies Everywhere)
-   ================================================ */
-html,
-body {
-  font-family: var(--zf-font-body);
-  font-size: var(--zf-font-size-base);
-  line-height: var(--zf-line-height);
-  color: var(--zf-color-text);
-  background-color: var(--zf-color-bg);
+@media (max-width: 782px) {
+  :root {
+    --wp-admin-bar-height: 46px; /* WP mobile admin bar */
+  }
 }
 
-/* Smooth scrolling & consistent scrollbars */
-html {
-  scroll-behavior: smooth;
+
+/* ==========================================================================
+   2) BASE GLOBAL
+   ========================================================================== */
+
+html, body {
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-size: 16px;
+  color: var(--zf-colors-text);
+  background: var(--zf-colors-bg);
+  height: 100%;
 }
-::-webkit-scrollbar {
-  width: 8px;
-}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 4px;
+  border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
-/* ================================================
-   3. WordPress Admin Page Fixes (ZorgFinder)
-   ================================================ */
-b/* Make WP admin not break layout */
+
+/* ==========================================================================
+   3) COMPONENT SYSTEM (Chakra-like abstractions)
+   ========================================================================== */
+
+/* ----- Labels ----- */
+.label {
+  @apply block text-sm font-medium mb-1;
+  color: var(--zf-colors-text);
+}
+
+/* ----- Input / Select / Textarea (Unified) ----- */
+.input {
+  @apply w-full px-3 py-2 border text-sm bg-white;
+  border-radius: var(--zf-radius-md);
+  border-color: var(--zf-colors-border);
+  transition: var(--zf-transition);
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+}
+
+.input:focus {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-0;
+}
+
+/* For semantic clarity, reuse .input */
+/* Modern Select Styling */
+.select {
+  background-image: url("data:image/svg+xml;utf8,<svg fill='none' stroke='%2362748b' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 18px;
+  padding-right: 40px !important;
+}
+
+.textarea {
+  @apply input resize-none;
+}
+
+/* ----- Checkbox ----- */
+.checkbox {
+  @apply h-4 w-4 border rounded-sm cursor-pointer;
+  border-color: var(--zf-colors-border);
+}
+
+/* ----- Buttons ----- */
+.btn {
+  @apply px-4 py-2 text-sm font-medium rounded-lg transition;
+}
+
+/* Solid primary */
+.btn-primary {
+  @apply text-white bg-blue-600 hover:bg-blue-700;
+}
+
+/* Outline */
+.btn-outline {
+  @apply border bg-white text-gray-700;
+  border-color: var(--zf-colors-border);
+}
+.btn-outline:hover {
+  @apply bg-gray-100;
+}
+
+/* ----- Card ----- */
+.card {
+  background: var(--zf-colors-surface);
+  border: 1px solid var(--zf-colors-border);
+  border-radius: var(--zf-radius-lg);
+  box-shadow: var(--zf-shadow-sm);
+  padding: 20px;
+}
+
+/* ----- Container ----- */
+.container-zf {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ----- Form Grid: 2 columns responsive ----- */
+.form-grid-2 {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+
+/* ==========================================================================
+   4) WORDPRESS ADMIN INTEGRATION
+   ========================================================================== */
+
+/* Prevent WP from forcing padding */
+body.wp-admin.toplevel_page_zorgfinder-dashboard #wpcontent {
+  padding: 0 !important;
+}
+
+body.wp-admin.toplevel_page_zorgfinder-dashboard #wpfooter {
+  display: none !important;
+}
+
+/* Make admin screen wrapper full-height */
 body.wp-admin.toplevel_page_zorgfinder-dashboard,
 body.wp-admin.toplevel_page_zorgfinder-dashboard #wpwrap,
 body.wp-admin.toplevel_page_zorgfinder-dashboard #wpcontent,
 body.wp-admin.toplevel_page_zorgfinder-dashboard #wpbody-content {
-  height: 100vh !important;
+  height: calc(100vh - var(--wp-admin-bar-height));
   overflow: hidden !important;
-  padding: 0 !important;
 }
 
-/* React app container: fills whole screen properly */
+/* Root React app container */
 #zorgfinder-admin-app {
   width: 100%;
-  height: calc(100vh - 32px); /* admin bar offset */
+  height: calc(100vh - var(--wp-admin-bar-height));
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--zf-color-bg);
-}
-
-/* The main scrollable area INSIDE the React app */
-#zorgfinder-admin-app main {
-  flex: 1;
-  overflow-y: hidden;
-  overflow-x: hidden; /* NO horizontal scroll here */
-  padding: 24px;      /* Global content spacing */
+  background: var(--zf-colors-bg);
 }
 
 
-/* ================================================
-   4. Gutenberg & Frontend Block Styling
-   ================================================ */
+/* ==========================================================================
+   5) APP SHELL LAYOUT
+   ========================================================================== */
 
-/* Typography defaults for blocks */
-.wp-block,
-.editor-styles-wrapper {
-  font-family: var(--zf-font-body);
-  line-height: var(--zf-line-height);
-  color: var(--zf-color-text);
-}
-
-/* Block heading consistency */
-.wp-block-heading,
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--zf-font-heading);
-  font-weight: 600;
-  color: var(--zf-color-text);
-  margin-bottom: 0.5em;
+.zf-app-shell {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
 }
 
-/* Paragraph & links */
-p {
-  margin-bottom: 1rem;
-  color: var(--zf-color-text-muted);
-}
-a {
-  color: var(--zf-color-accent);
-  transition: color var(--zf-transition);
-}
-a:hover {
-  color: var(--zf-color-accent-hover);
-}
-
-/* Buttons (frontend + admin) */
-.zf-btn,
-.wp-block-button__link {
-  background-color: var(--zf-color-accent);
-  color: #fff;
-  padding: 0.5rem 1rem;
-  border-radius: var(--zf-radius);
-  border: none;
-  font-weight: 500;
-  transition: background var(--zf-transition);
-}
-.zf-btn:hover,
-.wp-block-button__link:hover {
-  background-color: var(--zf-color-accent-hover);
-}
-
-/* Cards & panels */
-.zf-card,
-.wp-block-group {
-  background: var(--zf-color-bg-surface);
-  border: 1px solid var(--zf-color-border);
-  border-radius: var(--zf-radius);
+/* Sidebar */
+.zf-sidebar {
+  width: var(--zf-sidebar-width);
+  min-width: var(--zf-sidebar-width);
+  max-width: var(--zf-sidebar-width);
+  background: var(--zf-colors-surface);
+  border-right: 1px solid var(--zf-colors-border);
+  display: flex;
+  flex-direction: column;
+  padding: var(--zf-space-4);
   box-shadow: var(--zf-shadow-sm);
-  padding: var(--zf-spacing);
 }
 
-/* Alerts or notices */
-.zf-alert {
-  border-left: 4px solid var(--zf-color-accent);
-  background: var(--zf-color-bg-alt);
-  padding: 0.75rem 1rem;
-  border-radius: var(--zf-radius);
+/* Right pane */
+.zf-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 
-/* ================================================
-   5. Optional Dark Mode
-   ================================================ */
+/* Header */
+.zf-header {
+  flex: 0 0 auto;
+  border-bottom: 1px solid var(--zf-colors-border);
+  background: var(--zf-colors-surface);
+  padding: 16px 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Scrollable main area */
+.zf-main {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--zf-page-gutter);
+}
+
+/* Max width inner container */
+.zf-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Cards (legacy compatibility) */
+.zf-card {
+  background: var(--zf-colors-surface);
+  border: 1px solid var(--zf-colors-border);
+  border-radius: var(--zf-radius-lg);
+  box-shadow: var(--zf-shadow-sm);
+}
+
+
+/* ==========================================================================
+   6) TABLE HELPERS
+   ========================================================================== */
+
+.zf-table-shell {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.zf-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+.zf-table td,
+.zf-table th {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* ==========================================================================
+   7) UTILITIES
+   ========================================================================== */
+
+.min-h-24 { min-height: 24px; }
+.align-middle { vertical-align: middle; }
+
+
+/* ==========================================================================
+   8) RESPONSIVE ADJUSTMENTS
+   ========================================================================== */
+
+@media (max-width: 1100px) {
+  :root { --zf-sidebar-width: 200px; }
+  .zf-container { padding: 0 16px; }
+}
+
+@media (max-width: 800px) {
+  .zf-sidebar { display: none; }
+  #zorgfinder-admin-app { padding-left: 0; }
+}
+
+
+/* ==========================================================================
+   9) DARK MODE (Optional Minimal)
+   ========================================================================== */
+
 [data-theme='dark'] {
-  --zf-color-bg: #0f172a;
-  --zf-color-bg-surface: #1e293b;
-  --zf-color-text: #e2e8f0;
-  --zf-color-text-muted: #94a3b8;
-  --zf-color-border: #334155;
-  --zf-color-accent: #3b82f6;
-  --zf-color-accent-hover: #2563eb;
+  --zf-colors-bg: #0f172a;
+  --zf-colors-surface: #0b1220;
+  --zf-colors-text: #e6eef8;
+  --zf-colors-border: #233043;
 }
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fadeIn {
-  animation: fadeIn 0.2s ease-in-out;
-}
-
