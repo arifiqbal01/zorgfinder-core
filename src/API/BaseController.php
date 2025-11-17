@@ -34,8 +34,17 @@ abstract class BaseController extends WP_REST_Controller
     /**
      * Authentication check for protected routes.
      */
-    public function require_auth(): bool
-    {
-        return is_user_logged_in();
+    public function require_auth(): bool|WP_Error
+{
+    if (!is_user_logged_in()) {
+        return new WP_Error(
+            'rest_forbidden',
+            __('You must be logged in.', 'zorgfinder-core'),
+            ['status' => 401]
+        );
     }
+
+    return true;
+}
+
 }

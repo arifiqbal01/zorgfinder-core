@@ -1,0 +1,44 @@
+.zf-review-form { margin: 0 0 1.5rem; font-family: inherit; }
+.zf-review-form-title { font-size: 1.125rem; margin-bottom: 0.5rem; }
+.zf-label { display:block; margin-top: 0.75rem; margin-bottom: 0.25rem; font-weight:600; }
+
+.zf-stars { display:inline-flex; gap:8px; align-items:center; }
+.zf-star { background: transparent; border: none; cursor: pointer; padding:6px; border-radius:6px; transition: transform .12s ease; }
+.zf-star:focus { outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); transform: translateY(-1px); }
+.zf-star .zf-star-svg { font-size: 22px; color: #D1D5DB; display:inline-block; }
+.zf-star.active .zf-star-svg { color: #F59E0B; }
+.zf-star:hover .zf-star-svg { color: #FBBF24; transform: scale(1.08); }
+
+/* Form controls */
+.zf-provider-id, .zf-comment, .zf-submit-btn {
+  width:100%;
+  box-sizing:border-box;
+}
+.zf-provider-id, .zf-comment {
+  padding: 10px 12px;
+  border: 1px solid #E6E9EE;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+}
+.zf-comment { min-height: 100px; resize: vertical; }
+
+.zf-submit-btn {
+  display:inline-block;
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: #111827;
+  color: #fff;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Messages */
+.zf-message { margin-top: 10px; min-height: 22px; }
+.zf-message-success { color: #065f46; background:#ecfdf5; padding:8px; border-radius:6px; border:1px solid #bbf7d0; }
+.zf-message-error { color: #7f1d1d; background:#fff1f2; padding:8px; border-radius:6px; border:1px solid #fecaca; }
+
+/* Small utility */
+.screen-reader-text { position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px); white-space:nowrap; }

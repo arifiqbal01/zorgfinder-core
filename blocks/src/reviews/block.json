@@ -1,0 +1,24 @@
+{
+  "apiVersion": 3,
+  "name": "zorgfinder/reviews",
+  "title": "ZorgFinder Reviews",
+  "category": "widgets",
+  "icon": "star-filled",
+  "description": "Display a list of provider reviews.",
+  "keywords": ["reviews", "rating", "zorgfinder"],
+  "supports": {
+    "html": false
+  },
+  "attributes": {
+    "providerId": { "type": "number", "default": 0 },
+    "limit": { "type": "number", "default": 5 },
+    "approvedOnly": { "type": "boolean", "default": true },
+    "withComments": { "type": "boolean", "default": false },
+    "ratingFilter": { "type": "string", "default": "all" },
+    "sortBy": { "type": "string", "default": "latest" }
+  },
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./editor.css",
+  "style": "file:./style.css",
+  "render": "file:./render.php"
+}

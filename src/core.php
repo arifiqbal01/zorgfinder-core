@@ -6,7 +6,8 @@ use ZorgFinder\Database\DBManager;
 use ZorgFinder\API\{
     ProvidersController,
     CompareController,
-    FavouritesController
+    FavouritesController,
+    ReviewsController
 };
 use ZorgFinder\Blocks\BlockRegistrar;
 
@@ -38,6 +39,7 @@ final class Core {
             (new ProvidersController())->register_routes();
             (new CompareController())->register_routes();
             (new FavouritesController())->register_routes();
+            (new ReviewsController())->register_routes();
         });
     }
 

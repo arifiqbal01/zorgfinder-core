@@ -1,0 +1,20 @@
+{
+  "apiVersion": 3,
+  "name": "zorgfinder/review-form",
+  "title": "Review Submission Form",
+  "category": "widgets",
+  "icon": "feedback",
+  "description": "Allow users to submit reviews for providers.",
+  "supports": {
+    "html": false
+  },
+  "attributes": {
+    "providerId": { "type": "number", "default": 0 },
+    "showTitle": { "type": "boolean", "default": true },
+    "titleText": { "type": "string", "default": "Submit a Review" }
+  },
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./editor.css",
+  "style": "file:./style.css",
+  "render": "file:./render.php"
+}

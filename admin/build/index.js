@@ -9654,12 +9654,412 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _components_Table__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/Table */ "./src/components/Table.jsx");
+/* harmony import */ var _components_Pagination__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/Pagination */ "./src/components/Pagination.jsx");
+/* harmony import */ var _components_Filters__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../components/Filters */ "./src/components/Filters.jsx");
+/* harmony import */ var _components_Modal__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../components/Modal */ "./src/components/Modal.jsx");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/eye.js");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/star.js");
 
 
-const Providers = () => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
-  className: "text-2xl font-bold mb-4"
-}, "Reviews"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "This page will list and manage all reviews."));
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Providers);
+
+
+
+
+
+
+/**
+ * Admin Reviews page — sends nonce on every request so server knows this is admin UI.
+ */
+
+const DEFAULT_PER_PAGE = 10;
+const getNonce = () => typeof zorgFinderApp !== "undefined" ? zorgFinderApp.nonce : "";
+const Reviews = () => {
+  const [reviews, setReviews] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [providers, setProviders] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [providerMap, setProviderMap] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
+  const [usersMap, setUsersMap] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
+  const [selected, setSelected] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [page, setPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1);
+  const [perPage, setPerPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(DEFAULT_PER_PAGE);
+  const [total, setTotal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0);
+  const [filters, setFilters] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    search: "",
+    provider_id: "",
+    approved: "",
+    rating: ""
+  });
+  const [sort, setSort] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)("newest");
+  const [tab, setTab] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)("active"); // active | trash
+  const [loading, setLoading] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const [showModal, setShowModal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const [editing, setEditing] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+  const headers = {
+    "Content-Type": "application/json",
+    "X-WP-Nonce": getNonce()
+  };
+
+  // load providers + users
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    (async () => {
+      try {
+        const p = await fetch("/wp-json/zorg/v1/providers?per_page=999", {
+          headers
+        });
+        const pj = await p.json();
+        if (pj?.success) {
+          setProviders(pj.data);
+          const map = {};
+          pj.data.forEach(x => map[x.id] = x.name);
+          setProviderMap(map);
+        }
+      } catch (e) {
+        setProviders([]);
+      }
+    })();
+    (async () => {
+      try {
+        const u = await fetch("/wp-json/wp/v2/users?per_page=100", {
+          headers
+        });
+        const uj = await u.json();
+        if (Array.isArray(uj)) {
+          const map = {};
+          uj.forEach(user => {
+            map[user.id] = user.name || user.username || user.slug || `#${user.id}`;
+          });
+          setUsersMap(map);
+        }
+      } catch (e) {
+        setUsersMap({});
+      }
+    })();
+  }, []);
+
+  // fetch reviews
+  const fetchReviews = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([k, v]) => {
+        if (v !== "" && v !== null && v !== undefined) params.append(k, v);
+      });
+      params.append("page", page);
+      params.append("per_page", perPage);
+      params.append("sort", sort);
+      params.append("trashed", tab === "trash" ? 1 : 0);
+      const res = await fetch(`/wp-json/zorg/v1/reviews?${params.toString()}`, {
+        headers
+      });
+      const json = await res.json();
+      if (json?.success && Array.isArray(json.data)) {
+        setReviews(json.data);
+        setTotal(json.total || 0);
+      } else {
+        setReviews([]);
+        setTotal(0);
+      }
+    } catch (e) {
+      setReviews([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters, page, perPage, sort, tab]);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    setPage(1);
+  }, [filters.provider_id, filters.search, filters.approved, filters.rating, sort, tab, perPage]);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    fetchReviews();
+  }, [fetchReviews, page, perPage, sort, tab]);
+
+  // actions
+  const patchReview = async (id, body) => {
+    await fetch(`/wp-json/zorg/v1/reviews/${id}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify(body)
+    });
+  };
+  const deleteReview = async id => {
+    await fetch(`/wp-json/zorg/v1/reviews/${id}`, {
+      method: "DELETE",
+      headers: {
+        "X-WP-Nonce": getNonce()
+      }
+    });
+  };
+  const restoreReview = async id => {
+    await fetch(`/wp-json/zorg/v1/reviews/${id}/restore`, {
+      method: "PATCH",
+      headers: {
+        "X-WP-Nonce": getNonce()
+      }
+    });
+  };
+  const handleApprove = async id => {
+    setReviews(prev => prev.map(r => r.id === id ? {
+      ...r,
+      approved: 1
+    } : r));
+    await patchReview(id, {
+      approved: 1
+    });
+    await fetchReviews();
+  };
+  const handleUnapprove = async id => {
+    if (tab === "active") {
+      setReviews(prev => prev.filter(r => r.id !== id));
+      setSelected(s => s.filter(x => x !== id));
+    } else {
+      setReviews(prev => prev.map(r => r.id === id ? {
+        ...r,
+        approved: 0
+      } : r));
+    }
+    await patchReview(id, {
+      approved: 0
+    });
+    await fetchReviews();
+  };
+  const handleDelete = async id => {
+    await deleteReview(id);
+    setReviews(prev => prev.filter(r => r.id !== id));
+    setSelected(s => s.filter(x => x !== id));
+    await fetchReviews();
+  };
+  const handleRestore = async id => {
+    await restoreReview(id);
+    setReviews(prev => prev.filter(r => r.id !== id));
+    setSelected(s => s.filter(x => x !== id));
+    await fetchReviews();
+  };
+
+  // bulk actions
+  const bulkApprove = async () => {
+    for (const id of selected) await patchReview(id, {
+      approved: 1
+    });
+    setSelected([]);
+    await fetchReviews();
+  };
+  const bulkPending = async () => {
+    for (const id of selected) await patchReview(id, {
+      approved: 0
+    });
+    setSelected([]);
+    await fetchReviews();
+  };
+  const bulkDelete = async () => {
+    for (const id of selected) await deleteReview(id);
+    setSelected([]);
+    await fetchReviews();
+  };
+  const bulkRestore = async () => {
+    for (const id of selected) await restoreReview(id);
+    setSelected([]);
+    await fetchReviews();
+  };
+  const openReview = async id => {
+    try {
+      const res = await fetch(`/wp-json/zorg/v1/reviews/${id}`, {
+        headers
+      });
+      const json = await res.json();
+      if (json?.success) {
+        setEditing(json.data);
+        setShowModal(true);
+      }
+    } catch (e) {}
+  };
+  const columns = ["", "Provider", "User", "Rating", "Status", "Comment", "Date"];
+  const rows = reviews.map(r => ["", providerMap[r.provider_id] || `#${r.provider_id}`, usersMap[r.user_id] || `User #${r.user_id}`, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center gap-2"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "text-sm font-medium"
+  }, r.rating), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_6__["default"], {
+    size: 14
+  })),
+  // FIXED STATUS
+  Number(r.approved) === 1 ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "text-green-600 font-medium"
+  }, "Approved") : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "text-yellow-600 font-medium"
+  }, "Pending"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "truncate max-w-[220px] whitespace-pre-line"
+  }, r.comment), r.created_at]);
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "p-2 space-y-6"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center justify-between"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
+    className: "text-2xl font-semibold text-gray-800"
+  }, "Reviews"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center gap-3"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "text-sm text-gray-600"
+  }, "Sort:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
+    value: sort,
+    onChange: e => setSort(e.target.value),
+    className: "input"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "newest"
+  }, "Newest"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "oldest"
+  }, "Oldest"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "highest"
+  }, "Highest rated"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "lowest"
+  }, "Lowest rated")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex gap-2 bg-white rounded-lg p-2 shadow-sm"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: () => setTab("active"),
+    className: `px-3 py-1 rounded ${tab === "active" ? "bg-black text-white" : "bg-gray-100"}`
+  }, "Active"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: () => setTab("trash"),
+    className: `px-3 py-1 rounded ${tab === "trash" ? "bg-black text-white" : "bg-gray-100"}`
+  }, "Trash")))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Filters__WEBPACK_IMPORTED_MODULE_3__["default"], {
+    schema: [{
+      type: "search",
+      key: "search",
+      placeholder: "Search reviews…"
+    }, {
+      type: "select",
+      key: "provider_id",
+      placeholder: "Provider",
+      options: providers.map(p => ({
+        value: p.id,
+        label: p.name
+      }))
+    }, {
+      type: "select",
+      key: "approved",
+      placeholder: "Status",
+      options: [{
+        value: 1,
+        label: "Approved"
+      }, {
+        value: 0,
+        label: "Pending"
+      }]
+    }],
+    filters: filters,
+    setFilters: setFilters
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex gap-3 items-center zf-no-select",
+    role: "toolbar",
+    "aria-label": "Filter by rating"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    onClick: () => setFilters(f => ({
+      ...f,
+      rating: ""
+    })),
+    className: `px-4 py-1 rounded-full text-sm font-medium select-none ${filters.rating === "" ? "bg-black text-white" : "bg-gray-100 text-gray-700"}`,
+    "aria-pressed": filters.rating === ""
+  }, "All Ratings"), ["5", "4", "3", "2", "1"].map(r => {
+    const active = String(filters.rating) === String(r);
+    return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+      key: r,
+      type: "button",
+      onClick: () => setFilters(f => ({
+        ...f,
+        rating: r
+      })),
+      className: `${active ? 'zf-rating-btn zf-active' : 'zf-rating-btn'} focus:outline-none`,
+      "aria-pressed": active,
+      title: `${r} star${r !== "1" ? "s" : ""}`
+    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+      className: "flex items-center gap-1"
+    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
+      width: "14",
+      height: "14",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      "aria-hidden": true
+    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("path", {
+      d: "M12 .587l3.668 7.431L23 9.75l-5.5 5.356L18.334 24 12 20.092 5.666 24 6.5 15.106 1 9.75l7.332-1.732L12 .587z"
+    })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+      className: "text-sm font-medium"
+    }, r)));
+  })), selected.length > 0 && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex gap-3 bg-white border p-3 rounded-xl shadow-sm"
+  }, tab === "trash" ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: bulkRestore,
+    className: "px-3 py-1 rounded bg-green-600 text-white"
+  }, "Restore Selected") : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: bulkApprove,
+    className: "px-3 py-1 rounded bg-green-600 text-white"
+  }, "Approve Selected"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: bulkPending,
+    className: "px-3 py-1 rounded bg-yellow-600 text-white"
+  }, "Mark Pending"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: bulkDelete,
+    className: "px-3 py-1 rounded bg-red-600 text-white"
+  }, "Delete Selected")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "ml-auto text-sm text-gray-600"
+  }, selected.length, " selected")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Table__WEBPACK_IMPORTED_MODULE_1__["default"], {
+    columns: columns,
+    data: rows,
+    providers: reviews,
+    selected: selected,
+    setSelected: setSelected,
+    actions: i => {
+      const r = reviews[i];
+      const approved = Number(r.approved) === 1;
+      return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+        className: "flex items-center gap-3"
+      }, !approved && tab !== "trash" && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+        onClick: () => handleApprove(r.id),
+        title: "Approve",
+        className: "text-green-600"
+      }, "\u2714"), approved && tab !== "trash" && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+        onClick: () => handleUnapprove(r.id),
+        title: "Unapprove",
+        className: "text-yellow-600"
+      }, "\u2716"), tab === "trash" ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+        onClick: () => handleRestore(r.id),
+        title: "Restore",
+        className: "text-green-600"
+      }, "\u21BA") : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+        onClick: () => handleDelete(r.id),
+        title: "Delete",
+        className: "text-red-600"
+      }, "\uD83D\uDDD1"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+        onClick: () => openReview(r.id),
+        title: "View",
+        className: "text-blue-600"
+      }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_5__["default"], {
+        size: 16
+      })));
+    },
+    pagination: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Pagination__WEBPACK_IMPORTED_MODULE_2__["default"], {
+      page: page,
+      perPage: perPage,
+      total: total,
+      onChange: p => setPage(p),
+      onPerPageChange: v => {
+        setPerPage(v);
+        setPage(1);
+      }
+    })
+  }), showModal && editing && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Modal__WEBPACK_IMPORTED_MODULE_4__["default"], {
+    title: `Review #${editing.id}`,
+    onClose: () => {
+      setEditing(null);
+      setShowModal(false);
+    }
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "space-y-3 text-sm"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Provider:"), " ", providerMap[editing.provider_id] || editing.provider_id), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "User:"), " ", usersMap[editing.user_id] || editing.user_id), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Rating:"), " ", (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "inline-flex items-center gap-2"
+  }, editing.rating, " ", (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_6__["default"], {
+    size: 16
+  }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Status:"), " ", Number(editing.approved) === 1 ? "Approved" : "Pending"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Comment:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "mt-2 p-3 bg-gray-50 rounded whitespace-pre-line"
+  }, editing.comment)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Date:"), " ", editing.created_at))));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Reviews);
 
 /***/ }),
 

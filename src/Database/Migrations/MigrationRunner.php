@@ -5,6 +5,8 @@ namespace ZorgFinder\Database\Migrations;
 use ZorgFinder\Database\Migrations\CreateProvidersTable;
 use ZorgFinder\Database\Migrations\CreateFavouritesTable;
 use ZorgFinder\Database\Migrations\CreateReimbursementsTable;
+use ZorgFinder\Database\Migrations\CreateReviewsTable;
+
 
 /**
  * Handles running all ZorgFinder database migrations.
@@ -21,6 +23,7 @@ class MigrationRunner {
             new CreateProvidersTable(),
             new CreateReimbursementsTable(),
             new CreateFavouritesTable(),
+            new CreateReviewsTable(),
         ];
 
         foreach ($migrations as $migration) {

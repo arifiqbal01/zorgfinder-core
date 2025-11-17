@@ -1,0 +1,55 @@
+.zf-review-form {
+  margin: 25px 0;
+}
+
+.zf-review-form-title {
+  margin-bottom: 15px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.zf-login-warning {
+  color: #b71c1c;
+  background: #ffebee;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.zf-stars span {
+  font-size: 26px;
+  cursor: pointer;
+  color: #ccc;
+  margin-right: 4px;
+}
+
+.zf-stars span.active {
+  color: #ff9800;
+}
+
+.zf-review-form-inner input,
+.zf-review-form-inner select,
+.zf-review-form-inner textarea {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.zf-submit-btn {
+  background: #0073aa;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.zf-message .success {
+  color: #2e7d32;
+  margin-top: 10px;
+}
+
+.zf-message .error {
+  color: #c62828;
+  margin-top: 10px;
+}
