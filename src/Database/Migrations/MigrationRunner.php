@@ -6,6 +6,8 @@ use ZorgFinder\Database\Migrations\CreateProvidersTable;
 use ZorgFinder\Database\Migrations\CreateFavouritesTable;
 use ZorgFinder\Database\Migrations\CreateReimbursementsTable;
 use ZorgFinder\Database\Migrations\CreateReviewsTable;
+use ZorgFinder\Database\Migrations\CreateAppointmentsTable;
+
 
 
 /**
@@ -24,6 +26,7 @@ class MigrationRunner {
             new CreateReimbursementsTable(),
             new CreateFavouritesTable(),
             new CreateReviewsTable(),
+            new CreateAppointmentsTable(),
         ];
 
         foreach ($migrations as $migration) {

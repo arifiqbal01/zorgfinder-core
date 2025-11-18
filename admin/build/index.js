@@ -8687,11 +8687,10 @@ const Filters = ({
     const value = (_filters$field$key = filters[field.key]) !== null && _filters$field$key !== void 0 ? _filters$field$key : "";
 
     /* --------------------------------
-     * SEARCH — dynamic placeholder, no icon
+     * SEARCH INPUT
      * -------------------------------- */
     if (field.type === "search") {
-      const placeholder = field.placeholder || `Search ${field.resource || "items"}…`; // fallback
-
+      const placeholder = field.placeholder || `Search ${field.resource || "items"}…`;
       return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
         key: field.key,
         className: "w-full md:w-64"
@@ -8702,15 +8701,15 @@ const Filters = ({
           ...filters,
           [field.key]: e.target.value
         }),
-        className: " input h-10 text-sm pl-4 pr-3 "
+        className: "input h-10 text-sm pl-4 pr-3"
       }));
     }
 
     /* --------------------------------
-     * SELECT — pill styled, no arrows
+     * SELECT DROPDOWN — pill style
      * -------------------------------- */
     if (field.type === "select") {
-      const label = value && field.options.find(o => o.value === value)?.label;
+      const label = value && field.options?.find(o => String(o.value) === String(value))?.label;
       return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
         key: field.key,
         className: " relative flex items-center bg-gray-50 border border-gray-200 rounded-full shadow-sm px-4 h-9 text-sm cursor-pointer "
@@ -8720,7 +8719,7 @@ const Filters = ({
           ...filters,
           [field.key]: e.target.value
         }),
-        className: " absolute inset-0 w-full h-full opacity-0 cursor-pointer "
+        className: "absolute inset-0 w-full h-full opacity-0 cursor-pointer"
       }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
         value: ""
       }, field.placeholder), field.options?.map(opt => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
@@ -8747,6 +8746,33 @@ const Filters = ({
         }),
         className: "h-4 w-4 accent-blue-600"
       }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, field.label));
+    }
+
+    /* --------------------------------
+    * DATE FILTER — pill style (fixed)
+    * -------------------------------- */
+
+    if (field.type === "date") {
+      const openPicker = () => {
+        const input = document.getElementById(`date-${field.key}`);
+        if (input && input.showPicker) input.showPicker();else input.click(); // fallback
+      };
+      return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+        key: field.key,
+        onClick: openPicker,
+        className: " relative flex items-center justify-between bg-gray-50 border border-gray-200 rounded-full shadow-sm px-4 h-9 text-sm w-[160px] cursor-pointer select-none "
+      }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+        id: `date-${field.key}`,
+        type: "date",
+        value: value,
+        onChange: e => setFilters({
+          ...filters,
+          [field.key]: e.target.value
+        }),
+        className: " absolute inset-0 w-full h-full  opacity-0 cursor-pointer z-10 "
+      }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+        className: "pointer-events-none text-gray-700 truncate"
+      }, value || field.placeholder || "Select date"));
     }
     return null;
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
@@ -9141,12 +9167,339 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _components_Table__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/Table */ "./src/components/Table.jsx");
+/* harmony import */ var _components_Pagination__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/Pagination */ "./src/components/Pagination.jsx");
+/* harmony import */ var _components_Filters__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../components/Filters */ "./src/components/Filters.jsx");
+/* harmony import */ var _components_Modal__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../components/Modal */ "./src/components/Modal.jsx");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/eye.js");
 
 
-const Providers = () => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
-  className: "text-2xl font-bold mb-4"
-}, "appointments"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "This page will list and manage all appointments."));
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Providers);
+
+
+
+
+
+const DEFAULT_PER_PAGE = 10;
+const getNonce = () => typeof zorgFinderApp !== "undefined" ? zorgFinderApp.nonce : "";
+const Appointments = () => {
+  const [items, setItems] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [providers, setProviders] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [usersMap, setUsersMap] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
+  const [selected, setSelected] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [page, setPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1);
+  const [perPage, setPerPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(DEFAULT_PER_PAGE);
+  const [total, setTotal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0);
+  const [filters, setFilters] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    search: "",
+    provider_id: "",
+    user_id: "",
+    status: "",
+    date: ""
+  });
+  const [sort, setSort] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)("newest");
+  const [tab, setTab] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)("active"); // active | trash
+  const [loading, setLoading] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const [showModal, setShowModal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const [editing, setEditing] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+  const headers = {
+    "Content-Type": "application/json",
+    "X-WP-Nonce": getNonce()
+  };
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    (async () => {
+      try {
+        const p = await fetch("/wp-json/zorg/v1/providers?per_page=999", {
+          headers
+        });
+        const pj = await p.json();
+        if (pj?.success) {
+          setProviders(pj.data);
+        }
+      } catch (e) {
+        setProviders([]);
+      }
+    })();
+    (async () => {
+      try {
+        const u = await fetch("/wp-json/wp/v2/users?per_page=100", {
+          headers
+        });
+        const uj = await u.json();
+        if (Array.isArray(uj)) {
+          const map = {};
+          uj.forEach(user => {
+            map[user.id] = user.name || user.username || `#${user.id}`;
+          });
+          setUsersMap(map);
+        }
+      } catch (e) {
+        setUsersMap({});
+      }
+    })();
+  }, []);
+  const fetchAppointments = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([k, v]) => {
+        if (v !== "" && v !== null && v !== undefined) params.append(k, v);
+      });
+      params.append("page", page);
+      params.append("per_page", perPage);
+      params.append("sort", sort);
+      params.append("trashed", tab === "trash" ? 1 : 0);
+      const res = await fetch(`/wp-json/zorg/v1/appointments?${params.toString()}`, {
+        headers
+      });
+      const json = await res.json();
+      if (json?.success && Array.isArray(json.data)) {
+        setItems(json.data);
+        setTotal(json.total || 0);
+      } else {
+        setItems([]);
+        setTotal(0);
+      }
+    } catch (e) {
+      setItems([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters, page, perPage, sort, tab]);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    setPage(1);
+  }, [filters.provider_id, filters.search, filters.status, filters.date, sort, tab, perPage]);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    fetchAppointments();
+  }, [fetchAppointments, page, perPage, sort, tab]);
+
+  // Actions
+  const patchAppointment = async (id, body) => {
+    await fetch(`/wp-json/zorg/v1/appointments/${id}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify(body)
+    });
+  };
+  const deleteAppointment = async id => {
+    await fetch(`/wp-json/zorg/v1/appointments/${id}`, {
+      method: "DELETE",
+      headers: {
+        "X-WP-Nonce": getNonce()
+      }
+    });
+  };
+  const restoreAppointment = async id => {
+    await fetch(`/wp-json/zorg/v1/appointments/${id}/restore`, {
+      method: "PATCH",
+      headers: {
+        "X-WP-Nonce": getNonce()
+      }
+    });
+  };
+  const handleConfirm = async id => {
+    await patchAppointment(id, {
+      status: "confirmed"
+    });
+    await fetchAppointments();
+  };
+  const handleReject = async id => {
+    await patchAppointment(id, {
+      status: "rejected"
+    });
+    await fetchAppointments();
+  };
+  const handleDelete = async id => {
+    await deleteAppointment(id);
+    setItems(prev => prev.filter(x => x.id !== id));
+    setSelected(s => s.filter(x => x !== id));
+    await fetchAppointments();
+  };
+  const handleRestore = async id => {
+    await restoreAppointment(id);
+    setItems(prev => prev.filter(x => x.id !== id));
+    setSelected(s => s.filter(x => x !== id));
+    await fetchAppointments();
+  };
+
+  // Bulk actions
+  const bulkConfirm = async () => {
+    for (const id of selected) await patchAppointment(id, {
+      status: "confirmed"
+    });
+    setSelected([]);
+    await fetchAppointments();
+  };
+  const bulkReject = async () => {
+    for (const id of selected) await patchAppointment(id, {
+      status: "rejected"
+    });
+    setSelected([]);
+    await fetchAppointments();
+  };
+  const bulkDelete = async () => {
+    for (const id of selected) await deleteAppointment(id);
+    setSelected([]);
+    await fetchAppointments();
+  };
+  const bulkRestore = async () => {
+    for (const id of selected) await restoreAppointment(id);
+    setSelected([]);
+    await fetchAppointments();
+  };
+  const openAppointment = async id => {
+    try {
+      const res = await fetch(`/wp-json/zorg/v1/appointments/${id}`, {
+        headers
+      });
+      const json = await res.json();
+      if (json?.success) {
+        setEditing(json.data);
+        setShowModal(true);
+      }
+    } catch (e) {}
+  };
+  const columns = ["", "Provider", "User", "Date", "Time", "Status", "Notes", "Created"];
+  const rows = items.map(it => ["", providers.find(p => p.id === it.provider_id)?.name || `#${it.provider_id}`, usersMap[it.user_id] || `User #${it.user_id}`, it.preferred_date, it.time_slot, it.status, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "truncate max-w-[240px] whitespace-pre-line"
+  }, it.notes), it.created_at]);
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "p-2 space-y-6"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center justify-between"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
+    className: "text-2xl font-semibold text-gray-800"
+  }, "Appointments"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center gap-3"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "text-sm text-gray-600"
+  }, "Sort:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
+    value: sort,
+    onChange: e => setSort(e.target.value),
+    className: "input"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "newest"
+  }, "Newest"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "oldest"
+  }, "Oldest")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex gap-2 bg-white rounded-lg p-2 shadow-sm"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: () => setTab("active"),
+    className: `px-3 py-1 rounded ${tab === "active" ? "bg-black text-white" : "bg-gray-100"}`
+  }, "Active"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: () => setTab("trash"),
+    className: `px-3 py-1 rounded ${tab === "trash" ? "bg-black text-white" : "bg-gray-100"}`
+  }, "Trash")))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Filters__WEBPACK_IMPORTED_MODULE_3__["default"], {
+    schema: [{
+      type: "search",
+      key: "search",
+      placeholder: "Search name, notes, provider…"
+    }, {
+      type: "select",
+      key: "provider_id",
+      placeholder: "Provider",
+      options: providers.map(p => ({
+        value: p.id,
+        label: p.name
+      }))
+    }, {
+      type: "select",
+      key: "status",
+      placeholder: "Status",
+      options: [{
+        value: 'pending',
+        label: 'Pending'
+      }, {
+        value: 'confirmed',
+        label: 'Confirmed'
+      }, {
+        value: 'rejected',
+        label: 'Rejected'
+      }]
+    }, {
+      type: "date",
+      key: "date",
+      placeholder: "Select date"
+    }, {
+      type: "time",
+      key: "time",
+      placeholder: "Select time"
+    }],
+    filters: filters,
+    setFilters: setFilters
+  }), selected.length > 0 && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex gap-3 bg-white border p-3 rounded-xl shadow-sm"
+  }, tab === "trash" ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: bulkRestore,
+    className: "px-3 py-1 rounded bg-green-600 text-white"
+  }, "Restore Selected") : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: bulkConfirm,
+    className: "px-3 py-1 rounded bg-green-600 text-white"
+  }, "Confirm Selected"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: bulkReject,
+    className: "px-3 py-1 rounded bg-yellow-600 text-white"
+  }, "Reject Selected"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: bulkDelete,
+    className: "px-3 py-1 rounded bg-red-600 text-white"
+  }, "Delete Selected")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "ml-auto text-sm text-gray-600"
+  }, selected.length, " selected")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Table__WEBPACK_IMPORTED_MODULE_1__["default"], {
+    columns: columns,
+    data: rows,
+    providers: items,
+    selected: selected,
+    setSelected: setSelected,
+    actions: i => {
+      const it = items[i];
+      return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+        className: "flex items-center gap-3"
+      }, it.status !== "confirmed" && tab !== "trash" && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+        onClick: () => handleConfirm(it.id),
+        title: "Confirm",
+        className: "text-green-600"
+      }, "\u2714"), it.status !== "rejected" && tab !== "trash" && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+        onClick: () => handleReject(it.id),
+        title: "Reject",
+        className: "text-yellow-600"
+      }, "\u2716"), tab === "trash" ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+        onClick: () => handleRestore(it.id),
+        title: "Restore",
+        className: "text-green-600"
+      }, "\u21BA") : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+        onClick: () => handleDelete(it.id),
+        title: "Delete",
+        className: "text-red-600"
+      }, "\uD83D\uDDD1"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+        onClick: () => openAppointment(it.id),
+        title: "View",
+        className: "text-blue-600"
+      }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_5__["default"], {
+        size: 16
+      })));
+    },
+    pagination: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Pagination__WEBPACK_IMPORTED_MODULE_2__["default"], {
+      page: page,
+      perPage: perPage,
+      total: total,
+      onChange: p => setPage(p),
+      onPerPageChange: v => {
+        setPerPage(v);
+        setPage(1);
+      }
+    })
+  }), showModal && editing && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Modal__WEBPACK_IMPORTED_MODULE_4__["default"], {
+    title: `Appointment #${editing.id}`,
+    onClose: () => {
+      setEditing(null);
+      setShowModal(false);
+    }
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "space-y-3 text-sm"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Provider:"), " ", providers.find(p => p.id === editing.provider_id)?.name || editing.provider_id), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "User:"), " ", usersMap[editing.user_id] || editing.user_id), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Date:"), " ", editing.preferred_date), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Time:"), " ", editing.time_slot), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Status:"), " ", editing.status), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Notes:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "mt-2 p-3 bg-gray-50 rounded whitespace-pre-line"
+  }, editing.notes)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Created:"), " ", editing.created_at))));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Appointments);
 
 /***/ }),
 

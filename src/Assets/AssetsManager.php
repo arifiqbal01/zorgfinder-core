@@ -95,15 +95,18 @@ class AssetsManager
      */
     public function enqueue_frontend_assets()
 {
-    $file = ZORGFINDER_PATH . 'assets/js/review-form-frontend.js';
+    $review_file = ZORGFINDER_PATH . 'assets/js/review-form-frontend.js';
+   $appointment_built = ZORGFINDER_PATH . 'blocks/build/appointment-form-frontend.js';
 
-    if (file_exists($file)) {
-
+    /**
+     * REVIEW FORM FRONTEND JS
+     */
+    if (file_exists($review_file)) {
         wp_enqueue_script(
             'zorgfinder-review-form',
             ZORGFINDER_URL . 'assets/js/review-form-frontend.js',
-            [],
-            filemtime($file),
+            ['wp-element'],
+            filemtime($review_file),
             true
         );
 
@@ -111,9 +114,32 @@ class AssetsManager
             'restUrl' => rest_url('zorg/v1/'),
             'nonce'   => wp_create_nonce('wp_rest'),
         ]);
-
     } else {
-        error_log('❌ Review Form JS missing: ' . $file);
+        error_log('❌ Review Form JS missing: ' . $review_file);
+    }
+
+
+    /**
+     * APPOINTMENT FORM FRONTEND JS
+     * Always check + load independently
+     */
+    if ( file_exists( $appointment_built ) ) {
+        wp_enqueue_script(
+            'zorgfinder-appointment-form',
+            ZORGFINDER_URL . 'blocks/build/appointment-form-frontend.js',
+            ['wp-element'],
+            filemtime( $appointment_built ),
+            true
+        );
+
+        // Localize the global object — must match how component reads it (window.zorgFinderApp)
+        wp_localize_script('zorgfinder-appointment-form', 'zorgFinderApp', [
+            'restUrl' => rest_url('zorg/v1/'),
+            'nonce'   => wp_create_nonce('wp_rest'),
+        ]);
+    } else {
+        error_log('❌ Appointment Form frontend bundle missing: ' . $appointment_built);
     }
 }
+
 }

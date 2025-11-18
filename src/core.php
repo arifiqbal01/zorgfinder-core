@@ -7,8 +7,8 @@ use ZorgFinder\API\{
     ProvidersController,
     CompareController,
     FavouritesController,
-    ReviewsController
-};
+    ReviewsController,
+    AppointmentsController};
 use ZorgFinder\Blocks\BlockRegistrar;
 
 final class Core {
@@ -40,6 +40,7 @@ final class Core {
             (new CompareController())->register_routes();
             (new FavouritesController())->register_routes();
             (new ReviewsController())->register_routes();
+            (new AppointmentsController())->register_routes();
         });
     }
 

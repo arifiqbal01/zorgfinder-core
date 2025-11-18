@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, X } from "lucide-react";
+import { X } from "lucide-react";
 
 const Filters = ({ schema = [], filters, setFilters }) => {
   const clearAll = () => {
@@ -19,44 +19,35 @@ const Filters = ({ schema = [], filters, setFilters }) => {
       {schema.map((field) => {
         const value = filters[field.key] ?? "";
 
-       /* --------------------------------
-        * SEARCH — dynamic placeholder, no icon
-        * -------------------------------- */
+        /* --------------------------------
+         * SEARCH INPUT
+         * -------------------------------- */
         if (field.type === "search") {
           const placeholder =
-            field.placeholder ||
-            `Search ${field.resource || "items"}…`; // fallback
+            field.placeholder || `Search ${field.resource || "items"}…`;
 
           return (
-            <div
-              key={field.key}
-              className="w-full md:w-64"
-            >
+            <div key={field.key} className="w-full md:w-64">
               <input
                 placeholder={placeholder}
                 value={value}
                 onChange={(e) =>
                   setFilters({ ...filters, [field.key]: e.target.value })
                 }
-                className="
-                  input
-                  h-10
-                  text-sm
-                  pl-4 pr-3
-                "
+                className="input h-10 text-sm pl-4 pr-3"
               />
             </div>
           );
         }
 
-
         /* --------------------------------
-         * SELECT — pill styled, no arrows
+         * SELECT DROPDOWN — pill style
          * -------------------------------- */
         if (field.type === "select") {
           const label =
             value &&
-            field.options.find((o) => o.value === value)?.label;
+            field.options?.find((o) => String(o.value) === String(value))
+              ?.label;
 
           return (
             <div
@@ -73,9 +64,7 @@ const Filters = ({ schema = [], filters, setFilters }) => {
                 onChange={(e) =>
                   setFilters({ ...filters, [field.key]: e.target.value })
                 }
-                className="
-                  absolute inset-0 w-full h-full opacity-0 cursor-pointer
-                "
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               >
                 <option value="">{field.placeholder}</option>
                 {field.options?.map((opt) => (
@@ -123,6 +112,56 @@ const Filters = ({ schema = [], filters, setFilters }) => {
           );
         }
 
+        /* --------------------------------
+        * DATE FILTER — pill style (fixed)
+        * -------------------------------- */
+       
+if (field.type === "date") {
+  const openPicker = () => {
+    const input = document.getElementById(`date-${field.key}`);
+    if (input && input.showPicker) input.showPicker();
+    else input.click(); // fallback
+  };
+
+  return (
+    <div
+      key={field.key}
+      onClick={openPicker}
+      className="
+        relative flex items-center justify-between
+        bg-gray-50 border border-gray-200
+        rounded-full shadow-sm
+        px-4 h-9 text-sm
+        w-[160px]
+        cursor-pointer
+        select-none
+      "
+    >
+      {/* Hidden native date input */}
+      <input
+        id={`date-${field.key}`}
+        type="date"
+        value={value}
+        onChange={(e) => setFilters({ ...filters, [field.key]: e.target.value })}
+        className="
+          absolute inset-0 w-full h-full 
+          opacity-0
+          cursor-pointer
+          z-10
+        "
+      />
+
+      {/* Visible label */}
+      <span className="pointer-events-none text-gray-700 truncate">
+        {value || field.placeholder || "Select date"}
+      </span>
+    </div>
+  );
+}
+
+
+
+
         return null;
       })}
 
@@ -130,8 +169,7 @@ const Filters = ({ schema = [], filters, setFilters }) => {
       <button
         onClick={clearAll}
         className="
-          ml-auto
-          flex items-center gap-2
+          ml-auto flex items-center gap-2
           bg-gray-100 border border-gray-200
           rounded-full shadow-sm
           px-4 h-9 text-sm
