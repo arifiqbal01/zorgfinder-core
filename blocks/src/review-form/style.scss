@@ -1,55 +1,93 @@
-.zf-review-form {
-  margin: 25px 0;
+/* Review form styles - modern stars, tooltips, skeleton, messages */
+
+.zf-review-form { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width: 680px; }
+.zf-review-form .zf-review-form-title { margin: 0 0 12px; font-size: 20px; }
+.zf-review-form label { display:block; margin: 14px 0 6px; font-weight:600; }
+.zf-review-form .zf-comment { width:100%; padding:10px; border:1px solid #e2e2e2; border-radius:6px; font-size:14px; resize:vertical; }
+.zf-review-form .zf-submit-btn { margin-top:12px; padding:10px 14px; border-radius:8px; border:0; background:#0b6efd; color:#fff; cursor:pointer; font-weight:600; }
+.zf-review-form .zf-submit-btn.zf-disabled { opacity:0.6; cursor:not-allowed; }
+
+/* Stars */
+.zf-stars { display:flex; gap:10px; align-items:center; cursor:pointer; margin:6px 0 0; }
+.zf-star { display:inline-flex; align-items:center; justify-content:center; position:relative; line-height:0; outline:none; border-radius:6px; }
+.zf-star:focus { box-shadow:0 0 0 3px rgba(11,110,253,0.12); }
+.zf-star-icon {
+  width: 18px;
+  height: 18px;
+  opacity: 0.35;
+  transition: transform 0.18s cubic-bezier(.2,.9,.2,1), opacity 0.18s ease, fill 0.18s ease;
+  fill: none;
+  stroke: currentColor;
+  color: #cfcfcf;
 }
 
-.zf-review-form-title {
-  margin-bottom: 15px;
-  font-size: 20px;
-  font-weight: 600;
+/* Active - filled color */
+.zf-star.active .zf-star-icon,
+.zf-star.active .zf-star-icon path {
+  opacity:1;
+  transform: scale(1.12);
+  color: #ffb400;
+  fill: #ffb400;
+  stroke: #ffb400;
 }
 
-.zf-login-warning {
-  color: #b71c1c;
-  background: #ffebee;
-  padding: 12px;
+/* Hover state */
+.zf-star:hover .zf-star-icon { opacity: 1; transform: scale(1.12); color:#ffb400; fill:#ffb400; stroke:#ffb400; }
+
+/* Tooltip -- simple */
+.zf-star::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: -36px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.82);
+  color: #fff;
+  padding: 6px 8px;
   border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  transform-origin: 50% 100%;
+  z-index: 40;
+  transform: translateX(-50%) translateY(6px);
 }
 
-.zf-stars span {
-  font-size: 26px;
-  cursor: pointer;
-  color: #ccc;
-  margin-right: 4px;
+.zf-star:hover::after,
+.zf-star:focus::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
-.zf-stars span.active {
-  color: #ff9800;
-}
-
-.zf-review-form-inner input,
-.zf-review-form-inner select,
-.zf-review-form-inner textarea {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 15px;
-  border: 1px solid #ddd;
+/* Skeleton shimmer for stars */
+.zf-stars.skeleton .zf-star-icon {
+  opacity: 0.16 !important;
+  fill: none;
+  background: linear-gradient(90deg, #f6f6f6 25%, #eaeaea 37%, #f6f6f6 63%);
+  background-size: 400% 100%;
   border-radius: 6px;
+  -webkit-mask-image: none;
+  animation: zf-shimmer 1.2s linear infinite;
 }
 
-.zf-submit-btn {
-  background: #0073aa;
-  color: white;
-  padding: 10px 16px;
-  border-radius: 6px;
-  cursor: pointer;
+@keyframes zf-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
 }
 
-.zf-message .success {
-  color: #2e7d32;
-  margin-top: 10px;
-}
+/* Messages */
+.zf-message { margin-top: 10px; min-height: 20px; }
+.zf-message-success { color: #064e3b; background: #ecfdf5; padding:8px 10px; border-radius:6px; border:1px solid #bbf7d0; }
+.zf-message-error { color: #7f1d1d; background: #fff1f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; }
 
-.zf-message .error {
-  color: #c62828;
-  margin-top: 10px;
+/* provider average display (optional selector used by realtime updater) */
+.zf-provider-average { display:inline-flex; align-items:center; gap:6px; font-weight:600; }
+.zf-provider-average .avg-value { font-size:1.05rem; }
+
+/* small responsive tweaks */
+@media (max-width:420px) {
+  .zf-star-icon { width:24px; height:24px; }
+  .zf-review-form .zf-comment { font-size:13px; }
 }

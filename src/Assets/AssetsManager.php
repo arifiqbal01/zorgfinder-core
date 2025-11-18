@@ -94,20 +94,26 @@ class AssetsManager
      * - Review Submission Form JS
      */
     public function enqueue_frontend_assets()
-    {
-        // ⭐ REVIEW FORM: interactive stars + AJAX submission
-        $review_form_js = ZORGFINDER_PATH . 'assets/js/review-block-form.js';
+{
+    $file = ZORGFINDER_PATH . 'assets/js/review-form-frontend.js';
 
-        if (file_exists($review_form_js)) {
-            wp_enqueue_script(
-                'zorgfinder-review-form',
-                ZORGFINDER_URL . 'assets/js/review-block-form.js',
-                [],
-                ZORGFINDER_VERSION,
-                true
-            );
-        } else {
-            error_log('⚠️ ZorgFinder: review-block-form.js missing at: ' . $review_form_js);
-        }
+    if (file_exists($file)) {
+
+        wp_enqueue_script(
+            'zorgfinder-review-form',
+            ZORGFINDER_URL . 'assets/js/review-form-frontend.js',
+            [],
+            filemtime($file),
+            true
+        );
+
+        wp_localize_script('zorgfinder-review-form', 'zorgFinderReview', [
+            'restUrl' => rest_url('zorg/v1/'),
+            'nonce'   => wp_create_nonce('wp_rest'),
+        ]);
+
+    } else {
+        error_log('❌ Review Form JS missing: ' . $file);
     }
+}
 }
