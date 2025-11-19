@@ -89,17 +89,20 @@ class AssetsManager
         }
     }
 
-    /**
-     * Frontend Assets (Public Site)
-     * - Review Submission Form JS
-     */
     public function enqueue_frontend_assets()
 {
-    $review_file = ZORGFINDER_PATH . 'assets/js/review-form-frontend.js';
-   $appointment_built = ZORGFINDER_PATH . 'blocks/build/appointment-form-frontend.js';
+    $review_file       = ZORGFINDER_PATH . 'assets/js/review-form-frontend.js';
+    $appointment_file  = ZORGFINDER_PATH . 'blocks/build/appointment-form-frontend.js';
+    $providers_file    = ZORGFINDER_PATH . 'blocks/build/providers-frontend.js';
+
+    $localize = [
+        'restUrl'    => rest_url('zorg/v1/'),
+        'nonce'      => wp_create_nonce('wp_rest'),
+        'isLoggedIn' => is_user_logged_in(),
+    ];
 
     /**
-     * REVIEW FORM FRONTEND JS
+     * REVIEW FORM
      */
     if (file_exists($review_file)) {
         wp_enqueue_script(
@@ -109,37 +112,39 @@ class AssetsManager
             filemtime($review_file),
             true
         );
-
-        wp_localize_script('zorgfinder-review-form', 'zorgFinderReview', [
-            'restUrl' => rest_url('zorg/v1/'),
-            'nonce'   => wp_create_nonce('wp_rest'),
-        ]);
-    } else {
-        error_log('❌ Review Form JS missing: ' . $review_file);
+        wp_localize_script('zorgfinder-review-form', 'zorgFinderApp', $localize);
     }
 
-
     /**
-     * APPOINTMENT FORM FRONTEND JS
-     * Always check + load independently
+     * APPOINTMENT FORM
      */
-    if ( file_exists( $appointment_built ) ) {
+    if (file_exists($appointment_file)) {
         wp_enqueue_script(
             'zorgfinder-appointment-form',
             ZORGFINDER_URL . 'blocks/build/appointment-form-frontend.js',
             ['wp-element'],
-            filemtime( $appointment_built ),
+            filemtime($appointment_file),
             true
         );
-
-        // Localize the global object — must match how component reads it (window.zorgFinderApp)
-        wp_localize_script('zorgfinder-appointment-form', 'zorgFinderApp', [
-            'restUrl' => rest_url('zorg/v1/'),
-            'nonce'   => wp_create_nonce('wp_rest'),
-        ]);
-    } else {
-        error_log('❌ Appointment Form frontend bundle missing: ' . $appointment_built);
+        wp_localize_script('zorgfinder-appointment-form', 'zorgFinderApp', $localize);
     }
+
+    /**
+     * PROVIDERS FRONTEND (NEW)
+     */
+    if (file_exists($providers_file)) {
+        wp_enqueue_script(
+            'zorgfinder-providers-frontend',
+            ZORGFINDER_URL . 'blocks/build/providers-frontend.js',
+            ['wp-element'],
+            filemtime($providers_file),
+            true
+        );
+        wp_localize_script('zorgfinder-providers-frontend', 'zorgFinderApp', $localize);
+    }
+
 }
+
+
 
 }

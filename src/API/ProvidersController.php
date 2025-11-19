@@ -9,12 +9,17 @@ class ProvidersController extends BaseController
 {
     public function register_routes()
     {
-        // List (paginated)
+        // List
         register_rest_route($this->namespace, '/providers', [
             [
                 'methods'  => 'GET',
                 'callback' => [$this, 'get_providers'],
                 'permission_callback' => '__return_true',
+            ],
+            [
+                'methods'  => 'POST',
+                'callback' => [$this, 'create_provider'],
+                'permission_callback' => [$this, 'require_admin'],
             ],
         ]);
 
@@ -25,49 +30,39 @@ class ProvidersController extends BaseController
                 'callback' => [$this, 'get_provider'],
                 'permission_callback' => '__return_true',
             ],
-        ]);
-
-        // Create
-        register_rest_route($this->namespace, '/providers', [
-            [
-                'methods'  => 'POST',
-                'callback' => [$this, 'create_provider'],
-                'permission_callback' => [$this, 'require_admin'],
-            ],
-        ]);
-
-        // Update
-        register_rest_route($this->namespace, '/providers/(?P<id>\d+)', [
             [
                 'methods'  => ['PUT','PATCH'],
                 'callback' => [$this, 'update_provider'],
                 'permission_callback' => [$this, 'require_admin'],
             ],
-        ]);
-
-        // Delete
-        register_rest_route($this->namespace, '/providers/(?P<id>\d+)', [
             [
                 'methods'  => 'DELETE',
                 'callback' => [$this, 'delete_provider'],
                 'permission_callback' => [$this, 'require_admin'],
             ],
         ]);
+
+        // Restore Provider
+        register_rest_route($this->namespace, '/providers/(?P<id>\d+)/restore', [
+            [
+                'methods'  => 'PATCH',
+                'callback' => [$this, 'restore_provider'],
+                'permission_callback' => [$this, 'require_admin'],
+            ],
+        ]);
     }
 
-
     /**
-     * LIST — PAGINATED
+     * LIST PROVIDERS
      */
     public function get_providers(WP_REST_Request $request): WP_REST_Response|WP_Error
     {
         global $wpdb;
         $table = $wpdb->prefix . 'zf_providers';
 
-        // WHERE conditions
         $where = "WHERE deleted_at IS NULL";
 
-        // SEARCH
+        // Search
         if ($search = $request->get_param('search')) {
             $like = '%' . $wpdb->esc_like($search) . '%';
             $where .= $wpdb->prepare("
@@ -75,7 +70,7 @@ class ProvidersController extends BaseController
             ", $like, $like, $like, $like);
         }
 
-        // ENUM FILTERS
+        // Enum filters
         $enumFilters = ['type_of_care','indication_type','organization_type','religion'];
         foreach ($enumFilters as $field) {
             if ($value = $request->get_param($field)) {
@@ -83,7 +78,6 @@ class ProvidersController extends BaseController
             }
         }
 
-        // HKZ
         if ($request->get_param('has_hkz') == 1) {
             $where .= " AND has_hkz = 1";
         }
@@ -93,32 +87,27 @@ class ProvidersController extends BaseController
         $per_page = max(1, (int)$request->get_param('per_page'));
         $offset   = ($page - 1) * $per_page;
 
-        // Count
         $total = (int)$wpdb->get_var("SELECT COUNT(*) FROM $table $where");
 
-        // Query
-        $providers = $wpdb->get_results(
+        $rows = $wpdb->get_results(
             $wpdb->prepare("
-                SELECT * 
-                FROM $table 
-                $where 
-                ORDER BY id DESC 
+                SELECT * FROM $table 
+                $where
+                ORDER BY id DESC
                 LIMIT %d OFFSET %d
             ", $per_page, $offset),
             ARRAY_A
         );
 
-        // FINAL STANDARD RESPONSE
         return new WP_REST_Response([
             'success'   => true,
-            'data'      => $providers,
+            'data'      => $rows,
             'total'     => $total,
             'page'      => $page,
             'per_page'  => $per_page,
             'pages'     => ceil($total / $per_page),
         ], 200);
     }
-
 
     /**
      * SINGLE PROVIDER
@@ -129,21 +118,20 @@ class ProvidersController extends BaseController
         $id    = (int)$request->get_param('id');
         $table = $wpdb->prefix . 'zf_providers';
 
-        $provider = $wpdb->get_row(
-            $wpdb->prepare("SELECT * FROM $table WHERE id = %d AND deleted_at IS NULL", $id),
+        $row = $wpdb->get_row(
+            $wpdb->prepare("SELECT * FROM $table WHERE id=%d AND deleted_at IS NULL", $id),
             ARRAY_A
         );
 
-        if (!$provider) {
+        if (!$row) {
             return $this->error("Provider not found", 404);
         }
 
         return new WP_REST_Response([
             'success' => true,
-            'data'    => $provider,
+            'data'    => $row,
         ], 200);
     }
-
 
     /**
      * CREATE
@@ -177,7 +165,6 @@ class ProvidersController extends BaseController
 
         return $this->get_provider(new WP_REST_Request(['id' => $id]));
     }
-
 
     /**
      * UPDATE
@@ -214,38 +201,109 @@ class ProvidersController extends BaseController
         return $this->get_provider(new WP_REST_Request(['id' => $id]));
     }
 
-
     /**
-     * DELETE (soft)
+     * DELETE PROVIDER (Soft) + CASCADE
      */
     public function delete_provider(WP_REST_Request $request): WP_REST_Response|WP_Error
     {
         global $wpdb;
-        $table = $wpdb->prefix . 'zf_providers';
-        $id    = (int)$request->get_param('id');
 
-        if (!$wpdb->get_var($wpdb->prepare("SELECT id FROM $table WHERE id=%d", $id))) {
-            return $this->error("Provider not found", 404);
+        $id = (int)$request->get_param('id');
+        if (!$id) return $this->error("Provider ID is required", 400);
+
+        $table_prov = $wpdb->prefix . 'zf_providers';
+        $table_fav  = $wpdb->prefix . 'zf_favourites';
+        $table_rev  = $wpdb->prefix . 'zf_reviews';
+        $table_app  = $wpdb->prefix . 'zf_appointments';
+        $table_reim = $wpdb->prefix . 'zf_reimbursements';
+
+        $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM $table_prov WHERE id=%d", $id));
+        if (!$exists) return $this->error("Provider not found", 404);
+
+        $now = current_time('mysql');
+
+        $wpdb->query("START TRANSACTION");
+
+        try {
+            // Soft delete provider
+            $wpdb->update($table_prov, ['deleted_at' => $now], ['id' => $id]);
+
+            // Cascade delete
+            $wpdb->update($table_fav, ['deleted_at' => $now], ['provider_id' => $id]);
+            $wpdb->update($table_rev, ['deleted_at' => $now], ['provider_id' => $id]);
+            $wpdb->update($table_app, ['deleted_at' => $now], ['provider_id' => $id]);
+
+            if ($wpdb->get_var("SHOW TABLES LIKE '{$table_reim}'")) {
+                $wpdb->update($table_reim, ['deleted_at' => $now], ['provider_id' => $id]);
+            }
+
+            $wpdb->query("COMMIT");
+
+            return $this->respond([
+                'message' => 'Provider soft-deleted with cascaded favourites, reviews, appointments and reimbursements.'
+            ]);
+
+        } catch (\Throwable $e) {
+            $wpdb->query("ROLLBACK");
+            error_log("[ZORG CASCADE DELETE ERROR] " . $e->getMessage());
+            return $this->error("Failed to delete provider", 500);
         }
-
-        $wpdb->update($table, [
-            'deleted_at' => current_time('mysql')
-        ], ['id' => $id]);
-
-        return $this->respond(['message' => 'Provider soft-deleted']);
     }
 
-    public function require_admin(): bool|\WP_Error
-{
-    if (!current_user_can('edit_others_posts')) {
-        return new WP_Error(
-            'rest_forbidden',
-            __('You do not have permission to modify providers.', 'zorgfinder-core'),
-            ['status' => 403]
-        );
+    /**
+     * RESTORE PROVIDER + CASCADE RESTORE
+     */
+    public function restore_provider(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        global $wpdb;
+
+        $id = (int)$request->get_param('id');
+        if (!$id) return $this->error("Provider ID is required", 400);
+
+        $table_prov = $wpdb->prefix . 'zf_providers';
+        $table_fav  = $wpdb->prefix . 'zf_favourites';
+        $table_rev  = $wpdb->prefix . 'zf_reviews';
+        $table_app  = $wpdb->prefix . 'zf_appointments';
+        $table_reim = $wpdb->prefix . 'zf_reimbursements';
+
+        $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM $table_prov WHERE id=%d", $id));
+        if (!$exists) return $this->error("Provider not found", 404);
+
+        $wpdb->query("START TRANSACTION");
+
+        try {
+            $wpdb->update($table_prov, ['deleted_at' => null], ['id' => $id]);
+
+            $wpdb->update($table_fav, ['deleted_at' => null], ['provider_id' => $id]);
+            $wpdb->update($table_rev, ['deleted_at' => null], ['provider_id' => $id]);
+            $wpdb->update($table_app, ['deleted_at' => null], ['provider_id' => $id]);
+
+            if ($wpdb->get_var("SHOW TABLES LIKE '{$table_reim}'")) {
+                $wpdb->update($table_reim, ['deleted_at' => null], ['provider_id' => $id]);
+            }
+
+            $wpdb->query("COMMIT");
+
+            return $this->respond([
+                'message' => 'Provider restored with all related records.'
+            ]);
+
+        } catch (\Throwable $e) {
+            $wpdb->query("ROLLBACK");
+            error_log("[ZORG CASCADE RESTORE ERROR] " . $e->getMessage());
+            return $this->error("Failed to restore provider", 500);
+        }
     }
 
-    return true;
-}
-
+    public function require_admin(): bool|WP_Error
+    {
+        if (!current_user_can('edit_others_posts')) {
+            return new WP_Error(
+                'rest_forbidden',
+                __('You do not have permission to modify providers.', 'zorgfinder-core'),
+                ['status' => 403]
+            );
+        }
+        return true;
+    }
 }

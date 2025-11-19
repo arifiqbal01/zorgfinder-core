@@ -7,10 +7,14 @@ module.exports = {
   entry: async () => {
     const entries = await defaultConfig.entry();
 
-    // Keep block entries (auto-discovery) AND add frontend hydration bundle
+    // Appointment frontend
     entries["appointment-form-frontend"] = path.resolve(
       __dirname,
       "src/appointment-form/appointment-form.js"
+    );
+    entries["providers-frontend"] = path.resolve(
+      __dirname,
+      "src/providers/providers-frontend.js"
     );
 
     return entries;
@@ -20,7 +24,6 @@ module.exports = {
     ...defaultConfig.module,
     rules: [
       ...defaultConfig.module.rules,
-      // Ensure classic JSX runtime so WP's wp-element works
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
@@ -30,19 +33,12 @@ module.exports = {
             presets: [
               [
                 require.resolve("@babel/preset-react"),
-                { runtime: "classic" } // force React.createElement
+                { runtime: "classic" }
               ]
             ]
           }
         }
       }
     ]
-  },
-
-  resolve: {
-    ...defaultConfig.resolve,
-    alias: {
-      "@shared": path.resolve(__dirname, "../shared-styles"),
-    },
-  },
+  }
 };

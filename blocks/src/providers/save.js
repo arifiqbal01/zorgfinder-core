@@ -1,2 +1,3 @@
-const Save = () => null; // dynamic rendering via PHP
-export default Save;
+export default function save() {
+    return null;
+}

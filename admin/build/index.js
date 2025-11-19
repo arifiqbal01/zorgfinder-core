@@ -9536,12 +9536,286 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _components_Table__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/Table */ "./src/components/Table.jsx");
+/* harmony import */ var _components_Pagination__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/Pagination */ "./src/components/Pagination.jsx");
+/* harmony import */ var _components_Filters__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../components/Filters */ "./src/components/Filters.jsx");
+/* harmony import */ var _components_Modal__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../components/Modal */ "./src/components/Modal.jsx");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/eye.js");
 
 
-const Providers = () => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
-  className: "text-2xl font-bold mb-4"
-}, "favourites"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "This page will list and manage all favourites."));
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Providers);
+
+
+
+
+
+const DEFAULT_PER_PAGE = 10;
+const getNonce = () => typeof zorgFinderApp !== "undefined" ? zorgFinderApp.nonce : "";
+const Favourites = () => {
+  const [items, setItems] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [providers, setProviders] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [providerMap, setProviderMap] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
+  const [usersMap, setUsersMap] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
+  const [selected, setSelected] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [page, setPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1);
+  const [perPage, setPerPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(DEFAULT_PER_PAGE);
+  const [total, setTotal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0);
+  const [filters, setFilters] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    search: "",
+    provider_id: "",
+    user_id: ""
+  });
+  const [sort, setSort] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)("newest");
+  const [tab, setTab] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)("active"); // active | trash
+  const [loading, setLoading] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const [showModal, setShowModal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const [editing, setEditing] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+  const headers = {
+    "Content-Type": "application/json",
+    "X-WP-Nonce": getNonce()
+  };
+
+  /* -------------------------------
+   * LOAD PROVIDERS + USERS
+   * -------------------------------*/
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    (async () => {
+      try {
+        const p = await fetch("/wp-json/zorg/v1/providers?per_page=999", {
+          headers
+        });
+        const pj = await p.json();
+        if (pj?.success) {
+          setProviders(pj.data);
+          const map = {};
+          pj.data.forEach(x => map[x.id] = x.name);
+          setProviderMap(map);
+        }
+      } catch {
+        setProviders([]);
+      }
+    })();
+    (async () => {
+      try {
+        const u = await fetch("/wp-json/wp/v2/users?per_page=100", {
+          headers
+        });
+        const uj = await u.json();
+        if (Array.isArray(uj)) {
+          const map = {};
+          uj.forEach(u => {
+            map[u.id] = u.name || u.username || `User #${u.id}`;
+          });
+          setUsersMap(map);
+        }
+      } catch {
+        setUsersMap({});
+      }
+    })();
+  }, []);
+
+  /* -------------------------------
+   * FETCH FAVOURITES
+   * -------------------------------*/
+  const fetchFavourites = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([k, v]) => {
+        if (v !== "" && v !== null && v !== undefined) {
+          params.append(k, v);
+        }
+      });
+      params.append("page", page);
+      params.append("per_page", perPage);
+      params.append("sort", sort);
+      params.append("trashed", tab === "trash" ? 1 : 0);
+      const res = await fetch(`/wp-json/zorg/v1/favourites?${params.toString()}`, {
+        headers
+      });
+      const json = await res.json();
+
+      // FIX — new format check
+      const list = json?.data?.data;
+      const totalCount = json?.data?.total;
+      if (Array.isArray(list)) {
+        setItems(list);
+        setTotal(totalCount || 0);
+      } else {
+        setItems([]);
+        setTotal(0);
+      }
+    } catch (err) {
+      setItems([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters, page, perPage, sort, tab]);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    setPage(1);
+  }, [filters.search, filters.provider_id, filters.user_id, sort, tab, perPage]);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    fetchFavourites();
+  }, [fetchFavourites, page, perPage, sort, tab]);
+
+  /* -------------------------------
+   * ACTIONS
+   * -------------------------------*/
+  const deleteFavourite = async id => {
+    await fetch(`/wp-json/zorg/v1/favourites/${id}`, {
+      method: "DELETE",
+      headers: {
+        "X-WP-Nonce": getNonce()
+      }
+    });
+  };
+  const restoreFavourite = async id => {
+    await fetch(`/wp-json/zorg/v1/favourites/${id}/restore`, {
+      method: "PATCH",
+      headers: {
+        "X-WP-Nonce": getNonce()
+      }
+    });
+  };
+  const handleDelete = async id => {
+    await deleteFavourite(id);
+    setItems(prev => prev.filter(x => x.favourite_id !== id));
+    setSelected(s => s.filter(x => x !== id));
+    await fetchFavourites();
+  };
+  const handleRestore = async id => {
+    await restoreFavourite(id);
+    setItems(prev => prev.filter(x => x.favourite_id !== id));
+    setSelected(s => s.filter(x => x !== id));
+    await fetchFavourites();
+  };
+
+  /* -------------------------------
+   * BULK ACTIONS
+   * -------------------------------*/
+  const bulkDelete = async () => {
+    for (const id of selected) await deleteFavourite(id);
+    setSelected([]);
+    await fetchFavourites();
+  };
+  const bulkRestore = async () => {
+    for (const id of selected) await restoreFavourite(id);
+    setSelected([]);
+    await fetchFavourites();
+  };
+
+  /* -------------------------------
+   * VIEW MODAL
+   * -------------------------------*/
+  const openFavourite = item => {
+    setEditing(item);
+    setShowModal(true);
+  };
+
+  /* -------------------------------
+   * TABLE SETUP
+   * -------------------------------*/
+  const columns = ["", "Provider", "User", "Added On"];
+  const rows = items.map(it => ["", providerMap[it.provider_id] || `#${it.provider_id}`, usersMap[it.user_id] || `User #${it.user_id}`, it.created_at]);
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "p-2 space-y-6"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center justify-between"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
+    className: "text-2xl font-semibold text-gray-800"
+  }, "Favourites"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center gap-3"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "text-sm text-gray-600"
+  }, "Sort:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
+    value: sort,
+    onChange: e => setSort(e.target.value),
+    className: "input"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "newest"
+  }, "Newest"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "oldest"
+  }, "Oldest")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex gap-2 bg-white rounded-lg p-2 shadow-sm"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: () => setTab("active"),
+    className: `px-3 py-1 rounded ${tab === "active" ? "bg-black text-white" : "bg-gray-100"}`
+  }, "Active"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: () => setTab("trash"),
+    className: `px-3 py-1 rounded ${tab === "trash" ? "bg-black text-white" : "bg-gray-100"}`
+  }, "Trash")))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Filters__WEBPACK_IMPORTED_MODULE_3__["default"], {
+    schema: [{
+      type: "search",
+      key: "search",
+      placeholder: "Search provider name…"
+    }, {
+      type: "select",
+      key: "provider_id",
+      placeholder: "Provider",
+      options: providers.map(p => ({
+        value: p.id,
+        label: p.name
+      }))
+    }],
+    filters: filters,
+    setFilters: setFilters
+  }), selected.length > 0 && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex gap-3 bg-white border p-3 rounded-xl shadow-sm"
+  }, tab === "trash" ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: bulkRestore,
+    className: "px-3 py-1 rounded bg-green-600 text-white"
+  }, "Restore Selected") : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: bulkDelete,
+    className: "px-3 py-1 rounded bg-red-600 text-white"
+  }, "Delete Selected"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "ml-auto text-sm text-gray-600"
+  }, selected.length, " selected")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Table__WEBPACK_IMPORTED_MODULE_1__["default"], {
+    columns: columns,
+    data: rows,
+    providers: items,
+    selected: selected,
+    setSelected: setSelected,
+    actions: i => {
+      const it = items[i];
+      return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+        className: "flex items-center gap-3"
+      }, tab === "trash" ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+        onClick: () => handleRestore(it.favourite_id),
+        title: "Restore",
+        className: "text-green-600"
+      }, "\u21BA") : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+        onClick: () => handleDelete(it.favourite_id),
+        title: "Delete",
+        className: "text-red-600"
+      }, "\uD83D\uDDD1"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+        onClick: () => openFavourite(it),
+        title: "View",
+        className: "text-blue-600"
+      }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_5__["default"], {
+        size: 16
+      })));
+    },
+    pagination: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Pagination__WEBPACK_IMPORTED_MODULE_2__["default"], {
+      page: page,
+      perPage: perPage,
+      total: total,
+      onChange: p => setPage(p),
+      onPerPageChange: v => {
+        setPerPage(v);
+        setPage(1);
+      }
+    })
+  }), showModal && editing && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Modal__WEBPACK_IMPORTED_MODULE_4__["default"], {
+    title: `Favourite #${editing.favourite_id}`,
+    onClose: () => {
+      setEditing(null);
+      setShowModal(false);
+    }
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "space-y-3 text-sm"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Provider:"), " ", providerMap[editing.provider_id] || editing.provider_id), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "User:"), " ", usersMap[editing.user_id] || editing.user_id), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Added:"), " ", editing.created_at))));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Favourites);
 
 /***/ }),
 

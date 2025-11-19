@@ -8,8 +8,6 @@ use ZorgFinder\Database\Migrations\CreateReimbursementsTable;
 use ZorgFinder\Database\Migrations\CreateReviewsTable;
 use ZorgFinder\Database\Migrations\CreateAppointmentsTable;
 
-
-
 /**
  * Handles running all ZorgFinder database migrations.
  * Each migration must have an `up()` method.

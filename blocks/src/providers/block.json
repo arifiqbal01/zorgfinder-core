@@ -1,12 +1,20 @@
 {
-  "apiVersion": 2,
-  "name": "zorgfinder/providers",
-  "title": "ZorgFinder Providers",
+  "apiVersion": 3,
+  "name": "zorg/providers",
+  "title": "Providers List",
   "category": "widgets",
   "icon": "groups",
-  "description": "Display a list of healthcare providers from ZorgFinder.",
-  "keywords": ["zorgfinder", "providers", "healthcare"],
-  "textdomain": "zorgfinder",
+
   "editorScript": "file:./index.js",
-  "style": "file:./style.scss"
+  "editorStyle": "file:./editor.css",
+
+  "style": "file:./style.css",
+  "viewStyle": "file:./style.css",
+
+  "viewScript": "file:./providers-frontend.js",
+  "render": "file:./render.php",
+
+  "supports": {
+    "html": false
+  }
 }

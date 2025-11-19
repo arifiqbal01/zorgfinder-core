@@ -1,10 +1,13 @@
-import { registerBlockType } from '@wordpress/blocks';
-import Edit from './edit';
-import Save from './save';
-import './style.scss';
-import './editor.scss';
+import { registerBlockType } from "@wordpress/blocks";
+import Edit from "./edit";
+import metadata from "./block.json";
 
-registerBlockType('zorgfinder/providers', {
-  edit: Edit,
-  save: Save,
+import "./editor.scss";
+import "./style.scss";
+
+registerBlockType(metadata.name, {
+    edit: Edit,
+    save() {
+        return null; // dynamic block
+    }
 });
