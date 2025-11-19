@@ -14,6 +14,12 @@ class CreateFavouritesTable {
             user_id BIGINT(20) UNSIGNED NOT NULL,
             provider_id BIGINT(20) UNSIGNED NOT NULL,
 
+            device VARCHAR(20) DEFAULT NULL,
+            source_page VARCHAR(255) DEFAULT NULL,
+            ip_address VARCHAR(100) DEFAULT NULL,
+
+            meta_json LONGTEXT NULL,
+
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             deleted_at DATETIME NULL DEFAULT NULL,
@@ -21,7 +27,9 @@ class CreateFavouritesTable {
             PRIMARY KEY (id),
             KEY user_id (user_id),
             KEY provider_id (provider_id),
-            KEY deleted_at (deleted_at)
+            KEY deleted_at (deleted_at),
+            KEY device (device),
+            KEY created_at (created_at)
         ) $charset_collate;";
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';

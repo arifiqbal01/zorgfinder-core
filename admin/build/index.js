@@ -9553,19 +9553,17 @@ const getNonce = () => typeof zorgFinderApp !== "undefined" ? zorgFinderApp.nonc
 const Favourites = () => {
   const [items, setItems] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
   const [providers, setProviders] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
-  const [providerMap, setProviderMap] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
-  const [usersMap, setUsersMap] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
-  const [selected, setSelected] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [users, setUsers] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
   const [page, setPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1);
   const [perPage, setPerPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(DEFAULT_PER_PAGE);
   const [total, setTotal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0);
   const [filters, setFilters] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
     search: "",
     provider_id: "",
-    user_id: ""
+    user_id: "",
+    device: ""
   });
   const [sort, setSort] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)("newest");
-  const [tab, setTab] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)("active"); // active | trash
   const [loading, setLoading] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
   const [showModal, setShowModal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
   const [editing, setEditing] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
@@ -9575,7 +9573,7 @@ const Favourites = () => {
   };
 
   /* -------------------------------
-   * LOAD PROVIDERS + USERS
+   * FETCH PROVIDERS + USERS
    * -------------------------------*/
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     (async () => {
@@ -9584,15 +9582,8 @@ const Favourites = () => {
           headers
         });
         const pj = await p.json();
-        if (pj?.success) {
-          setProviders(pj.data);
-          const map = {};
-          pj.data.forEach(x => map[x.id] = x.name);
-          setProviderMap(map);
-        }
-      } catch {
-        setProviders([]);
-      }
+        if (pj?.success) setProviders(pj.data);
+      } catch {}
     })();
     (async () => {
       try {
@@ -9600,16 +9591,8 @@ const Favourites = () => {
           headers
         });
         const uj = await u.json();
-        if (Array.isArray(uj)) {
-          const map = {};
-          uj.forEach(u => {
-            map[u.id] = u.name || u.username || `User #${u.id}`;
-          });
-          setUsersMap(map);
-        }
-      } catch {
-        setUsersMap({});
-      }
+        if (Array.isArray(uj)) setUsers(uj);
+      } catch {}
     })();
   }, []);
 
@@ -9621,25 +9604,23 @@ const Favourites = () => {
     try {
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([k, v]) => {
-        if (v !== "" && v !== null && v !== undefined) {
-          params.append(k, v);
-        }
+        if (v !== "" && v !== null) params.append(k, v);
       });
       params.append("page", page);
       params.append("per_page", perPage);
       params.append("sort", sort);
-      params.append("trashed", tab === "trash" ? 1 : 0);
       const res = await fetch(`/wp-json/zorg/v1/favourites?${params.toString()}`, {
         headers
       });
       const json = await res.json();
 
-      // FIX — new format check
-      const list = json?.data?.data;
-      const totalCount = json?.data?.total;
+      // ⭐ FIXED: API now returns {data: [...], total: X}
+      const root = json?.data || json;
+      const list = root?.data || [];
+      const totalCount = root?.total || 0;
       if (Array.isArray(list)) {
         setItems(list);
-        setTotal(totalCount || 0);
+        setTotal(totalCount);
       } else {
         setItems([]);
         setTotal(0);
@@ -9650,73 +9631,71 @@ const Favourites = () => {
     } finally {
       setLoading(false);
     }
-  }, [filters, page, perPage, sort, tab]);
+  }, [filters, page, perPage, sort]);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     setPage(1);
-  }, [filters.search, filters.provider_id, filters.user_id, sort, tab, perPage]);
+  }, [filters.search, filters.provider_id, filters.user_id, filters.device, sort]);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     fetchFavourites();
-  }, [fetchFavourites, page, perPage, sort, tab]);
+  }, [fetchFavourites, page, perPage, sort]);
 
   /* -------------------------------
    * ACTIONS
-   * -------------------------------*/
-  const deleteFavourite = async id => {
-    await fetch(`/wp-json/zorg/v1/favourites/${id}`, {
-      method: "DELETE",
-      headers: {
-        "X-WP-Nonce": getNonce()
-      }
-    });
-  };
-  const restoreFavourite = async id => {
-    await fetch(`/wp-json/zorg/v1/favourites/${id}/restore`, {
-      method: "PATCH",
-      headers: {
-        "X-WP-Nonce": getNonce()
-      }
-    });
-  };
-  const handleDelete = async id => {
-    await deleteFavourite(id);
-    setItems(prev => prev.filter(x => x.favourite_id !== id));
-    setSelected(s => s.filter(x => x !== id));
-    await fetchFavourites();
-  };
-  const handleRestore = async id => {
-    await restoreFavourite(id);
-    setItems(prev => prev.filter(x => x.favourite_id !== id));
-    setSelected(s => s.filter(x => x !== id));
-    await fetchFavourites();
-  };
-
-  /* -------------------------------
-   * BULK ACTIONS
-   * -------------------------------*/
-  const bulkDelete = async () => {
-    for (const id of selected) await deleteFavourite(id);
-    setSelected([]);
-    await fetchFavourites();
-  };
-  const bulkRestore = async () => {
-    for (const id of selected) await restoreFavourite(id);
-    setSelected([]);
-    await fetchFavourites();
-  };
-
-  /* -------------------------------
-   * VIEW MODAL
    * -------------------------------*/
   const openFavourite = item => {
     setEditing(item);
     setShowModal(true);
   };
+  const closeModal = () => {
+    setEditing(null);
+    setShowModal(false);
+  };
 
   /* -------------------------------
-   * TABLE SETUP
+   * TABLE COLUMNS
    * -------------------------------*/
-  const columns = ["", "Provider", "User", "Added On"];
-  const rows = items.map(it => ["", providerMap[it.provider_id] || `#${it.provider_id}`, usersMap[it.user_id] || `User #${it.user_id}`, it.created_at]);
+  const columns = ["Provider", "User", "Device", "Source", "Added On"];
+  const rows = items.map(it => [it.provider_name, it.user_name, it.device || "-", it.source_page || "-", it.created_at]);
+
+  /* -------------------------------
+   * FILTER SCHEMA
+   * -------------------------------*/
+  const filterSchema = [{
+    type: "search",
+    key: "search",
+    placeholder: "Search provider name…"
+  }, {
+    type: "select",
+    key: "provider_id",
+    placeholder: "Provider",
+    options: providers.map(p => ({
+      value: p.id,
+      label: p.name
+    }))
+  }, {
+    type: "select",
+    key: "user_id",
+    placeholder: "User",
+    options: users.map(u => ({
+      value: u.id,
+      label: u.name || u.username
+    }))
+  }, {
+    type: "select",
+    key: "device",
+    placeholder: "Device",
+    options: [{
+      value: "mobile",
+      label: "Mobile"
+    }, {
+      value: "desktop",
+      label: "Desktop"
+    }]
+  }];
+
+  /* -------------------------------
+   * RENDER
+   * -------------------------------*/
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "p-2 space-y-6"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
@@ -9735,59 +9714,21 @@ const Favourites = () => {
     value: "newest"
   }, "Newest"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
     value: "oldest"
-  }, "Oldest")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "flex gap-2 bg-white rounded-lg p-2 shadow-sm"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-    onClick: () => setTab("active"),
-    className: `px-3 py-1 rounded ${tab === "active" ? "bg-black text-white" : "bg-gray-100"}`
-  }, "Active"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-    onClick: () => setTab("trash"),
-    className: `px-3 py-1 rounded ${tab === "trash" ? "bg-black text-white" : "bg-gray-100"}`
-  }, "Trash")))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Filters__WEBPACK_IMPORTED_MODULE_3__["default"], {
-    schema: [{
-      type: "search",
-      key: "search",
-      placeholder: "Search provider name…"
-    }, {
-      type: "select",
-      key: "provider_id",
-      placeholder: "Provider",
-      options: providers.map(p => ({
-        value: p.id,
-        label: p.name
-      }))
-    }],
+  }, "Oldest")))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Filters__WEBPACK_IMPORTED_MODULE_3__["default"], {
+    schema: filterSchema,
     filters: filters,
     setFilters: setFilters
-  }), selected.length > 0 && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "flex gap-3 bg-white border p-3 rounded-xl shadow-sm"
-  }, tab === "trash" ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-    onClick: bulkRestore,
-    className: "px-3 py-1 rounded bg-green-600 text-white"
-  }, "Restore Selected") : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-    onClick: bulkDelete,
-    className: "px-3 py-1 rounded bg-red-600 text-white"
-  }, "Delete Selected"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "ml-auto text-sm text-gray-600"
-  }, selected.length, " selected")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Table__WEBPACK_IMPORTED_MODULE_1__["default"], {
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Table__WEBPACK_IMPORTED_MODULE_1__["default"], {
     columns: columns,
     data: rows,
     providers: items,
-    selected: selected,
-    setSelected: setSelected,
+    selected: [],
+    setSelected: () => {},
     actions: i => {
       const it = items[i];
       return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
         className: "flex items-center gap-3"
-      }, tab === "trash" ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-        onClick: () => handleRestore(it.favourite_id),
-        title: "Restore",
-        className: "text-green-600"
-      }, "\u21BA") : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-        onClick: () => handleDelete(it.favourite_id),
-        title: "Delete",
-        className: "text-red-600"
-      }, "\uD83D\uDDD1"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+      }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
         onClick: () => openFavourite(it),
         title: "View",
         className: "text-blue-600"
@@ -9807,13 +9748,12 @@ const Favourites = () => {
     })
   }), showModal && editing && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Modal__WEBPACK_IMPORTED_MODULE_4__["default"], {
     title: `Favourite #${editing.favourite_id}`,
-    onClose: () => {
-      setEditing(null);
-      setShowModal(false);
-    }
+    onClose: closeModal
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "space-y-3 text-sm"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Provider:"), " ", providerMap[editing.provider_id] || editing.provider_id), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "User:"), " ", usersMap[editing.user_id] || editing.user_id), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Added:"), " ", editing.created_at))));
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Provider:"), " ", editing.provider_name), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "User:"), " ", editing.user_name), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Device:"), " ", editing.device), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Source Page:"), " ", editing.source_page), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "IP:"), " ", editing.ip_address), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Added:"), " ", editing.created_at), editing.meta_json && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("pre", {
+    className: "bg-gray-100 p-2 rounded text-xs overflow-auto"
+  }, JSON.stringify(JSON.parse(editing.meta_json), null, 2)))));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Favourites);
 

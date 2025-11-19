@@ -33,8 +33,9 @@ export function FavouritesProvider({ children }) {
     }, []);
 
     async function toggle(providerId) {
-        const id = parseInt(providerId);
+    const id = parseInt(providerId);
 
+        // Update UI instantly
         setFavourites(prev =>
             prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
         );
@@ -47,9 +48,13 @@ export function FavouritesProvider({ children }) {
                 "Content-Type": "application/json",
                 "X-WP-Nonce": window.zorgFinderApp?.nonce || ""
             },
-            body: JSON.stringify({ provider_id: id })
+            body: JSON.stringify({
+                provider_id: id,
+                source_page: window.location.pathname,   // ⭐ NEW
+            })
         });
     }
+
 
     return (
         <FavouritesContext.Provider value={{ favourites, toggle, loading }}>
