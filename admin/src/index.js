@@ -4,10 +4,11 @@ import { HashRouter, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './pages/Dashboard';
-import Providers from './pages/Providers';
+import Providers from './pages/providers/Providers';
 import Reviews from './pages/Reviews';
 import Appointments from './pages/Appointments';
 import Favourites from './pages/Favourites';
+import Reimbursements from './pages/Reimbursements';
 import '../../shared-styles/dist/global.css'; // ensure this builds to this path
 
 const AppShell = () => (
@@ -30,6 +31,7 @@ const AppShell = () => (
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/appointments" element={<Appointments />} />
             <Route path="/favourites" element={<Favourites />} />
+            <Route path="/reimbursements" element={<Reimbursements />} />
           </Routes>
         </div>
       </main>

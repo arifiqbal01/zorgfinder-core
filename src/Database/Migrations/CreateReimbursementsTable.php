@@ -2,7 +2,7 @@
 namespace ZorgFinder\Database\Migrations;
 
 /**
- * Creates the zf_reimbursements table.
+ * Creates the zf_reimbursements table (full version).
  */
 class CreateReimbursementsTable {
 
@@ -11,17 +11,23 @@ class CreateReimbursementsTable {
         $table = $wpdb->prefix . 'zf_reimbursements';
         $charset_collate = $wpdb->get_charset_collate();
 
-        $sql = "CREATE TABLE IF NOT EXISTS $table (
+        $sql = "CREATE TABLE $table (
             id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
             provider_id BIGINT(20) UNSIGNED NOT NULL,
-            type ENUM('WLZ','ZVW','WMO','Youth') DEFAULT NULL,
+            type ENUM('WLZ','ZVW','WMO','Youth') NOT NULL,
             description TEXT DEFAULT NULL,
             coverage_details TEXT DEFAULT NULL,
+
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            deleted_at DATETIME NULL DEFAULT NULL,
+
             PRIMARY KEY (id),
-            KEY provider_id (provider_id)
+            KEY provider_id (provider_id),
+            KEY type (type)
         ) $charset_collate;";
 
-        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta($sql);
     }
 }

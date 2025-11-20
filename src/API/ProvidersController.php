@@ -163,7 +163,10 @@ class ProvidersController extends BaseController
         $wpdb->insert($table, $data);
         $id = $wpdb->insert_id;
 
-        return $this->get_provider(new WP_REST_Request(['id' => $id]));
+        $request2 = new WP_REST_Request('GET', '/dummy');
+        $request2->set_param('id', $id);
+        return $this->get_provider($request2);
+
     }
 
     /**
@@ -198,7 +201,10 @@ class ProvidersController extends BaseController
 
         $wpdb->update($table, $fields, ['id' => $id]);
 
-        return $this->get_provider(new WP_REST_Request(['id' => $id]));
+        $request2 = new WP_REST_Request('GET', '/dummy');
+        $request2->set_param('id', $id);
+        return $this->get_provider($request2);
+
     }
 
     /**

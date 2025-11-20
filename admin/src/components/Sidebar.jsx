@@ -6,6 +6,7 @@ import {
   Star,
   CalendarDays,
   Heart,
+  Wallet
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -15,6 +16,7 @@ const Sidebar = () => {
     { to: "/reviews", label: "Reviews", icon: <Star size={18} /> },
     { to: "/appointments", label: "Appointments", icon: <CalendarDays size={18} /> },
     { to: "/favourites", label: "Favourites", icon: <Heart size={18} /> },
+    { to: "/reimbursements", label: "Reimbursements", icon: <Wallet size={18} /> },
   ];
 
   return (
