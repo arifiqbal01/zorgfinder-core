@@ -89,11 +89,12 @@ class AssetsManager
         }
     }
 
-    public function enqueue_frontend_assets()
+   public function enqueue_frontend_assets()
 {
     $review_file       = ZORGFINDER_PATH . 'assets/js/review-form-frontend.js';
     $appointment_file  = ZORGFINDER_PATH . 'blocks/build/appointment-form-frontend.js';
     $providers_file    = ZORGFINDER_PATH . 'blocks/build/providers-frontend.js';
+    $comparison_file   = ZORGFINDER_PATH . 'blocks/build/comparison-frontend.js'; // NEW
 
     $localize = [
         'restUrl'    => rest_url('zorg/v1/'),
@@ -130,7 +131,7 @@ class AssetsManager
     }
 
     /**
-     * PROVIDERS FRONTEND (NEW)
+     * PROVIDERS FRONTEND
      */
     if (file_exists($providers_file)) {
         wp_enqueue_script(
@@ -143,6 +144,19 @@ class AssetsManager
         wp_localize_script('zorgfinder-providers-frontend', 'zorgFinderApp', $localize);
     }
 
+    /**
+     * COMPARISON FRONTEND (NEW)
+     */
+    if (file_exists($comparison_file)) {
+        wp_enqueue_script(
+            'zorgfinder-comparison-frontend',
+            ZORGFINDER_URL . 'blocks/build/comparison-frontend.js',
+            ['wp-element'],
+            filemtime($comparison_file),
+            true
+        );
+        wp_localize_script('zorgfinder-comparison-frontend', 'zorgFinderApp', $localize);
+    }
 }
 
 

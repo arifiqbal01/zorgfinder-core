@@ -9,16 +9,25 @@ module.exports = {
 
     // Appointment frontend
     entries["appointment-form-frontend"] = path.resolve(
-      __dirname,
-      "src/appointment-form/appointment-form.js"
+        __dirname,
+        "src/appointment-form/appointment-form.js"
     );
+
+    // Providers frontend
     entries["providers-frontend"] = path.resolve(
-      __dirname,
-      "src/providers/providers-frontend.js"
+        __dirname,
+        "src/providers/providers-frontend.js"
+    );
+
+    // 🔥 NEW: Comparison frontend
+    entries["comparison-frontend"] = path.resolve(
+        __dirname,
+        "src/comparison/comparison-frontend.js"
     );
 
     return entries;
-  },
+},
+
 
   module: {
     ...defaultConfig.module,
