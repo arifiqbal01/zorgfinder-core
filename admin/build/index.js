@@ -25003,6 +25003,66 @@ const CalendarDays = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__["defau
 
 /***/ }),
 
+/***/ "./node_modules/lucide-react/dist/esm/icons/check.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/lucide-react/dist/esm/icons/check.js ***!
+  \***********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Check)
+/* harmony export */ });
+/* harmony import */ var _createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../createLucideIcon.js */ "./node_modules/lucide-react/dist/esm/createLucideIcon.js");
+/**
+ * @license lucide-react v0.320.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+
+
+
+const Check = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__["default"])("Check", [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]]);
+
+
+//# sourceMappingURL=check.js.map
+
+
+/***/ }),
+
+/***/ "./node_modules/lucide-react/dist/esm/icons/chevron-down.js":
+/*!******************************************************************!*\
+  !*** ./node_modules/lucide-react/dist/esm/icons/chevron-down.js ***!
+  \******************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ChevronDown)
+/* harmony export */ });
+/* harmony import */ var _createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../createLucideIcon.js */ "./node_modules/lucide-react/dist/esm/createLucideIcon.js");
+/**
+ * @license lucide-react v0.320.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+
+
+
+const ChevronDown = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__["default"])("ChevronDown", [
+  ["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]
+]);
+
+
+//# sourceMappingURL=chevron-down.js.map
+
+
+/***/ }),
+
 /***/ "./node_modules/lucide-react/dist/esm/icons/chevron-left.js":
 /*!******************************************************************!*\
   !*** ./node_modules/lucide-react/dist/esm/icons/chevron-left.js ***!
@@ -25168,6 +25228,38 @@ const LayoutDashboard = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__["de
 
 /***/ }),
 
+/***/ "./node_modules/lucide-react/dist/esm/icons/plus.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/lucide-react/dist/esm/icons/plus.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Plus)
+/* harmony export */ });
+/* harmony import */ var _createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../createLucideIcon.js */ "./node_modules/lucide-react/dist/esm/createLucideIcon.js");
+/**
+ * @license lucide-react v0.320.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+
+
+
+const Plus = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__["default"])("Plus", [
+  ["path", { d: "M5 12h14", key: "1ays0h" }],
+  ["path", { d: "M12 5v14", key: "s699le" }]
+]);
+
+
+//# sourceMappingURL=plus.js.map
+
+
+/***/ }),
+
 /***/ "./node_modules/lucide-react/dist/esm/icons/star.js":
 /*!**********************************************************!*\
   !*** ./node_modules/lucide-react/dist/esm/icons/star.js ***!
@@ -25201,6 +25293,39 @@ const Star = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__["default"])("S
 
 
 //# sourceMappingURL=star.js.map
+
+
+/***/ }),
+
+/***/ "./node_modules/lucide-react/dist/esm/icons/trash.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/lucide-react/dist/esm/icons/trash.js ***!
+  \***********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Trash)
+/* harmony export */ });
+/* harmony import */ var _createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../createLucideIcon.js */ "./node_modules/lucide-react/dist/esm/createLucideIcon.js");
+/**
+ * @license lucide-react v0.320.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+
+
+
+const Trash = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__["default"])("Trash", [
+  ["path", { d: "M3 6h18", key: "d0wm0j" }],
+  ["path", { d: "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6", key: "4alrt4" }],
+  ["path", { d: "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2", key: "v07s0e" }]
+]);
+
+
+//# sourceMappingURL=trash.js.map
 
 
 /***/ }),
@@ -50817,6 +50942,130 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./src/components/Accordion.jsx":
+/*!**************************************!*\
+  !*** ./src/components/Accordion.jsx ***!
+  \**************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/check.js");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/chevron-down.js");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/chevron-right.js");
+
+
+
+
+/**
+ * Reusable Accordion Component
+ *
+ * Props:
+ *  - items: [
+ *      {
+ *         id: "WLZ",
+ *         title: "WLZ — Long-term Care",
+ *         checked: true/false,
+ *         content: <Your JSX />
+ *      }
+ *    ]
+ *  - defaultOpen: array (but only first is used for one-at-a-time mode)
+ *  - showCheckbox: boolean
+ */
+
+const Accordion = ({
+  items = [],
+  defaultOpen = [],
+  showCheckbox = false
+}) => {
+  // Only one ID can be open at a time
+  const [openId, setOpenId] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(defaultOpen?.[0] || null);
+  const toggle = id => {
+    setOpenId(prev => prev === id ? null : id);
+  };
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "space-y-3"
+  }, items.map(item => {
+    const isOpen = openId === item.id;
+    return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+      key: item.id,
+      className: "border rounded-xl bg-white shadow-sm overflow-hidden"
+    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+      type: "button",
+      onClick: () => toggle(item.id),
+      className: " w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition "
+    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+      className: "flex items-center gap-3"
+    }, showCheckbox && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+      className: `
+                      h-5 w-5 rounded border 
+                      flex items-center justify-center
+                      ${item.checked ? "bg-blue-600 border-blue-600" : "bg-white border-gray-300"}
+                    `
+    }, item.checked && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_1__["default"], {
+      size: 14,
+      className: "text-white"
+    })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+      className: "font-medium text-gray-800"
+    }, item.title)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+      className: "text-gray-500"
+    }, isOpen ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_2__["default"], null) : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_3__["default"], null))), isOpen && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+      className: "p-4 bg-gray-50 animate-fadeIn"
+    }, item.content));
+  }));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Accordion);
+
+/***/ }),
+
+/***/ "./src/components/Button.jsx":
+/*!***********************************!*\
+  !*** ./src/components/Button.jsx ***!
+  \***********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Button)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _utils_cn__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/cn */ "./src/utils/cn.js");
+
+
+
+const variants = {
+  primary: "bg-blue-600 hover:bg-blue-700 text-white shadow-sm",
+  danger: "bg-red-600 hover:bg-red-700 text-white shadow-sm",
+  secondary: "bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300",
+  ghost: "bg-transparent hover:bg-gray-100 text-gray-700"
+};
+const sizes = {
+  sm: "h-8 px-3 text-sm",
+  md: "h-9 px-4 text-sm",
+  lg: "h-11 px-5 text-base"
+};
+function Button({
+  children,
+  variant = "primary",
+  size = "md",
+  className = "",
+  ...props
+}) {
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    className: (0,_utils_cn__WEBPACK_IMPORTED_MODULE_1__.cn)("rounded-md font-medium transition-all flex items-center justify-center", variants[variant], sizes[size], className),
+    ...props
+  }, children);
+}
+
+/***/ }),
+
 /***/ "./src/components/Filters.jsx":
 /*!************************************!*\
   !*** ./src/components/Filters.jsx ***!
@@ -51000,6 +51249,84 @@ const Loader = () => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div",
 
 /***/ }),
 
+/***/ "./src/components/LoadingOverlay.jsx":
+/*!*******************************************!*\
+  !*** ./src/components/LoadingOverlay.jsx ***!
+  \*******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _hooks_useLoading__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../hooks/useLoading */ "./src/hooks/useLoading.js");
+
+
+
+
+/**
+ * Shopify Muted Gray loading overlay.
+ * - Non-intrusive, centered card
+ * - Blocks interaction while visible
+ * - Accessible (role + aria)
+ */
+
+const LoadingOverlay = () => {
+  const {
+    visible,
+    message
+  } = (0,_hooks_useLoading__WEBPACK_IMPORTED_MODULE_1__.useLoading)();
+  if (!visible) return null;
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    "aria-hidden": !visible,
+    "aria-live": "assertive",
+    role: "status",
+    className: "fixed inset-0 z-50 flex items-center justify-center"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "absolute inset-0 bg-black/30 backdrop-blur-sm",
+    onClick: e => e.stopPropagation()
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: " relative z-10 max-w-2xl w-full mx-4 rounded-2xl shadow-xl bg-white/95 border border-gray-200 p-6 lg:p-8 ",
+    style: {
+      boxShadow: "0 12px 40px rgba(16,24,40,0.12)"
+    }
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center gap-4"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "h-9 w-9 rounded-full flex items-center justify-center",
+    "aria-hidden": "true"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
+    className: "animate-spin h-6 w-6 text-gray-400",
+    xmlns: "http://www.w3.org/2000/svg",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    role: "img"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("circle", {
+    className: "opacity-20",
+    cx: "12",
+    cy: "12",
+    r: "10",
+    stroke: "currentColor",
+    strokeWidth: "4"
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("path", {
+    className: "opacity-80",
+    fill: "currentColor",
+    d: "M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+  }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex-1"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "text-sm font-semibold text-gray-700"
+  }, message || "Processing…"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "text-xs text-gray-500 mt-1"
+  }, "Please wait \u2014 this may take a moment.")))));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (LoadingOverlay);
+
+/***/ }),
+
 /***/ "./src/components/Modal.jsx":
 /*!**********************************!*\
   !*** ./src/components/Modal.jsx ***!
@@ -51018,28 +51345,33 @@ __webpack_require__.r(__webpack_exports__);
 const Modal = ({
   title,
   children,
-  onClose,
-  width = "max-w-xl"
+  onClose
 }) => {
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
-    const handleEsc = e => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
+    const onEsc = e => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onEsc);
+    return () => window.removeEventListener("keydown", onEsc);
   }, [onClose]);
+  const sidebarWidth = document.body.classList.contains("folded") ? 60 : 160;
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fadeIn"
+    className: "fixed inset-0 z-[9999] bg-black/30 backdrop-blur-sm"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: `bg-white rounded-2xl shadow-2xl w-full ${width}`
+    className: " absolute top-[32px] right-0 bottom-0 bg-white shadow-xl overflow-hidden animate-slideInFast w-full lg:w-[calc(100vw-var(--wp-sidebar))] ",
+    style: {
+      "--wp-sidebar": `${sidebarWidth}px`
+    }
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "flex justify-between items-center border-b px-6 py-4"
+    className: "flex items-center justify-between px-6 md:px-10 py-4 md:py-5 border-b bg-white sticky top-0 z-20"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", {
-    className: "text-lg font-semibold"
+    className: "text-xl md:text-2xl font-semibold text-gray-800"
   }, title), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
     onClick: onClose,
-    className: "text-gray-400 hover:text-gray-600 text-xl"
+    className: "text-gray-400 hover:text-gray-600 text-3xl md:text-4xl leading-none"
   }, "\xD7")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "p-6"
-  }, children)));
+    className: "overflow-y-auto h-[calc(100vh-32px)] pb-16 md:pb-20"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: " mx-auto px-4 sm:px-6 md:px-10 py-6 md:py-10 max-w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl "
+  }, children))));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Modal);
 
@@ -51324,35 +51656,151 @@ const Table = ({
 
 /***/ }),
 
-/***/ "./src/hooks/useFetch.js":
+/***/ "./src/components/ToastContainer.jsx":
+/*!*******************************************!*\
+  !*** ./src/components/ToastContainer.jsx ***!
+  \*******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+
+const ToastContainer = ({
+  toasts
+}) => {
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: " fixed bottom-5 right-5  z-[9999]  flex flex-col  gap-3  items-end "
+  }, toasts.map(t => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    key: t.id,
+    className: `
+            px-4 py-3 rounded-lg shadow-lg border 
+            bg-white text-gray-800 
+            min-w-[260px] max-w-[340px]
+            transition-all duration-300 transform
+            animate-[toastIn_0.25s_ease-out]
+            ${t.type === "error" ? "border-red-300" : "border-gray-200"}
+          `
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "font-medium"
+  }, t.message))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("style", null, `
+        @keyframes toastIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ToastContainer);
+
+/***/ }),
+
+/***/ "./src/hooks/useLoading.js":
+/*!*********************************!*\
+  !*** ./src/hooks/useLoading.js ***!
+  \*********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   LoadingProvider: () => (/* binding */ LoadingProvider),
+/* harmony export */   useLoading: () => (/* binding */ useLoading)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+
+const LoadingContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.createContext)(null);
+const LoadingProvider = ({
+  children
+}) => {
+  const [state, setState] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    visible: false,
+    message: ""
+  });
+  const show = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)((message = "") => {
+    setState({
+      visible: true,
+      message
+    });
+  }, []);
+  const hide = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => {
+    setState({
+      visible: false,
+      message: ""
+    });
+  }, []);
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(LoadingContext.Provider, {
+    value: {
+      ...state,
+      show,
+      hide
+    }
+  }, children);
+};
+const useLoading = () => {
+  const ctx = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(LoadingContext);
+  if (!ctx) {
+    throw new Error("useLoading must be used within LoadingProvider");
+  }
+  return ctx;
+};
+
+/***/ }),
+
+/***/ "./src/hooks/useToast.js":
 /*!*******************************!*\
-  !*** ./src/hooks/useFetch.js ***!
+  !*** ./src/hooks/useToast.js ***!
   \*******************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   useFetch: () => (/* binding */ useFetch)
+/* harmony export */   ToastProvider: () => (/* binding */ ToastProvider),
+/* harmony export */   useToast: () => (/* binding */ useToast)
 /* harmony export */ });
-const useFetch = async (url, options = {}) => {
-  const headers = {
-    "Content-Type": "application/json",
-    "X-WP-Nonce": zorgFinderApp.nonce,
-    ...(options.headers || {})
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _components_ToastContainer__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/ToastContainer */ "./src/components/ToastContainer.jsx");
+
+
+
+const ToastContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.createContext)();
+const ToastProvider = ({
+  children
+}) => {
+  const [toasts, setToasts] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const push = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)((message, type = "info") => {
+    const id = Date.now();
+    setToasts(prev => [...prev, {
+      id,
+      message,
+      type
+    }]);
+
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 3000);
+  }, []);
+  const api = {
+    success: msg => push(msg, "success"),
+    error: msg => push(msg, "error"),
+    info: msg => push(msg, "info")
   };
-  const response = await fetch(url, {
-    ...options,
-    headers
-  });
-  const json = await response.json();
-  return {
-    ok: response.ok,
-    status: response.status,
-    data: json.data,
-    raw: json
-  };
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(ToastContext.Provider, {
+    value: api
+  }, children, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_ToastContainer__WEBPACK_IMPORTED_MODULE_1__["default"], {
+    toasts: toasts
+  }));
 };
+const useToast = () => (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(ToastContext);
 
 /***/ }),
 
@@ -53158,7 +53606,7 @@ const GeneralInfoForm = ({
   editing
 }) => {
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("form", {
-    className: "space-y-6"
+    className: "space-y-2"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-gray-600"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "ID:"), " ", form.id || "New"), editing && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Created:"), " ", form.created_at), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Updated:"), " ", form.updated_at))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
@@ -53345,12 +53793,25 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_Table__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../components/Table */ "./src/components/Table.jsx");
 /* harmony import */ var _components_Modal__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../components/Modal */ "./src/components/Modal.jsx");
 /* harmony import */ var _components_Pagination__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../components/Pagination */ "./src/components/Pagination.jsx");
-/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/eye.js");
-/* harmony import */ var _hooks_useFetch__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../hooks/useFetch */ "./src/hooks/useFetch.js");
-/* harmony import */ var _components_Filters__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../components/Filters */ "./src/components/Filters.jsx");
-/* harmony import */ var _GeneralInfoForm__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./GeneralInfoForm */ "./src/pages/providers/GeneralInfoForm.jsx");
-/* harmony import */ var _ReimbursementsForm__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./ReimbursementsForm */ "./src/pages/providers/ReimbursementsForm.jsx");
-/* harmony import */ var _useReimbursementForm__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./useReimbursementForm */ "./src/pages/providers/useReimbursementForm.js");
+/* harmony import */ var _components_Filters__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../components/Filters */ "./src/components/Filters.jsx");
+/* harmony import */ var _components_Button__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../components/Button */ "./src/components/Button.jsx");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/eye.js");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/plus.js");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/trash.js");
+/* harmony import */ var _GeneralInfoForm__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./GeneralInfoForm */ "./src/pages/providers/GeneralInfoForm.jsx");
+/* harmony import */ var _ReimbursementAccordion__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./ReimbursementAccordion */ "./src/pages/providers/ReimbursementAccordion.jsx");
+/* harmony import */ var _useProvidersList__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./useProvidersList */ "./src/pages/providers/useProvidersList.js");
+/* harmony import */ var _useProviderForm__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./useProviderForm */ "./src/pages/providers/useProviderForm.js");
+/* harmony import */ var _useReimbursements__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./useReimbursements */ "./src/pages/providers/useReimbursements.js");
+/* harmony import */ var _hooks_useToast__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../hooks/useToast */ "./src/hooks/useToast.js");
+/* harmony import */ var _hooks_useLoading__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../hooks/useLoading */ "./src/hooks/useLoading.js");
+
+
+
+
+
+
+ // NEW REUSABLE BUTTON
 
 
 
@@ -53361,47 +53822,90 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+/* ---------------------------------------------------------
+ * PROVIDERS PAGE
+ * --------------------------------------------------------- */
 
 const Providers = () => {
-  const [providers, setProviders] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
-  const [selectedIds, setSelectedIds] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const toast = (0,_hooks_useToast__WEBPACK_IMPORTED_MODULE_14__.useToast)();
+  const loadingOverlay = (0,_hooks_useLoading__WEBPACK_IMPORTED_MODULE_15__.useLoading)();
+
+  /* LIST HOOK */
+  const {
+    providers,
+    total,
+    filters,
+    setFilters,
+    sort,
+    setSort,
+    activeTab,
+    setActiveTab,
+    page,
+    setPage,
+    perPage,
+    setPerPage,
+    loading,
+    fetchProviders
+  } = (0,_useProvidersList__WEBPACK_IMPORTED_MODULE_11__.useProvidersList)();
+
+  /* MODAL */
   const [showModal, setShowModal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
-  const [editing, setEditing] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
-  const [tab, setTab] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)("general");
-  const CACHE_TTL = 10 * 60 * 1000;
-  const emptyForm = {
-    name: "",
-    slug: "",
-    type_of_care: "",
-    indication_type: "",
-    organization_type: "",
-    religion: "",
-    has_hkz: 0,
-    email: "",
-    phone: "",
-    website: "",
-    address: ""
+  const closeModal = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => setShowModal(false), []);
+
+  /* FORM HOOK */
+  const {
+    form,
+    setForm,
+    editing,
+    loadProvider,
+    saveProvider,
+    reset: resetProviderForm
+  } = (0,_useProviderForm__WEBPACK_IMPORTED_MODULE_12__.useProviderForm)(fetchProviders, closeModal);
+
+  /* REIMBURSEMENTS HOOK */
+  const {
+    list: reimburseList,
+    updateType,
+    loadForProvider,
+    reset: resetReimbursements
+  } = (0,_useReimbursements__WEBPACK_IMPORTED_MODULE_13__.useReimbursements)();
+
+  /* BULK ACTIONS */
+  const [selected, setSelected] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const toggleSelect = index => {
+    const row = providers[index];
+    if (!row) return;
+    setSelected(prev => prev.includes(row.id) ? prev.filter(id => id !== row.id) : [...prev, row.id]);
   };
-  const [form, setForm] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(emptyForm);
+  const toggleSelectAll = () => {
+    if (selected.length === providers.length) {
+      setSelected([]);
+    } else {
+      setSelected(providers.map(p => p.id));
+    }
+  };
+  const handleBulkDelete = async () => {
+    if (!confirm(`Delete ${selected.length} selected providers?`)) return;
+    try {
+      loadingOverlay.show("Deleting…");
+      await Promise.all(selected.map(id => fetch(`/wp-json/zorg/v1/providers/${id}`, {
+        method: "DELETE",
+        headers: {
+          "X-WP-Nonce": window.wpApiSettings.nonce
+        }
+      })));
+      toast.success("Selected providers deleted");
+      setSelected([]);
+      fetchProviders();
+    } catch (err) {
+      toast.error("Delete failed");
+    } finally {
+      loadingOverlay.hide();
+    }
+  };
 
-  // ❗ ADD BACK FILTERS
-  const [filters, setFilters] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
-    search: "",
-    type_of_care: "",
-    indication_type: "",
-    organization_type: "",
-    religion: "",
-    has_hkz: ""
-  });
-
-  // Hook for reimbursements
-  const reimburse = (0,_useReimbursementForm__WEBPACK_IMPORTED_MODULE_9__.useReimbursementForm)(editing?.id);
-
-  // PAGINATION
-  const [page, setPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1);
-  const [perPage, setPerPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(10);
-  const [total, setTotal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0);
-  const providerFilterSchema = [{
+  /* FILTER SCHEMA */
+  const filterSchema = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => [{
     type: "search",
     key: "search",
     placeholder: "Search providers…"
@@ -53465,215 +53969,173 @@ const Providers = () => {
     type: "checkbox",
     key: "has_hkz",
     label: "HKZ Only"
-  }];
+  }], []);
 
-  // ================================
-  // FETCH SINGLE PROVIDER
-  // ================================
-  const fetchProviderById = async id => {
-    const res = await fetch(`/wp-json/zorg/v1/providers/${id}`);
-    const json = await res.json();
-    return json?.data || {};
+  /* ---------------------------------------------------------
+   * OPEN EDIT MODAL
+   * --------------------------------------------------------- */
+  const openModalForProvider = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async index => {
+    const row = providers[index];
+    if (!row) return;
+    try {
+      loadingOverlay.show("Loading provider…");
+      await loadProvider(row.id);
+      await loadForProvider(row.id);
+      setShowModal(true);
+    } catch (err) {
+      toast.error(err.message || "Failed to load provider");
+    } finally {
+      loadingOverlay.hide();
+    }
+  }, [providers, loadProvider, loadForProvider, toast, loadingOverlay]);
+
+  /* ---------------------------------------------------------
+   * OPEN CREATE MODAL
+   * --------------------------------------------------------- */
+  const handleAddNew = () => {
+    resetProviderForm();
+    resetReimbursements();
+    setShowModal(true);
   };
 
-  // ================================
-  // FETCH PROVIDERS LIST
-  // ================================
-  const fetchProviders = async () => {
-    const params = new URLSearchParams();
-    Object.entries(filters).forEach(([k, v]) => {
-      if (v !== "") params.append(k, v);
-    });
-    params.append("page", page);
-    params.append("per_page", perPage);
-    const url = `/wp-json/zorg/v1/providers?${params.toString()}`;
-    const cacheKey = "providers_" + params.toString();
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      const expired = Date.now() - parsed.time > CACHE_TTL;
-      if (!expired) {
-        setProviders(parsed.data || []);
-        setTotal(parsed.total || 0);
-        return;
-      }
-    }
-    const res = await fetch(url);
-    const json = await res.json();
-    setProviders(json.data || []);
-    setTotal(json.total || 0);
-    localStorage.setItem(cacheKey, JSON.stringify({
-      time: Date.now(),
-      data: json.data || [],
-      total: json.total || 0
+  /* ---------------------------------------------------------
+   * SAVE PROVIDER
+   * --------------------------------------------------------- */
+  const handleSave = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async () => {
+    const payloadReimbursements = Object.entries(reimburseList).filter(([_, data]) => data !== null).map(([type, data]) => ({
+      type,
+      description: data.description || "",
+      coverage_details: data.coverage_details || ""
     }));
-  };
-  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
-    fetchProviders();
-  }, [filters, page, perPage]);
+    try {
+      loadingOverlay.show("Saving provider…");
+      await saveProvider(payloadReimbursements);
+      toast.success("Provider saved successfully");
+    } catch (err) {
+      toast.error(err.message || "Save failed");
+    } finally {
+      loadingOverlay.hide();
+    }
+  }, [reimburseList, saveProvider, toast, loadingOverlay]);
 
-  // ================================
-  // TABLE COLUMNS
-  // ================================
+  /* ---------------------------------------------------------
+   * TABLE SETUP
+   * --------------------------------------------------------- */
   const columns = ["Name", "Type of Care", "Email", "Phone", "Website", "Address"];
-  const data = providers.map(p => [(0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "flex items-center gap-3 w-full truncate"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-medium"
-  }, p.name?.charAt(0)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "font-medium text-gray-800 truncate"
-  }, p.name)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "truncate"
-  }, p.type_of_care), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
-    className: "text-blue-600 truncate"
-  }, p.email), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "truncate"
-  }, p.phone), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
-    className: "text-blue-600 truncate"
-  }, p.website?.replace(/^https?:\/\//, "")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "truncate"
-  }, p.address)]);
+  const rows = providers.map(p => [p.name, p.type_of_care, p.email, p.phone, p.website?.replace(/^https?:\/\//, ""), p.address]);
+  const actionsRenderer = i => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    className: "text-blue-600",
+    onClick: () => openModalForProvider(i)
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_6__["default"], {
+    size: 16
+  }));
 
-  // ================================
-  // SAVE PROVIDER
-  // ================================
-  const handleSave = async e => {
-    e.preventDefault();
-    const method = editing ? "PUT" : "POST";
-    const url = editing ? `/wp-json/zorg/v1/providers/${editing.id}` : `/wp-json/zorg/v1/providers`;
-    const payload = {
-      ...form,
-      has_hkz: form.has_hkz ? 1 : 0
-    };
-    const res = await fetch(url, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        "X-WP-Nonce": window.wpApiSettings.nonce // ← FIXED AUTH
-      },
-      body: JSON.stringify(payload)
-    });
+  /* ---------------------------------------------------------
+   * RENDER PAGE
+   * --------------------------------------------------------- */
 
-    // DEBUG ─── print everything
-    const text = await res.text();
-    console.log("=== PROVIDER SAVE RESPONSE ===");
-    console.log("Status:", res.status);
-    console.log("Body:", text);
-    if (!res.ok) {
-      alert("Failed to save provider");
-      return;
-    }
-    const json = JSON.parse(text);
-    let providerData = editing || json.data;
-    if (!editing) {
-      setEditing(providerData);
-      reimburse.setProviderId(providerData.id);
-    }
-    setTab("reimburse");
-    fetchProviders();
-  };
-
-  // ================================
-  // RENDER
-  // ================================
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "p-2 space-y-6"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex justify-between items-center"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center gap-4"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
-    className: "text-2xl font-semibold text-gray-800"
-  }, "Providers"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-    onClick: () => {
-      setEditing(null);
-      setForm(emptyForm);
-      reimburse.setProviderId(null);
-      reimburse.setForm({
-        type: "",
-        description: "",
-        coverage_details: ""
-      });
-      setTab("general");
-      setShowModal(true);
-    },
-    className: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm"
-  }, "+ Add Provider")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Filters__WEBPACK_IMPORTED_MODULE_6__["default"], {
-    schema: providerFilterSchema,
+    className: "text-2xl font-semibold"
+  }, "Providers"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    variant: "primary",
+    size: "md",
+    onClick: handleAddNew
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_7__["default"], {
+    size: 16,
+    className: "mr-1"
+  }), " Add Provider"), selected.length > 0 && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    variant: "danger",
+    size: "md",
+    onClick: handleBulkDelete
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_8__["default"], {
+    size: 16,
+    className: "mr-1"
+  }), "Delete Selected (", selected.length, ")")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center gap-3"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "text-sm"
+  }, "Sort:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
+    value: sort,
+    onChange: e => setSort(e.target.value),
+    className: "input"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "newest"
+  }, "Newest"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "oldest"
+  }, "Oldest"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "name_asc"
+  }, "Name A\u2013Z"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "name_desc"
+  }, "Name Z\u2013A")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex gap-2 bg-white rounded-lg p-2 shadow-sm"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: () => setActiveTab("active"),
+    className: `px-3 py-1 rounded ${activeTab === "active" ? "bg-black text-white" : "bg-gray-100"}`
+  }, "Active"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: () => setActiveTab("trash"),
+    className: `px-3 py-1 rounded ${activeTab === "trash" ? "bg-black text-white" : "bg-gray-100"}`
+  }, "Trash")))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Filters__WEBPACK_IMPORTED_MODULE_4__["default"], {
+    schema: filterSchema,
     filters: filters,
     setFilters: setFilters
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Table__WEBPACK_IMPORTED_MODULE_1__["default"], {
     columns: columns,
-    data: data,
+    data: rows,
     providers: providers,
-    selected: selectedIds,
-    setSelected: setSelectedIds,
-    actions: i => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-      onClick: async () => {
-        const full = await fetchProviderById(providers[i].id);
-        setEditing(full);
-        setForm({
-          ...full,
-          has_hkz: full.has_hkz ? 1 : 0
-        });
-        reimburse.setProviderId(full.id);
-        setTab("general");
-        setShowModal(true);
-      },
-      className: "text-blue-600 hover:text-blue-800"
-    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_4__["default"], {
-      size: 16
-    })),
+    actions: actionsRenderer,
+    loading: loading,
+    selected: selected,
+    toggleSelect: toggleSelect,
+    toggleSelectAll: toggleSelectAll,
     pagination: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Pagination__WEBPACK_IMPORTED_MODULE_3__["default"], {
       page: page,
       perPage: perPage,
       total: total,
-      onChange: newPage => setPage(newPage),
-      onPerPageChange: newPerPage => {
-        setPerPage(newPerPage);
+      onChange: setPage,
+      onPerPageChange: v => {
+        setPerPage(v);
         setPage(1);
       }
     })
   }), showModal && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Modal__WEBPACK_IMPORTED_MODULE_2__["default"], {
-    title: editing ? "Edit Provider" : "Add Provider",
-    onClose: () => {
-      setShowModal(false);
-      setEditing(null);
-      setForm(emptyForm);
-      setTab("general");
-    }
+    title: editing ? `Edit Provider #${editing.id}` : "Add Provider",
+    onClose: closeModal
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "border-b mb-4 flex gap-4"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-    className: tab === "general" ? "active-tab" : "tab",
-    onClick: () => setTab("general")
-  }, "General Info"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-    disabled: !editing?.id,
-    className: editing?.id ? tab === "reimburse" ? "active-tab" : "tab" : "tab opacity-50 cursor-not-allowed",
-    onClick: () => editing?.id && setTab("reimburse")
-  }, "Reimbursements")), tab === "general" && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_GeneralInfoForm__WEBPACK_IMPORTED_MODULE_7__["default"], {
+    className: "grid grid-cols-1 lg:grid-cols-2 gap-14"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "text-xl font-semibold mb-4"
+  }, "Provider Information"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_GeneralInfoForm__WEBPACK_IMPORTED_MODULE_9__["default"], {
     form: form,
     setForm: setForm,
     editing: editing
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-    onClick: handleSave,
-    className: "btn btn-primary mt-6"
-  }, editing ? "Update Provider" : "Save Provider")), tab === "reimburse" && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "space-y-6"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_ReimbursementsForm__WEBPACK_IMPORTED_MODULE_8__["default"], {
-    form: reimburse.form,
-    setForm: reimburse.setForm
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-    onClick: reimburse.saveReimbursement,
-    className: "btn btn-primary"
-  }, "Add Reimbursement"))));
+  })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "text-xl font-semibold mb-4"
+  }, "Reimbursements"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_ReimbursementAccordion__WEBPACK_IMPORTED_MODULE_10__["default"], {
+    list: reimburseList,
+    updateType: updateType
+  }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "mt-10"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    variant: "primary",
+    size: "lg",
+    className: "w-full",
+    onClick: handleSave
+  }, editing ? "Update Provider" : "Save Provider"))));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Providers);
 
 /***/ }),
 
-/***/ "./src/pages/providers/ReimbursementsForm.jsx":
-/*!****************************************************!*\
-  !*** ./src/pages/providers/ReimbursementsForm.jsx ***!
-  \****************************************************/
+/***/ "./src/pages/providers/ReimbursementAccordion.jsx":
+/*!********************************************************!*\
+  !*** ./src/pages/providers/ReimbursementAccordion.jsx ***!
+  \********************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -53683,116 +54145,411 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _components_Accordion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../components/Accordion */ "./src/components/Accordion.jsx");
 
-const ReimbursementsForm = ({
-  form,
-  setForm
+
+const ReimbursementAccordion = ({
+  list,
+  updateType
 }) => {
-  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("form", {
-    className: "space-y-6"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "flex flex-col gap-1.5"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
-    className: "label"
-  }, "Type"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
-    value: form.type,
-    className: "input select",
-    onChange: e => setForm({
-      ...form,
-      type: e.target.value
-    })
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
-    value: ""
-  }, "Select"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
-    value: "WLZ"
-  }, "WLZ"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
-    value: "ZVW"
-  }, "ZVW"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
-    value: "WMO"
-  }, "WMO"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
-    value: "Youth"
-  }, "Youth"))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "flex flex-col gap-1.5"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
-    className: "label"
-  }, "Description"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("textarea", {
-    value: form.description,
-    onChange: e => setForm({
-      ...form,
-      description: e.target.value
-    }),
-    className: "textarea h-24"
-  })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "flex flex-col gap-1.5"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
-    className: "label"
-  }, "Coverage Details"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("textarea", {
-    value: form.coverage_details,
-    onChange: e => setForm({
-      ...form,
-      coverage_details: e.target.value
-    }),
-    className: "textarea h-24"
-  })));
+  const TYPES = {
+    WLZ: "WLZ — Long-term Care",
+    ZVW: "ZVW — Health Insurance",
+    WMO: "WMO — Social Support",
+    Youth: "Youth Care"
+  };
+  const items = Object.keys(TYPES).map(type => {
+    const item = list[type];
+    return {
+      id: type,
+      title: TYPES[type],
+      checked: !!item && (!!item.description || !!item.coverage_details),
+      content: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+        className: "space-y-4"
+      }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+        className: "label"
+      }, "Description"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("textarea", {
+        className: "textarea h-24",
+        value: item?.description || "",
+        onChange: e => updateType(type, {
+          description: e.target.value
+        })
+      })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+        className: "label"
+      }, "Coverage Details"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("textarea", {
+        className: "textarea h-24",
+        value: item?.coverage_details || "",
+        onChange: e => updateType(type, {
+          coverage_details: e.target.value
+        })
+      })))
+    };
+  });
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Accordion__WEBPACK_IMPORTED_MODULE_1__["default"], {
+    items: items,
+    showCheckbox: true,
+    defaultOpen: ["WLZ"]
+  });
 };
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ReimbursementsForm);
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ReimbursementAccordion);
 
 /***/ }),
 
-/***/ "./src/pages/providers/useReimbursementForm.js":
-/*!*****************************************************!*\
-  !*** ./src/pages/providers/useReimbursementForm.js ***!
-  \*****************************************************/
+/***/ "./src/pages/providers/useProviderForm.js":
+/*!************************************************!*\
+  !*** ./src/pages/providers/useProviderForm.js ***!
+  \************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   useReimbursementForm: () => (/* binding */ useReimbursementForm)
+/* harmony export */   useProviderForm: () => (/* binding */ useProviderForm)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 
-const useReimbursementForm = initialProviderId => {
-  const [providerId, setProviderId] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(initialProviderId || null);
+const getNonce = () => window?.wpApiSettings?.nonce || "";
+const useProviderForm = (fetchProviders, closeModal) => {
+  const emptyForm = {
+    name: "",
+    slug: "",
+    type_of_care: "",
+    indication_type: "",
+    organization_type: "",
+    religion: "",
+    has_hkz: 0,
+    email: "",
+    phone: "",
+    website: "",
+    address: ""
+  };
+  const [form, setForm] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(emptyForm);
+  const [editing, setEditing] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+
+  /* LOAD SINGLE PROVIDER */
+  const loadProvider = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async id => {
+    const res = await fetch(`/wp-json/zorg/v1/providers/${id}`, {
+      headers: {
+        "X-WP-Nonce": getNonce()
+      }
+    });
+    const json = await res.json();
+    setEditing(json?.data || null);
+    setForm({
+      ...json?.data,
+      has_hkz: json?.data?.has_hkz ? 1 : 0
+    });
+    return json?.data;
+  }, []);
+
+  /* SAVE PROVIDER + REIMBURSEMENTS */
+  const saveProvider = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async reimbursements => {
+    const isEditing = !!editing?.id;
+
+    /* ---------------------------------------------------
+     * VALIDATION: At least one reimbursement must exist
+     * --------------------------------------------------- */
+    if (!Array.isArray(reimbursements) || reimbursements.length === 0) {
+      throw new Error("At least one reimbursement type must be filled.");
+    }
+
+    /* ---------------------------------------------------
+     * VALIDATION: One type must have description or coverage
+     * --------------------------------------------------- */
+    const hasValid = reimbursements.some(r => r.description && r.description.trim() !== "" || r.coverage_details && r.coverage_details.trim() !== "");
+    if (!hasValid) {
+      throw new Error("Please fill at least one reimbursement (description or coverage).");
+    }
+    const url = isEditing ? `/wp-json/zorg/v1/providers-with-reimbursements/${editing.id}` : `/wp-json/zorg/v1/providers-with-reimbursements`;
+    const method = isEditing ? "PUT" : "POST";
+    const payload = {
+      ...form,
+      has_hkz: form.has_hkz ? 1 : 0,
+      reimbursements
+    };
+    const res = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "X-WP-Nonce": getNonce()
+      },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.message || "Save failed");
+    fetchProviders();
+    closeModal();
+  }, [editing, form, fetchProviders, closeModal]);
+  const reset = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => {
+    setForm(emptyForm);
+    setEditing(null);
+  }, []);
+  return {
+    form,
+    setForm,
+    editing,
+    loadProvider,
+    saveProvider,
+    reset
+  };
+};
+
+/***/ }),
+
+/***/ "./src/pages/providers/useProvidersList.js":
+/*!*************************************************!*\
+  !*** ./src/pages/providers/useProvidersList.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   useProvidersList: () => (/* binding */ useProvidersList)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+const DEFAULT_PER_PAGE = 10;
+const getNonce = () => window?.wpApiSettings?.nonce || "";
+const useProvidersList = () => {
+  const [providers, setProviders] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [filters, setFilters] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    search: "",
+    type_of_care: "",
+    indication_type: "",
+    organization_type: "",
+    religion: "",
+    has_hkz: ""
+  });
+  const [sort, setSort] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)("newest");
+  const [activeTab, setActiveTab] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)("active");
+  const [page, setPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1);
+  const [perPage, setPerPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(DEFAULT_PER_PAGE);
+  const [total, setTotal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0);
+  const [loading, setLoading] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+
+  /* ---------------------- PARAM BUILDER ------------------------ */
+  const buildParams = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([k, v]) => {
+      if (v) params.append(k, v);
+    });
+    params.append("page", page);
+    params.append("per_page", perPage);
+    params.append("sort", sort);
+    params.append("trashed", activeTab === "trash" ? "1" : "0");
+    return params.toString();
+  }, [filters, page, perPage, sort, activeTab]);
+
+  /* ---------------------- FETCH PROVIDERS ---------------------- */
+  const fetchProviders = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async () => {
+    const params = buildParams();
+    const url = `/wp-json/zorg/v1/providers?${params}`;
+    setLoading(true);
+    try {
+      const res = await fetch(url, {
+        headers: {}
+      });
+      const text = await res.text();
+      let json = {};
+      try {
+        json = JSON.parse(text);
+      } catch (err) {
+        json = {};
+      }
+      const list = Array.isArray(json?.data) ? json.data : [];
+      setProviders(list);
+      setTotal(json?.total || 0);
+    } catch (err) {
+      setProviders([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [buildParams]);
+
+  /* ---------------------- EFFECTS ---------------------- */
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    fetchProviders();
+  }, [fetchProviders]);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    setPage(1);
+    fetchProviders();
+  }, [filters, sort, perPage]);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    setPage(1);
+    fetchProviders();
+  }, [activeTab]);
+  return {
+    providers,
+    total,
+    filters,
+    setFilters,
+    sort,
+    setSort,
+    activeTab,
+    setActiveTab,
+    page,
+    setPage,
+    perPage,
+    setPerPage,
+    loading,
+    fetchProviders
+  };
+};
+
+/***/ }),
+
+/***/ "./src/pages/providers/useReimbursements.js":
+/*!**************************************************!*\
+  !*** ./src/pages/providers/useReimbursements.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   useReimbursements: () => (/* binding */ useReimbursements)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+const getNonce = () => window?.wpApiSettings?.nonce || "";
+
+/* Allowed types */
+const TYPES = ["WLZ", "ZVW", "WMO", "Youth"];
+
+/* Empty structured list */
+const emptyStructured = () => TYPES.reduce((acc, t) => {
+  acc[t] = null;
+  return acc;
+}, {});
+const useReimbursements = () => {
+  const [list, setList] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(emptyStructured());
+
+  // Not used much anymore
   const [form, setForm] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
     type: "",
     description: "",
     coverage_details: ""
   });
-  const saveReimbursement = async () => {
-    const res = await fetch("/wp-json/zorg/v1/reimbursements", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-WP-Nonce": window.wpApiSettings.nonce
-      },
-      body: JSON.stringify({
-        provider_id: providerId,
-        type: form.type,
-        description: form.description,
-        coverage_details: form.coverage_details
-      })
-    });
-    const text = await res.text();
-    console.log("=== REIMBURSEMENT SAVE RESPONSE ===");
-    console.log("Status:", res.status);
-    console.log("Body:", text);
-    if (!res.ok) {
-      alert("Failed to add reimbursement");
-      return;
-    }
 
-    // Success
-  };
+  /* ============================================================
+   * LOAD REIMBURSEMENTS FOR PROVIDER — with logs
+   * ============================================================ */
+  const loadForProvider = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async id => {
+    console.log("%c[useReimbursements] 🔵 loadForProvider called", "color:#2980ff", {
+      id
+    });
+    try {
+      const url = `/wp-json/zorg/v1/reimbursements?provider_id=${id}`;
+      console.log("[useReimbursements] Fetching:", url);
+      const res = await fetch(url, {
+        headers: {
+          "X-WP-Nonce": getNonce()
+        }
+      });
+      console.log("[useReimbursements] Response status:", res.status);
+      const text = await res.text();
+      console.log("[useReimbursements] Raw response text:", text);
+      let json = {};
+      try {
+        json = JSON.parse(text);
+      } catch (err) {
+        console.error("[useReimbursements] ❌ JSON parse failed:", err);
+        return;
+      }
+      console.log("[useReimbursements] Parsed JSON:", json);
+      const rows = Array.isArray(json?.data) ? json.data : [];
+      console.log("[useReimbursements] Rows array:", rows);
+
+      // Normalize
+      const normalized = emptyStructured();
+      rows.forEach(r => {
+        const type = (r.type || "").toUpperCase().trim();
+        console.log("[useReimbursements] Processing row:", r, "-> type:", type);
+        if (normalized.hasOwnProperty(type)) {
+          var _r$id, _r$description, _r$coverage_details;
+          normalized[type] = {
+            id: (_r$id = r.id) !== null && _r$id !== void 0 ? _r$id : null,
+            type,
+            description: (_r$description = r.description) !== null && _r$description !== void 0 ? _r$description : "",
+            coverage_details: (_r$coverage_details = r.coverage_details) !== null && _r$coverage_details !== void 0 ? _r$coverage_details : ""
+          };
+        } else {
+          console.warn("[useReimbursements] ⚠️ Unknown type from DB:", r);
+        }
+      });
+      console.log("%c[useReimbursements] ✅ Normalized mapped list:", "color:green", normalized);
+      setList(normalized);
+      return normalized;
+    } catch (err) {
+      console.error("[useReimbursements] ❌ loadForProvider error:", err);
+      setList(emptyStructured());
+    }
+  }, []);
+
+  /* Reset */
+  const reset = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => {
+    console.log("[useReimbursements] ♻️ reset()");
+    setList(emptyStructured());
+    setForm({
+      type: "",
+      description: "",
+      coverage_details: ""
+    });
+  }, []);
+
+  /* Update one type */
+  const updateType = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)((type, data) => {
+    console.log("[useReimbursements] ✏️ updateType()", type, data);
+    setList(prev => {
+      const updated = {
+        ...prev,
+        [type]: {
+          ...(prev[type] || {
+            id: null,
+            type
+          }),
+          ...data
+        }
+      };
+      console.log("[useReimbursements] Updated structured list:", updated);
+      return updated;
+    });
+  }, []);
   return {
+    list,
+    setList,
+    updateType,
     form,
     setForm,
-    saveReimbursement,
-    providerId,
-    setProviderId // ← IMPORTANT FIX
+    loadForProvider,
+    reset,
+    // legacy
+    addEntry: () => console.warn("addEntry() not used"),
+    removeEntry: () => console.warn("removeEntry() not used")
   };
 };
+
+/***/ }),
+
+/***/ "./src/utils/cn.js":
+/*!*************************!*\
+  !*** ./src/utils/cn.js ***!
+  \*************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   cn: () => (/* binding */ cn)
+/* harmony export */ });
+function cn(...classes) {
+  return classes.flat(Infinity).filter(Boolean).join(" ");
+}
 
 /***/ }),
 
@@ -53931,7 +54688,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _pages_Appointments__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./pages/Appointments */ "./src/pages/Appointments.jsx");
 /* harmony import */ var _pages_Favourites__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./pages/Favourites */ "./src/pages/Favourites.jsx");
 /* harmony import */ var _pages_Reimbursements__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./pages/Reimbursements */ "./src/pages/Reimbursements.jsx");
-/* harmony import */ var _shared_styles_dist_global_css__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../shared-styles/dist/global.css */ "../shared-styles/dist/global.css");
+/* harmony import */ var _hooks_useToast__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./hooks/useToast */ "./src/hooks/useToast.js");
+/* harmony import */ var _hooks_useLoading__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./hooks/useLoading */ "./src/hooks/useLoading.js");
+/* harmony import */ var _components_LoadingOverlay__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./components/LoadingOverlay */ "./src/components/LoadingOverlay.jsx");
+/* harmony import */ var _shared_styles_dist_global_css__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../shared-styles/dist/global.css */ "../shared-styles/dist/global.css");
+
+
+
 
 
 
@@ -53977,7 +54740,7 @@ const AppShell = () => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div
 }))))));
 const mount = document.getElementById('zorgfinder-admin-app');
 if (mount) {
-  (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(mount).render((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_3__.HashRouter, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(AppShell, null)));
+  (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(mount).render((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_3__.HashRouter, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_hooks_useToast__WEBPACK_IMPORTED_MODULE_12__.ToastProvider, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_hooks_useLoading__WEBPACK_IMPORTED_MODULE_13__.LoadingProvider, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(AppShell, null), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_LoadingOverlay__WEBPACK_IMPORTED_MODULE_14__["default"], null)))));
 }
 })();
 

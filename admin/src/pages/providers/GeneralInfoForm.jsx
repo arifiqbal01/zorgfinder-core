@@ -1,6 +1,6 @@
 const GeneralInfoForm = ({ form, setForm, editing }) => {
   return (
-    <form className="space-y-6">
+    <form className="space-y-2">
       <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-gray-600">
         <span><strong>ID:</strong> {form.id || "New"}</span>
         {editing && (

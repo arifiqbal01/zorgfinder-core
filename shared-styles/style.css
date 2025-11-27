@@ -324,3 +324,18 @@ body.wp-admin.toplevel_page_zorgfinder-dashboard #wpbody-content {
   --zf-colors-text: #e6eef8;
   --zf-colors-border: #233043;
 }
+
+@keyframes slideInFast {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slideInFast {
+  animation: slideInFast 0.15s ease-out;
+}

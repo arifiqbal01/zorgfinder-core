@@ -199,17 +199,24 @@ class DashboardController extends BaseController
         ]);
     }
 
-   public function require_admin(): bool|\WP_Error
-{
-    if (!current_user_can('manage_options')) {
-        return new WP_Error(
-            'rest_forbidden',
-            __('You do not have permission to access dashboard insights.', 'zorgfinder-core'),
-            ['status' => 403]
-        );
+    /**
+     * ADMIN AUTH CHECK
+     */
+    public function require_admin(): bool|WP_Error
+    {
+        $auth = $this->require_auth();
+        if (is_wp_error($auth)) {
+            return $auth;
+        }
+
+        if (!current_user_can('manage_options')) {
+            return new WP_Error(
+                'rest_forbidden',
+                __('You do not have permission to access dashboard insights.', 'zorgfinder-core'),
+                ['status' => 403]
+            );
+        }
+
+        return true;
     }
-
-    return true;
-}
-
 }

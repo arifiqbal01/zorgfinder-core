@@ -1,9 +1,6 @@
 <?php
 namespace ZorgFinder\Database\Migrations;
 
-/**
- * Creates the zf_reimbursements table (full version).
- */
 class CreateReimbursementsTable {
 
     public function up(): void {
@@ -24,7 +21,9 @@ class CreateReimbursementsTable {
 
             PRIMARY KEY (id),
             KEY provider_id (provider_id),
-            KEY type (type)
+            KEY type (type),
+
+            UNIQUE KEY unique_provider_type (provider_id, type)
         ) $charset_collate;";
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';

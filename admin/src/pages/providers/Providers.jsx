@@ -1,304 +1,324 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import Table from "../../components/Table";
 import Modal from "../../components/Modal";
 import Pagination from "../../components/Pagination";
-import { Eye } from "lucide-react";
-import { useFetch } from "../../hooks/useFetch";
 import Filters from "../../components/Filters";
 
+import Button from "../../components/Button"; // NEW REUSABLE BUTTON
+
+import { Eye, Plus, Trash } from "lucide-react";
+
 import GeneralInfoForm from "./GeneralInfoForm";
-import ReimbursementsForm from "./ReimbursementsForm";
-import { useReimbursementForm } from "./useReimbursementForm";
+import ReimbursementAccordion from "./ReimbursementAccordion";
+
+import { useProvidersList } from "./useProvidersList";
+import { useProviderForm } from "./useProviderForm";
+import { useReimbursements } from "./useReimbursements";
+
+import { useToast } from "../../hooks/useToast";
+import { useLoading } from "../../hooks/useLoading";
+
+/* ---------------------------------------------------------
+ * PROVIDERS PAGE
+ * --------------------------------------------------------- */
 
 const Providers = () => {
-  const [providers, setProviders] = useState([]);
-  const [selectedIds, setSelectedIds] = useState([]);
+  const toast = useToast();
+  const loadingOverlay = useLoading();
+
+  /* LIST HOOK */
+  const {
+    providers,
+    total,
+    filters,
+    setFilters,
+    sort,
+    setSort,
+    activeTab,
+    setActiveTab,
+    page,
+    setPage,
+    perPage,
+    setPerPage,
+    loading,
+    fetchProviders,
+  } = useProvidersList();
+
+  /* MODAL */
   const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [tab, setTab] = useState("general");
+  const closeModal = useCallback(() => setShowModal(false), []);
 
-  const CACHE_TTL = 10 * 60 * 1000;
+  /* FORM HOOK */
+  const {
+    form,
+    setForm,
+    editing,
+    loadProvider,
+    saveProvider,
+    reset: resetProviderForm,
+  } = useProviderForm(fetchProviders, closeModal);
 
-  const emptyForm = {
-    name: "",
-    slug: "",
-    type_of_care: "",
-    indication_type: "",
-    organization_type: "",
-    religion: "",
-    has_hkz: 0,
-    email: "",
-    phone: "",
-    website: "",
-    address: "",
-  };
+  /* REIMBURSEMENTS HOOK */
+  const {
+    list: reimburseList,
+    updateType,
+    loadForProvider,
+    reset: resetReimbursements,
+  } = useReimbursements();
 
-  const [form, setForm] = useState(emptyForm);
+  /* BULK ACTIONS */
+  const [selected, setSelected] = useState([]);
 
-  // ❗ ADD BACK FILTERS
-  const [filters, setFilters] = useState({
-    search: "",
-    type_of_care: "",
-    indication_type: "",
-    organization_type: "",
-    religion: "",
-    has_hkz: "",
-  });
+  const toggleSelect = (index) => {
+    const row = providers[index];
+    if (!row) return;
 
-  // Hook for reimbursements
-  const reimburse = useReimbursementForm(editing?.id);
-
-  // PAGINATION
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
-  const [total, setTotal] = useState(0);
-
-  const providerFilterSchema = [
-    { type: "search", key: "search", placeholder: "Search providers…" },
-    {
-      type: "select",
-      key: "type_of_care",
-      placeholder: "Type of care",
-      options: [
-        { value: "disability", label: "Disability" },
-        { value: "GGZ", label: "GGZ" },
-        { value: "youth", label: "Youth" },
-        { value: "elderly", label: "Elderly" },
-      ],
-    },
-    {
-      type: "select",
-      key: "indication_type",
-      placeholder: "Indication",
-      options: [
-        { value: "PGB", label: "PGB" },
-        { value: "ZIN", label: "ZIN" },
-      ],
-    },
-    {
-      type: "select",
-      key: "organization_type",
-      placeholder: "Organization",
-      options: [
-        { value: "BV", label: "BV" },
-        { value: "Stichting", label: "Stichting" },
-      ],
-    },
-    {
-      type: "select",
-      key: "religion",
-      placeholder: "Religion",
-      options: [
-        { value: "Islamic", label: "Islamic" },
-        { value: "Jewish", label: "Jewish" },
-        { value: "Christian", label: "Christian" },
-        { value: "None", label: "None" },
-      ],
-    },
-    { type: "checkbox", key: "has_hkz", label: "HKZ Only" },
-  ];
-
-  // ================================
-  // FETCH SINGLE PROVIDER
-  // ================================
-  const fetchProviderById = async (id) => {
-    const res = await fetch(`/wp-json/zorg/v1/providers/${id}`);
-    const json = await res.json();
-    return json?.data || {};
-  };
-
-  // ================================
-  // FETCH PROVIDERS LIST
-  // ================================
-  const fetchProviders = async () => {
-    const params = new URLSearchParams();
-
-    Object.entries(filters).forEach(([k, v]) => {
-      if (v !== "") params.append(k, v);
-    });
-
-    params.append("page", page);
-    params.append("per_page", perPage);
-
-    const url = `/wp-json/zorg/v1/providers?${params.toString()}`;
-    const cacheKey = "providers_" + params.toString();
-
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      const expired = Date.now() - parsed.time > CACHE_TTL;
-
-      if (!expired) {
-        setProviders(parsed.data || []);
-        setTotal(parsed.total || 0);
-        return;
-      }
-    }
-
-    const res = await fetch(url);
-    const json = await res.json();
-
-    setProviders(json.data || []);
-    setTotal(json.total || 0);
-
-    localStorage.setItem(
-      cacheKey,
-      JSON.stringify({
-        time: Date.now(),
-        data: json.data || [],
-        total: json.total || 0,
-      })
+    setSelected((prev) =>
+      prev.includes(row.id)
+        ? prev.filter((id) => id !== row.id)
+        : [...prev, row.id]
     );
   };
 
-  useEffect(() => {
-    fetchProviders();
-  }, [filters, page, perPage]);
+  const toggleSelectAll = () => {
+    if (selected.length === providers.length) {
+      setSelected([]);
+    } else {
+      setSelected(providers.map((p) => p.id));
+    }
+  };
 
-  // ================================
-  // TABLE COLUMNS
-  // ================================
-  const columns = [
-    "Name",
-    "Type of Care",
-    "Email",
-    "Phone",
-    "Website",
-    "Address",
-  ];
+  const handleBulkDelete = async () => {
+    if (!confirm(`Delete ${selected.length} selected providers?`)) return;
 
-  const data = providers.map((p) => [
-    <div className="flex items-center gap-3 w-full truncate">
-      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-medium">
-        {p.name?.charAt(0)}
-      </div>
-      <span className="font-medium text-gray-800 truncate">{p.name}</span>
-    </div>,
-    <span className="truncate">{p.type_of_care}</span>,
-    <a className="text-blue-600 truncate">{p.email}</a>,
-    <span className="truncate">{p.phone}</span>,
-    <a className="text-blue-600 truncate">
-      {p.website?.replace(/^https?:\/\//, "")}
-    </a>,
-    <span className="truncate">{p.address}</span>,
+    try {
+      loadingOverlay.show("Deleting…");
+
+      await Promise.all(
+        selected.map((id) =>
+          fetch(`/wp-json/zorg/v1/providers/${id}`, {
+            method: "DELETE",
+            headers: { "X-WP-Nonce": window.wpApiSettings.nonce },
+          })
+        )
+      );
+
+      toast.success("Selected providers deleted");
+      setSelected([]);
+      fetchProviders();
+    } catch (err) {
+      toast.error("Delete failed");
+    } finally {
+      loadingOverlay.hide();
+    }
+  };
+
+  /* FILTER SCHEMA */
+  const filterSchema = useMemo(
+    () => [
+      { type: "search", key: "search", placeholder: "Search providers…" },
+      {
+        type: "select",
+        key: "type_of_care",
+        placeholder: "Type of care",
+        options: [
+          { value: "disability", label: "Disability" },
+          { value: "GGZ", label: "GGZ" },
+          { value: "youth", label: "Youth" },
+          { value: "elderly", label: "Elderly" },
+        ],
+      },
+      {
+        type: "select",
+        key: "indication_type",
+        placeholder: "Indication",
+        options: [
+          { value: "PGB", label: "PGB" },
+          { value: "ZIN", label: "ZIN" },
+        ],
+      },
+      {
+        type: "select",
+        key: "organization_type",
+        placeholder: "Organization",
+        options: [
+          { value: "BV", label: "BV" },
+          { value: "Stichting", label: "Stichting" },
+        ],
+      },
+      {
+        type: "select",
+        key: "religion",
+        placeholder: "Religion",
+        options: [
+          { value: "Islamic", label: "Islamic" },
+          { value: "Jewish", label: "Jewish" },
+          { value: "Christian", label: "Christian" },
+          { value: "None", label: "None" },
+        ],
+      },
+      { type: "checkbox", key: "has_hkz", label: "HKZ Only" },
+    ],
+    []
+  );
+
+  /* ---------------------------------------------------------
+   * OPEN EDIT MODAL
+   * --------------------------------------------------------- */
+  const openModalForProvider = useCallback(
+    async (index) => {
+      const row = providers[index];
+      if (!row) return;
+
+      try {
+        loadingOverlay.show("Loading provider…");
+
+        await loadProvider(row.id);
+        await loadForProvider(row.id);
+
+        setShowModal(true);
+      } catch (err) {
+        toast.error(err.message || "Failed to load provider");
+      } finally {
+        loadingOverlay.hide();
+      }
+    },
+    [providers, loadProvider, loadForProvider, toast, loadingOverlay]
+  );
+
+  /* ---------------------------------------------------------
+   * OPEN CREATE MODAL
+   * --------------------------------------------------------- */
+  const handleAddNew = () => {
+    resetProviderForm();
+    resetReimbursements();
+    setShowModal(true);
+  };
+
+  /* ---------------------------------------------------------
+   * SAVE PROVIDER
+   * --------------------------------------------------------- */
+  const handleSave = useCallback(async () => {
+    const payloadReimbursements = Object.entries(reimburseList)
+      .filter(([_, data]) => data !== null)
+      .map(([type, data]) => ({
+        type,
+        description: data.description || "",
+        coverage_details: data.coverage_details || "",
+      }));
+
+    try {
+      loadingOverlay.show("Saving provider…");
+
+      await saveProvider(payloadReimbursements);
+
+      toast.success("Provider saved successfully");
+    } catch (err) {
+      toast.error(err.message || "Save failed");
+    } finally {
+      loadingOverlay.hide();
+    }
+  }, [reimburseList, saveProvider, toast, loadingOverlay]);
+
+  /* ---------------------------------------------------------
+   * TABLE SETUP
+   * --------------------------------------------------------- */
+  const columns = ["Name", "Type of Care", "Email", "Phone", "Website", "Address"];
+  const rows = providers.map((p) => [
+    p.name,
+    p.type_of_care,
+    p.email,
+    p.phone,
+    p.website?.replace(/^https?:\/\//, ""),
+    p.address,
   ]);
 
-  // ================================
-  // SAVE PROVIDER
-  // ================================
- const handleSave = async (e) => {
-  e.preventDefault();
+  const actionsRenderer = (i) => (
+    <button className="text-blue-600" onClick={() => openModalForProvider(i)}>
+      <Eye size={16} />
+    </button>
+  );
 
-  const method = editing ? "PUT" : "POST";
-  const url = editing
-    ? `/wp-json/zorg/v1/providers/${editing.id}`
-    : `/wp-json/zorg/v1/providers`;
+  /* ---------------------------------------------------------
+   * RENDER PAGE
+   * --------------------------------------------------------- */
 
-  const payload = { ...form, has_hkz: form.has_hkz ? 1 : 0 };
-
-  const res = await fetch(url, {
-  method,
-  headers: {
-    "Content-Type": "application/json",
-    "X-WP-Nonce": window.wpApiSettings.nonce,   // ← FIXED AUTH
-  },
-  body: JSON.stringify(payload),
-});
-
-
-  // DEBUG ─── print everything
-  const text = await res.text();
-  console.log("=== PROVIDER SAVE RESPONSE ===");
-  console.log("Status:", res.status);
-  console.log("Body:", text);
-
-  if (!res.ok) {
-    alert("Failed to save provider");
-    return;
-  }
-
-  const json = JSON.parse(text);
-  let providerData = editing || json.data;
-
-  if (!editing) {
-    setEditing(providerData);
-    reimburse.setProviderId(providerData.id);
-  }
-
-  setTab("reimburse");
-  fetchProviders();
-};
-
-
-
-  // ================================
-  // RENDER
-  // ================================
   return (
     <div className="p-2 space-y-6">
 
       {/* HEADER */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-gray-800">Providers</h1>
 
-        <button
-          onClick={() => {
-            setEditing(null);
-            setForm(emptyForm);
-            reimburse.setProviderId(null);
-            reimburse.setForm({
-              type: "",
-              description: "",
-              coverage_details: "",
-            });
-            setTab("general");
-            setShowModal(true);
-          }}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm"
-        >
-          + Add Provider
-        </button>
+        {/* LEFT: TITLE + ACTION BUTTONS */}
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-semibold">Providers</h1>
+
+          <Button variant="primary" size="md" onClick={handleAddNew}>
+            <Plus size={16} className="mr-1" /> Add Provider
+          </Button>
+
+          {selected.length > 0 && (
+            <Button
+              variant="danger"
+              size="md"
+              onClick={handleBulkDelete}
+            >
+              <Trash size={16} className="mr-1" />
+              Delete Selected ({selected.length})
+            </Button>
+          )}
+        </div>
+
+        {/* RIGHT: SORT + TABS */}
+        <div className="flex items-center gap-3">
+          <label className="text-sm">Sort:</label>
+          <select value={sort} onChange={(e) => setSort(e.target.value)} className="input">
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="name_asc">Name A–Z</option>
+            <option value="name_desc">Name Z–A</option>
+          </select>
+
+          <div className="flex gap-2 bg-white rounded-lg p-2 shadow-sm">
+            <button
+              onClick={() => setActiveTab("active")}
+              className={`px-3 py-1 rounded ${activeTab === "active" ? "bg-black text-white" : "bg-gray-100"}`}
+            >
+              Active
+            </button>
+
+            <button
+              onClick={() => setActiveTab("trash")}
+              className={`px-3 py-1 rounded ${activeTab === "trash" ? "bg-black text-white" : "bg-gray-100"}`}
+            >
+              Trash
+            </button>
+          </div>
+        </div>
+
       </div>
 
       {/* FILTERS */}
-      <Filters
-        schema={providerFilterSchema}
-        filters={filters}
-        setFilters={setFilters}
-      />
+      <Filters schema={filterSchema} filters={filters} setFilters={setFilters} />
 
       {/* TABLE */}
       <Table
         columns={columns}
-        data={data}
+        data={rows}
         providers={providers}
-        selected={selectedIds}
-        setSelected={setSelectedIds}
-        actions={(i) => (
-          <button
-            onClick={async () => {
-              const full = await fetchProviderById(providers[i].id);
-
-              setEditing(full);
-              setForm({ ...full, has_hkz: full.has_hkz ? 1 : 0 });
-              reimburse.setProviderId(full.id);
-
-              setTab("general");
-              setShowModal(true);
-            }}
-            className="text-blue-600 hover:text-blue-800"
-          >
-            <Eye size={16} />
-          </button>
-        )}
+        actions={actionsRenderer}
+        loading={loading}
+        selected={selected}
+        toggleSelect={toggleSelect}
+        toggleSelectAll={toggleSelectAll}
         pagination={
           <Pagination
             page={page}
             perPage={perPage}
             total={total}
-            onChange={(newPage) => setPage(newPage)}
-            onPerPageChange={(newPerPage) => {
-              setPerPage(newPerPage);
+            onChange={setPage}
+            onPerPageChange={(v) => {
+              setPerPage(v);
               setPage(1);
             }}
           />
@@ -307,75 +327,36 @@ const Providers = () => {
 
       {/* MODAL */}
       {showModal && (
-        <Modal
-          title={editing ? "Edit Provider" : "Add Provider"}
-          onClose={() => {
-            setShowModal(false);
-            setEditing(null);
-            setForm(emptyForm);
-            setTab("general");
-          }}
-        >
-          {/* TABS */}
-          <div className="border-b mb-4 flex gap-4">
-            <button
-              className={tab === "general" ? "active-tab" : "tab"}
-              onClick={() => setTab("general")}
-            >
-              General Info
-            </button>
+        <Modal title={editing ? `Edit Provider #${editing.id}` : "Add Provider"} onClose={closeModal}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14">
 
-            <button
-              disabled={!editing?.id}
-              className={
-                editing?.id
-                  ? tab === "reimburse"
-                    ? "active-tab"
-                    : "tab"
-                  : "tab opacity-50 cursor-not-allowed"
-              }
-              onClick={() => editing?.id && setTab("reimburse")}
-            >
-              Reimbursements
-            </button>
+            {/* LEFT — GENERAL INFO */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Provider Information</h2>
+              <GeneralInfoForm form={form} setForm={setForm} editing={editing} />
+            </div>
+
+            {/* RIGHT — REIMBURSEMENTS */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Reimbursements</h2>
+
+              <ReimbursementAccordion
+                list={reimburseList}
+                updateType={updateType}
+              />
+            </div>
+
           </div>
 
-          {/* GENERAL INFO TAB */}
-          {tab === "general" && (
-            <>
-              <GeneralInfoForm
-                form={form}
-                setForm={setForm}
-                editing={editing}
-              />
+          <div className="mt-10">
+            <Button variant="primary" size="lg" className="w-full" onClick={handleSave}>
+              {editing ? "Update Provider" : "Save Provider"}
+            </Button>
+          </div>
 
-              <button
-                onClick={handleSave}
-                className="btn btn-primary mt-6"
-              >
-                {editing ? "Update Provider" : "Save Provider"}
-              </button>
-            </>
-          )}
-
-          {/* REIMBURSEMENTS TAB */}
-          {tab === "reimburse" && (
-            <div className="space-y-6">
-              <ReimbursementsForm
-                form={reimburse.form}
-                setForm={reimburse.setForm}
-              />
-
-              <button
-                onClick={reimburse.saveReimbursement}
-                className="btn btn-primary"
-              >
-                Add Reimbursement
-              </button>
-            </div>
-          )}
         </Modal>
       )}
+
     </div>
   );
 };

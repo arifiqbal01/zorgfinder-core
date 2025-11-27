@@ -66,20 +66,19 @@ class ReimbursementsController extends BaseController
 {
     global $wpdb;
 
-    // Always start with a leading/trailing spaces
     $where = " WHERE deleted_at IS NULL ";
 
     $provider_id = $req->get_param('provider_id');
-    $type = $req->get_param('type');
-    $search = $req->get_param('search');
-    $trashed = (int)$req->get_param('trashed') === 1;
+    $type        = $req->get_param('type');
+    $search      = $req->get_param('search');
+    $trashed     = (int) $req->get_param('trashed') === 1;
 
     if ($trashed) {
         $where = " WHERE deleted_at IS NOT NULL ";
     }
 
     if ($provider_id) {
-        $where .= $wpdb->prepare(" AND provider_id = %d ", (int)$provider_id);
+        $where .= $wpdb->prepare(" AND provider_id = %d ", (int) $provider_id);
     }
 
     if ($type) {
@@ -88,21 +87,23 @@ class ReimbursementsController extends BaseController
 
     if ($search) {
         $like = '%' . $wpdb->esc_like($search) . '%';
-        $where .= $wpdb->prepare(" AND (description LIKE %s OR coverage_details LIKE %s) ", $like, $like);
+        $where .= $wpdb->prepare(
+            " AND (description LIKE %s OR coverage_details LIKE %s) ",
+            $like,
+            $like
+        );
     }
 
-    $page = max(1, (int)$req->get_param('page'));
-    $per_page = (int)$req->get_param('per_page') ?: 10;
-    $offset = ($page - 1) * $per_page;
+    $page     = max(1, (int) $req->get_param('page'));
+    $per_page = (int) $req->get_param('per_page') ?: 10;
+    $offset   = ($page - 1) * $per_page;
 
-    // Debug SQL (optional)
-    // error_log("SQL: SELECT * FROM {$this->table} $where LIMIT $per_page OFFSET $offset");
-
-    $total = (int)$wpdb->get_var("SELECT COUNT(*) FROM $this->table $where");
+    $total = (int) $wpdb->get_var("SELECT COUNT(*) FROM $this->table $where");
 
     $rows = $wpdb->get_results(
         $wpdb->prepare("
-            SELECT * FROM {$this->table}
+            SELECT *
+            FROM {$this->table}
             $where
             ORDER BY created_at DESC
             LIMIT %d OFFSET %d
@@ -110,13 +111,15 @@ class ReimbursementsController extends BaseController
         ARRAY_A
     );
 
-    return $this->respond([
-        'data'     => $rows,
+    // IMPORTANT: return FLAT JSON, NOT nested under "data": { "data": [] }
+    return new WP_REST_Response([
+        'success'  => true,
+        'data'     => $rows,              // <-- FIXED: actual array
         'total'    => $total,
         'page'     => $page,
         'per_page' => $per_page,
         'pages'    => ceil($total / $per_page),
-    ]);
+    ], 200);
 }
 
 
