@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 
-const getNonce = () => window?.wpApiSettings?.nonce || "";
+const getNonce = () => window?.zorgFinderApp?.nonce || "";
 
 /* Allowed types */
 const TYPES = ["WLZ", "ZVW", "WMO", "Youth"];

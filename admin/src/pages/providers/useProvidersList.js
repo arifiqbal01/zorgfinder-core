@@ -2,8 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 
 const DEFAULT_PER_PAGE = 10;
 
-const getNonce = () =>
-  window?.wpApiSettings?.nonce || "";
+const getNonce = () => window?.zorgFinderApp?.nonce || "";
 
 export const useProvidersList = () => {
   const [providers, setProviders] = useState([]);

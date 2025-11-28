@@ -1,277 +1,242 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import Table from "../components/Table";
 import Pagination from "../components/Pagination";
 import Filters from "../components/Filters";
 import Modal from "../components/Modal";
-import { Eye, Star } from "lucide-react";
+import Button from "../components/Button";
+import { Eye, Trash2, RotateCcw, Star } from "lucide-react";
+import { useListManager } from "../hooks/useListManager";
 
-/**
- * Admin Reviews page — sends nonce on every request so server knows this is admin UI.
- */
-
-const DEFAULT_PER_PAGE = 10;
-
-const getNonce = () =>
-  typeof zorgFinderApp !== "undefined" ? zorgFinderApp.nonce : "";
+// Correct nonce source
+const getNonce = () => window?.zorgFinderApp?.nonce || "";
 
 const Reviews = () => {
-  const [reviews, setReviews] = useState([]);
+  // NEW: expanded comment state
+  const [expandedCommentId, setExpandedCommentId] = useState(null);
+
+  /* Load reviews */
+  const {
+    items,
+    filters,
+    setFilters,
+    sort,
+    setSort,
+    tab,
+    setTab,
+    page,
+    setPage,
+    perPage,
+    setPerPage,
+    total,
+    fetchItems,
+    deleteItem,
+    restoreItem,
+  } = useListManager(
+    "/reviews",
+    { search: "", provider_id: "", approved: "" },
+    true
+  );
+
   const [providers, setProviders] = useState([]);
   const [providerMap, setProviderMap] = useState({});
   const [usersMap, setUsersMap] = useState({});
   const [selected, setSelected] = useState([]);
 
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(DEFAULT_PER_PAGE);
-  const [total, setTotal] = useState(0);
-
-  const [filters, setFilters] = useState({
-    search: "",
-    provider_id: "",
-    approved: "",
-    rating: "",
-  });
-
-  const [sort, setSort] = useState("newest");
-  const [tab, setTab] = useState("active"); // active | trash
-  const [loading, setLoading] = useState(false);
-
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
 
-  const headers = {
-    "Content-Type": "application/json",
+  const authHeaders = {
     "X-WP-Nonce": getNonce(),
   };
 
-  // load providers + users
+  /* ---------------------------------------------------------
+     LOAD PROVIDERS + USERS
+  --------------------------------------------------------- */
   useEffect(() => {
+    // PROVIDERS
     (async () => {
       try {
-        const p = await fetch("/wp-json/zorg/v1/providers?per_page=999", {
-          headers,
+        const res = await fetch(`/wp-json/zorg/v1/providers?per_page=999`, {
+          headers: authHeaders,
         });
-        const pj = await p.json();
-        if (pj?.success) {
-          setProviders(pj.data);
+        const json = await res.json();
+
+        if (json?.success) {
           const map = {};
-          pj.data.forEach((x) => (map[x.id] = x.name));
+          json.data.forEach((p) => (map[p.id] = p.name));
+          setProviders(json.data);
           setProviderMap(map);
         }
-      } catch (e) {
-        setProviders([]);
-      }
+      } catch {}
     })();
 
+    // USERS
     (async () => {
       try {
-        const u = await fetch("/wp-json/wp/v2/users?per_page=100", { headers });
-        const uj = await u.json();
-        if (Array.isArray(uj)) {
-          const map = {};
-          uj.forEach((user) => {
-            map[user.id] =
-              user.name || user.username || user.slug || `#${user.id}`;
+        const res = await fetch(`/wp-json/wp/v2/users?per_page=100`, {
+          headers: authHeaders,
+        });
+        const json = await res.json();
+
+        if (Array.isArray(json)) {
+          const m = {};
+          json.forEach((u) => {
+            m[u.id] = u.name || u.username || u.slug || `User #${u.id}`;
           });
-          setUsersMap(map);
+          setUsersMap(m);
         }
-      } catch (e) {
-        setUsersMap({});
-      }
+      } catch {}
     })();
   }, []);
 
-  // fetch reviews
-  const fetchReviews = useCallback(async () => {
-    setLoading(true);
+  /* ---------------------------------------------------------
+     PROVIDERS WITH REVIEWS ONLY
+  --------------------------------------------------------- */
+  const reviewedProviders = providers.filter((p) =>
+    items.some((r) => r.provider_id === p.id)
+  );
+
+  /* ---------------------------------------------------------
+     APPROVE / PENDING
+  --------------------------------------------------------- */
+  const setApproved = async (id, status) => {
+    await fetch(`/wp-json/zorg/v1/reviews/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "X-WP-Nonce": getNonce(),
+      },
+      body: JSON.stringify({ approved: status }),
+    });
+
+    fetchItems();
+  };
+
+  /* ---------------------------------------------------------
+     OPEN REVIEW
+  --------------------------------------------------------- */
+  const openItem = async (id) => {
     try {
-      const params = new URLSearchParams();
-      Object.entries(filters).forEach(([k, v]) => {
-        if (v !== "" && v !== null && v !== undefined) params.append(k, v);
+      const res = await fetch(`/wp-json/zorg/v1/reviews/${id}`, {
+        headers: authHeaders,
       });
-      params.append("page", page);
-      params.append("per_page", perPage);
-      params.append("sort", sort);
-      params.append("trashed", tab === "trash" ? 1 : 0);
-
-      const res = await fetch(
-        `/wp-json/zorg/v1/reviews?${params.toString()}`,
-        {
-          headers,
-        }
-      );
       const json = await res.json();
-      if (json?.success && Array.isArray(json.data)) {
-        setReviews(json.data);
-        setTotal(json.total || 0);
-      } else {
-        setReviews([]);
-        setTotal(0);
-      }
-    } catch (e) {
-      setReviews([]);
-      setTotal(0);
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, page, perPage, sort, tab]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [
-    filters.provider_id,
-    filters.search,
-    filters.approved,
-    filters.rating,
-    sort,
-    tab,
-    perPage,
-  ]);
-
-  useEffect(() => {
-    fetchReviews();
-  }, [fetchReviews, page, perPage, sort, tab]);
-
-  // actions
-  const patchReview = async (id, body) => {
-    await fetch(`/wp-json/zorg/v1/reviews/${id}`, {
-      method: "PATCH",
-      headers,
-      body: JSON.stringify(body),
-    });
-  };
-
-  const deleteReview = async (id) => {
-    await fetch(`/wp-json/zorg/v1/reviews/${id}`, {
-      method: "DELETE",
-      headers: { "X-WP-Nonce": getNonce() },
-    });
-  };
-
-  const restoreReview = async (id) => {
-    await fetch(`/wp-json/zorg/v1/reviews/${id}/restore`, {
-      method: "PATCH",
-      headers: { "X-WP-Nonce": getNonce() },
-    });
-  };
-
-  const handleApprove = async (id) => {
-    setReviews((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, approved: 1 } : r))
-    );
-    await patchReview(id, { approved: 1 });
-    await fetchReviews();
-  };
-
-  const handleUnapprove = async (id) => {
-    if (tab === "active") {
-      setReviews((prev) => prev.filter((r) => r.id !== id));
-      setSelected((s) => s.filter((x) => x !== id));
-    } else {
-      setReviews((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, approved: 0 } : r))
-      );
-    }
-    await patchReview(id, { approved: 0 });
-    await fetchReviews();
-  };
-
-  const handleDelete = async (id) => {
-    await deleteReview(id);
-    setReviews((prev) => prev.filter((r) => r.id !== id));
-    setSelected((s) => s.filter((x) => x !== id));
-    await fetchReviews();
-  };
-
-  const handleRestore = async (id) => {
-    await restoreReview(id);
-    setReviews((prev) => prev.filter((r) => r.id !== id));
-    setSelected((s) => s.filter((x) => x !== id));
-    await fetchReviews();
-  };
-
-  // bulk actions
-  const bulkApprove = async () => {
-    for (const id of selected) await patchReview(id, { approved: 1 });
-    setSelected([]);
-    await fetchReviews();
-  };
-
-  const bulkPending = async () => {
-    for (const id of selected) await patchReview(id, { approved: 0 });
-    setSelected([]);
-    await fetchReviews();
-  };
-
-  const bulkDelete = async () => {
-    for (const id of selected) await deleteReview(id);
-    setSelected([]);
-    await fetchReviews();
-  };
-
-  const bulkRestore = async () => {
-    for (const id of selected) await restoreReview(id);
-    setSelected([]);
-    await fetchReviews();
-  };
-
-  const openReview = async (id) => {
-    try {
-      const res = await fetch(`/wp-json/zorg/v1/reviews/${id}`, { headers });
-      const json = await res.json();
       if (json?.success) {
         setEditing(json.data);
         setShowModal(true);
       }
-    } catch (e) {}
+    } catch {}
   };
 
-  const columns = ["", "Provider", "User", "Rating", "Status", "Comment", "Date"];
+  /* ---------------------------------------------------------
+     BULK ACTIONS
+  --------------------------------------------------------- */
+  const bulkDelete = async () => {
+    for (const id of selected) await deleteItem(id);
+    setSelected([]);
+    fetchItems();
+  };
 
-  const rows = reviews.map((r) => [
-    "",
+  const bulkRestore = async () => {
+    for (const id of selected) await restoreItem(id);
+    setSelected([]);
+    fetchItems();
+  };
+
+  const bulkApprove = async () => {
+    for (const id of selected) await setApproved(id, 1);
+    setSelected([]);
+    fetchItems();
+  };
+
+  const bulkPending = async () => {
+    for (const id of selected) await setApproved(id, 0);
+    setSelected([]);
+    fetchItems();
+  };
+
+  /* ---------------------------------------------------------
+     Close expanded comment when clicking outside
+  --------------------------------------------------------- */
+  useEffect(() => {
+    const handleClickOutside = () => setExpandedCommentId(null);
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  /* ---------------------------------------------------------
+     TABLE CONFIG
+  --------------------------------------------------------- */
+  const columns = ["Provider", "User", "Rating", "Status", "Comment", "Date"];
+
+  const rows = items.map((r) => [
     providerMap[r.provider_id] || `#${r.provider_id}`,
     usersMap[r.user_id] || `User #${r.user_id}`,
-    <div className="flex items-center gap-2">
-      <span className="text-sm font-medium">{r.rating}</span>
-      <Star size={14} />
-    </div>,
-
-    // FIXED STATUS
+    <div className="flex items-center gap-2">{r.rating} <Star size={14} /></div>,
     Number(r.approved) === 1 ? (
-      <span className="text-green-600 font-medium">Approved</span>
+      <span className="text-green-600 font-semibold">Approved</span>
     ) : (
-      <span className="text-yellow-600 font-medium">Pending</span>
+      <span className="text-yellow-600 font-semibold">Pending</span>
     ),
 
-    <span className="truncate max-w-[220px] whitespace-pre-line">
-      {r.comment}
-    </span>,
+    /* COMMENT CELL WITH TRUNCATION + EXPAND */
+    <td onClick={(e) => e.stopPropagation()}>
+      {expandedCommentId === r.id ? (
+        /* FULL COMMENT */
+        <div>
+          <div className="p-2 bg-gray-50 rounded leading-relaxed whitespace-pre-line">
+            {r.comment}
+          </div>
+          <button
+            className="text-blue-600 text-xs mt-1 underline"
+            onClick={() => setExpandedCommentId(null)}
+          >
+            Collapse
+          </button>
+        </div>
+      ) : (
+        /* TRUNCATED COMMENT */
+        <div className="relative max-w-[260px]">
+          <div className="line-clamp-3 whitespace-pre-line">
+            {r.comment}
+          </div>
+
+          {/* explicit "..." button */}
+          {r.comment.length > 80 && (
+            <button
+              className="absolute bottom-0 right-0 bg-white pl-1 text-blue-600 text-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpandedCommentId(r.id);
+              }}
+            >
+              ...
+            </button>
+          )}
+        </div>
+      )}
+    </td>,
+
     r.created_at,
   ]);
 
+  /* ---------------------------------------------------------
+     RENDER
+  --------------------------------------------------------- */
   return (
     <div className="p-2 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-800">Reviews</h1>
 
-        <div className="flex items-center gap-3">
-          <label className="text-sm text-gray-600">Sort:</label>
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="input"
-          >
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="highest">Highest rated</option>
-            <option value="lowest">Lowest rated</option>
-          </select>
+      {/* HEADER */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-2xl font-semibold">Reviews</h1>
 
-          <div className="flex gap-2 bg-white rounded-lg p-2 shadow-sm">
+        <div className="flex items-center gap-4">
+          {/* Tabs */}
+          <div className="flex bg-white shadow-sm rounded-lg overflow-hidden">
             <button
               onClick={() => setTab("active")}
-              className={`px-3 py-1 rounded ${
+              className={`px-4 py-2 text-sm ${
                 tab === "active" ? "bg-black text-white" : "bg-gray-100"
               }`}
             >
@@ -279,16 +244,30 @@ const Reviews = () => {
             </button>
             <button
               onClick={() => setTab("trash")}
-              className={`px-3 py-1 rounded ${
+              className={`px-4 py-2 text-sm border-l ${
                 tab === "trash" ? "bg-black text-white" : "bg-gray-100"
               }`}
             >
               Trash
             </button>
           </div>
+
+          {/* Sort */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm">Sort:</label>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="input min-w-[140px]"
+            >
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+            </select>
+          </div>
         </div>
       </div>
 
+      {/* FILTERS */}
       <Filters
         schema={[
           { type: "search", key: "search", placeholder: "Search reviews…" },
@@ -296,7 +275,10 @@ const Reviews = () => {
             type: "select",
             key: "provider_id",
             placeholder: "Provider",
-            options: providers.map((p) => ({ value: p.id, label: p.name })),
+            options: reviewedProviders.map((p) => ({
+              value: p.id,
+              label: p.name,
+            })),
           },
           {
             type: "select",
@@ -312,136 +294,79 @@ const Reviews = () => {
         setFilters={setFilters}
       />
 
-     {/* Rating Buttons (improved visuals & accessible) */}
-      <div className="flex gap-3 items-center zf-no-select" role="toolbar" aria-label="Filter by rating">
-        <button
-          type="button"
-          onClick={() => setFilters((f) => ({ ...f, rating: "" }))}
-          className={`px-4 py-1 rounded-full text-sm font-medium select-none ${filters.rating === "" ? "bg-black text-white" : "bg-gray-100 text-gray-700"}`}
-          aria-pressed={filters.rating === ""}
-        >
-          All Ratings
-        </button>
-
-        {["5","4","3","2","1"].map((r) => {
-          const active = String(filters.rating) === String(r);
-          return (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setFilters((f) => ({ ...f, rating: r }))}
-              className={`${active ? 'zf-rating-btn zf-active' : 'zf-rating-btn'} focus:outline-none`}
-              aria-pressed={active}
-              title={`${r} star${r !== "1" ? "s" : ""}`}
-            >
-              <div className="flex items-center gap-1">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <path d="M12 .587l3.668 7.431L23 9.75l-5.5 5.356L18.334 24 12 20.092 5.666 24 6.5 15.106 1 9.75l7.332-1.732L12 .587z" />
-                </svg>
-                <span className="text-sm font-medium">{r}</span>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-
-      {/* Bulk Actions */}
+      {/* BULK BAR */}
       {selected.length > 0 && (
-        <div className="flex gap-3 bg-white border p-3 rounded-xl shadow-sm">
+        <div className="flex items-center gap-4 bg-white border p-3 rounded-xl shadow-sm">
           {tab === "trash" ? (
-            <button
-              onClick={bulkRestore}
-              className="px-3 py-1 rounded bg-green-600 text-white"
-            >
-              Restore Selected
-            </button>
+            <Button variant="success" size="sm" onClick={bulkRestore}>
+              <RotateCcw size={14} className="mr-1" /> Restore Selected
+            </Button>
           ) : (
             <>
-              <button
-                onClick={bulkApprove}
-                className="px-3 py-1 rounded bg-green-600 text-white"
-              >
+              <Button variant="success" size="sm" onClick={bulkApprove}>
                 Approve Selected
-              </button>
-              <button
-                onClick={bulkPending}
-                className="px-3 py-1 rounded bg-yellow-600 text-white"
-              >
+              </Button>
+              <Button variant="warning" size="sm" onClick={bulkPending}>
                 Mark Pending
-              </button>
-              <button
-                onClick={bulkDelete}
-                className="px-3 py-1 rounded bg-red-600 text-white"
-              >
-                Delete Selected
-              </button>
+              </Button>
+              <Button variant="danger" size="sm" onClick={bulkDelete}>
+                <Trash2 size={14} className="mr-1" /> Delete Selected
+              </Button>
             </>
           )}
-          <div className="ml-auto text-sm text-gray-600">
+
+          <span className="ml-auto text-sm text-gray-600">
             {selected.length} selected
-          </div>
+          </span>
         </div>
       )}
 
-      {/* Table */}
+      {/* TABLE */}
       <Table
         columns={columns}
         data={rows}
-        providers={reviews}
+        providers={items}
         selected={selected}
         setSelected={setSelected}
         actions={(i) => {
-          const r = reviews[i];
-          const approved = Number(r.approved) === 1;
-
+          const r = items[i];
           return (
             <div className="flex items-center gap-3">
+              {tab !== "trash" &&
+                (Number(r.approved) === 1 ? (
+                  <button
+                    onClick={() => setApproved(r.id, 0)}
+                    className="text-yellow-600"
+                  >
+                    Mark Pending
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setApproved(r.id, 1)}
+                    className="text-green-600"
+                  >
+                    Approve
+                  </button>
+                ))}
 
-              {/* Approve */}
-              {!approved && tab !== "trash" && (
-                <button
-                  onClick={() => handleApprove(r.id)}
-                  title="Approve"
-                  className="text-green-600"
-                >
-                  ✔
-                </button>
-              )}
-
-              {/* Unapprove */}
-              {approved && tab !== "trash" && (
-                <button
-                  onClick={() => handleUnapprove(r.id)}
-                  title="Unapprove"
-                  className="text-yellow-600"
-                >
-                  ✖
-                </button>
-              )}
-
-              {/* Delete / Restore */}
               {tab === "trash" ? (
                 <button
-                  onClick={() => handleRestore(r.id)}
-                  title="Restore"
+                  onClick={() => restoreItem(r.id).then(fetchItems)}
                   className="text-green-600"
                 >
-                  ↺
+                  <RotateCcw size={16} />
                 </button>
               ) : (
                 <button
-                  onClick={() => handleDelete(r.id)}
-                  title="Delete"
+                  onClick={() => deleteItem(r.id).then(fetchItems)}
                   className="text-red-600"
                 >
-                  🗑
+                  <Trash2 size={16} />
                 </button>
               )}
 
               <button
-                onClick={() => openReview(r.id)}
-                title="View"
+                onClick={() => openItem(r.id)}
                 className="text-blue-600"
               >
                 <Eye size={16} />
@@ -463,7 +388,7 @@ const Reviews = () => {
         }
       />
 
-      {/* Modal */}
+      {/* MODAL */}
       {showModal && editing && (
         <Modal
           title={`Review #${editing.id}`}
@@ -472,26 +397,29 @@ const Reviews = () => {
             setShowModal(false);
           }}
         >
-          <div className="space-y-3 text-sm">
+          <div className="space-y-4 text-sm">
             <div>
-              <strong>Provider:</strong>{" "}
-              {providerMap[editing.provider_id] || editing.provider_id}
-            </div>
-            <div>
-              <strong>User:</strong>{" "}
-              {usersMap[editing.user_id] || editing.user_id}
-            </div>
-            <div>
-              <strong>Rating:</strong>{" "}
-              <span className="inline-flex items-center gap-2">
-                {editing.rating} <Star size={16} />
-              </span>
+              <strong>Provider:</strong>
+              <div className="mt-1">{providerMap[editing.provider_id]}</div>
             </div>
 
-            {/* FIXED STATUS */}
             <div>
-              <strong>Status:</strong>{" "}
-              {Number(editing.approved) === 1 ? "Approved" : "Pending"}
+              <strong>User:</strong>
+              <div className="mt-1">{usersMap[editing.user_id]}</div>
+            </div>
+
+            <div>
+              <strong>Rating:</strong>
+              <div className="mt-1 flex items-center gap-2">
+                {editing.rating} <Star size={16} />
+              </div>
+            </div>
+
+            <div>
+              <strong>Status:</strong>
+              <div className="mt-1">
+                {Number(editing.approved) === 1 ? "Approved" : "Pending"}
+              </div>
             </div>
 
             <div>

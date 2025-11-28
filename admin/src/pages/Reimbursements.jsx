@@ -3,173 +3,101 @@ import Table from "../components/Table";
 import Pagination from "../components/Pagination";
 import Filters from "../components/Filters";
 import Modal from "../components/Modal";
-import { Eye } from "lucide-react";
+import Button from "../components/Button";
+import { Eye, Trash2, RotateCcw } from "lucide-react";
 
-const DEFAULT_PER_PAGE = 10;
+import { useListManager } from "../hooks/useListManager"; // NEW
 
-const getNonce = () =>
-  typeof zorgFinderApp !== "undefined" ? zorgFinderApp.nonce : "";
+const getNonce = () => window?.wpApiSettings?.nonce || "";
 
-// Normalize API results to always return an array
-const normalizeList = (data) => {
-  if (Array.isArray(data)) return data;
-  if (!data) return [];
-  if (data.data && typeof data.data === "object" && !Array.isArray(data.data)) {
-    return [data.data];
-  }
-  return [];
-};
+const REIMB_TYPES = [
+  { value: "WLZ", label: "WLZ" },
+  { value: "ZVW", label: "ZVW" },
+  { value: "WMO", label: "WMO" },
+  { value: "Youth", label: "Youth" },
+];
 
+/* ---------------------------------------------------------
+   COMPONENT
+--------------------------------------------------------- */
 const Reimbursements = () => {
-  const [items, setItems] = useState([]);
-  const [providers, setProviders] = useState([]);
-  const [providerMap, setProviderMap] = useState({});
-
-  const [selected, setSelected] = useState([]);
-
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(DEFAULT_PER_PAGE);
-  const [total, setTotal] = useState(0);
-
-  const [filters, setFilters] = useState({
+  /* Loaded via new cached engine */
+  const {
+    items,
+    filters,
+    setFilters,
+    sort,
+    setSort,
+    tab,
+    setTab,
+    page,
+    setPage,
+    perPage,
+    setPerPage,
+    total,
+    loading,
+    fetchItems,
+    deleteItem,
+    restoreItem
+  } = useListManager("/reimbursements", {
     search: "",
     provider_id: "",
-    type: "",
+    type: ""
   });
 
-  const [tab, setTab] = useState("active"); 
-  const [loading, setLoading] = useState(false);
+  const [providers, setProviders] = useState([]);
+  const [providerMap, setProviderMap] = useState({});
+  const [selected, setSelected] = useState([]);
 
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
-
-  const REIMB_TYPES = [
-    { value: "WLZ", label: "WLZ" },
-    { value: "ZVW", label: "ZVW" },
-    { value: "WMO", label: "WMO" },
-    { value: "Youth", label: "Youth" },
-  ];
 
   const headers = {
     "Content-Type": "application/json",
     "X-WP-Nonce": getNonce(),
   };
 
-  // Load providers
+  /* ---------------------------------------------------------
+     LOAD PROVIDER LIST (WITH CACHE)
+  --------------------------------------------------------- */
   useEffect(() => {
     (async () => {
       try {
-        const p = await fetch("/wp-json/zorg/v1/providers?per_page=999", {
-          headers,
-        });
-        const json = await p.json();
+        const url = `/wp-json/zorg/v1/providers?per_page=999&trashed=0`;
+
+        const res = await fetch(url);
+        const json = await res.json();
+
         if (json?.success && Array.isArray(json.data)) {
           setProviders(json.data);
           const map = {};
-          json.data.forEach((x) => (map[x.id] = x.name));
+          json.data.forEach((p) => (map[p.id] = p.name));
           setProviderMap(map);
         }
-      } catch (e) {
+      } catch {
         setProviders([]);
       }
     })();
   }, []);
 
-  // Fetch reimbursements
-  const fetchItems = useCallback(async () => {
-  setLoading(true);
-
-  try {
-    const params = new URLSearchParams();
-
-    Object.entries(filters).forEach(([k, v]) => {
-      if (v !== "") params.append(k, v);
-    });
-
-    params.append("page", page);
-    params.append("per_page", perPage);
-    params.append("trashed", tab === "trash" ? 1 : 0);
-
-    const res = await fetch(
-      `/wp-json/zorg/v1/reimbursements?${params.toString()}`,
-      { headers }
-    );
-
-    const json = await res.json();
-
-    if (json?.success && json?.data) {
-      const payload = json.data;
-
-      const list = Array.isArray(payload.data)
-        ? payload.data
-        : [];
-
-      setItems(list);
-      setTotal(payload.total || list.length);
-    } else {
-      setItems([]);
-      setTotal(0);
-    }
-  } catch (e) {
-    setItems([]);
-    setTotal(0);
-  } finally {
-    setLoading(false);
-  }
-}, [filters, page, perPage, tab]);
-
-
-  useEffect(() => {
-    fetchItems();
-  }, [fetchItems]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [filters.provider_id, filters.type, filters.search, tab]);
-
-  // CRUD helpers
-  const deleteItem = async (id) => {
-    await fetch(`/wp-json/zorg/v1/reimbursements/${id}`, {
-      method: "DELETE",
-      headers,
-    });
-  };
-
-  const restoreItem = async (id) => {
-    await fetch(`/wp-json/zorg/v1/reimbursements/${id}/restore`, {
-      method: "PATCH",
-      headers,
-    });
-  };
-
-  const updateItem = async (id, body) => {
-    await fetch(`/wp-json/zorg/v1/reimbursements/${id}`, {
-      method: "PATCH",
-      headers,
-      body: JSON.stringify(body),
-    });
-  };
-
+  /* ---------------------------------------------------------
+     OPEN MODAL
+  --------------------------------------------------------- */
   const openItem = async (id) => {
     try {
-      const res = await fetch(`/wp-json/zorg/v1/reimbursements/${id}`, {
-        headers,
-      });
+      const res = await fetch(`/wp-json/zorg/v1/reimbursements/${id}`, { headers });
       const json = await res.json();
 
       if (json?.success) {
-        const data =
-          json.data?.data || 
-          json.data ||
-          null;
-
-        setEditing(data);
+        setEditing(json.data?.data || json.data);
         setShowModal(true);
       }
-    } catch (e) {}
+    } catch {}
   };
 
-  // Bulk actions
+  /* ---------------------------------------------------------
+     BULK ACTIONS
+  --------------------------------------------------------- */
   const bulkDelete = async () => {
     for (const id of selected) await deleteItem(id);
     setSelected([]);
@@ -182,51 +110,66 @@ const Reimbursements = () => {
     fetchItems();
   };
 
+  /* ---------------------------------------------------------
+     TABLE CONFIG
+  --------------------------------------------------------- */
   const columns = ["Provider", "Type", "Description", "Coverage", "Date"];
 
-  const rows = Array.isArray(items)
-    ? items.map((i) => [
-        providerMap[i.provider_id] || `#${i.provider_id}`,
-        <span className="font-semibold">{i.type}</span>,
-        <span className="truncate max-w-[220px] whitespace-pre-line">
-          {i.description}
-        </span>,
-        <span className="truncate max-w-[220px] whitespace-pre-line">
-          {i.coverage_details}
-        </span>,
-        i.created_at,
-      ])
-    : [];
+  const rows = items.map((i) => [
+    providerMap[i.provider_id] || `#${i.provider_id}`,
+    <span className="font-semibold">{i.type}</span>,
+    <span className="truncate max-w-[200px] whitespace-pre-line">{i.description}</span>,
+    <span className="truncate max-w-[200px] whitespace-pre-line">{i.coverage_details}</span>,
+    i.created_at,
+  ]);
 
+  /* ---------------------------------------------------------
+     RENDER UI
+  --------------------------------------------------------- */
   return (
     <div className="p-2 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-800">Reimbursements</h1>
 
-        <div className="flex items-center gap-3">
-          <div className="flex gap-2 bg-white rounded-lg p-2 shadow-sm">
+      {/* HEADER — matching Providers */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+
+        <h1 className="text-2xl font-semibold">Reimbursements</h1>
+
+        <div className="flex items-center gap-4">
+          {/* Tabs */}
+          <div className="flex bg-white shadow-sm rounded-lg overflow-hidden">
             <button
               onClick={() => setTab("active")}
-              className={`px-3 py-1 rounded ${
-                tab === "active" ? "bg-black text-white" : "bg-gray-100"
-              }`}
+              className={`px-4 py-2 text-sm ${tab === "active" ? "bg-black text-white" : "bg-gray-100"}`}
             >
               Active
             </button>
             <button
               onClick={() => setTab("trash")}
-              className={`px-3 py-1 rounded ${
-                tab === "trash" ? "bg-black text-white" : "bg-gray-100"
-              }`}
+              className={`px-4 py-2 text-sm border-l ${tab === "trash" ? "bg-black text-white" : "bg-gray-100"}`}
             >
               Trash
             </button>
           </div>
+
+          {/* Sort */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm">Sort:</label>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="input min-w-[140px]"
+            >
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="name_asc">Provider A–Z</option>
+              <option value="name_desc">Provider Z–A</option>
+            </select>
+          </div>
         </div>
+
       </div>
 
-      {/* Filters */}
+      {/* FILTERS */}
       <Filters
         schema={[
           { type: "search", key: "search", placeholder: "Search…" },
@@ -241,38 +184,33 @@ const Reimbursements = () => {
             key: "type",
             placeholder: "Type",
             options: REIMB_TYPES,
-          },
+          }
         ]}
         filters={filters}
         setFilters={setFilters}
       />
 
-      {/* Bulk actions */}
+      {/* BULK BAR — same as provider */}
       {selected.length > 0 && (
-        <div className="flex gap-3 bg-white border p-3 rounded-xl shadow-sm">
+        <div className="flex items-center gap-4 bg-white border p-3 rounded-xl shadow-sm">
+
           {tab === "trash" ? (
-            <button
-              onClick={bulkRestore}
-              className="px-3 py-1 rounded bg-green-600 text-white"
-            >
-              Restore Selected
-            </button>
+            <Button variant="success" size="sm" onClick={bulkRestore}>
+              <RotateCcw size={14} className="mr-1" /> Restore Selected
+            </Button>
           ) : (
-            <button
-              onClick={bulkDelete}
-              className="px-3 py-1 rounded bg-red-600 text-white"
-            >
-              Delete Selected
-            </button>
+            <Button variant="danger" size="sm" onClick={bulkDelete}>
+              <Trash2 size={14} className="mr-1" /> Delete Selected
+            </Button>
           )}
 
-          <div className="ml-auto text-sm text-gray-600">
+          <span className="ml-auto text-sm text-gray-600">
             {selected.length} selected
-          </div>
+          </span>
         </div>
       )}
 
-      {/* Table */}
+      {/* TABLE */}
       <Table
         columns={columns}
         data={rows}
@@ -281,31 +219,24 @@ const Reimbursements = () => {
         setSelected={setSelected}
         actions={(i) => {
           const item = items[i];
-
           return (
-            <div className="flex items-center gap-3">
-              {/* Delete / Restore */}
+            <div className="flex gap-3">
               {tab === "trash" ? (
                 <button
                   onClick={() => restoreItem(item.id).then(fetchItems)}
                   className="text-green-600"
                 >
-                  ↺
+                  <RotateCcw size={16} />
                 </button>
               ) : (
                 <button
                   onClick={() => deleteItem(item.id).then(fetchItems)}
                   className="text-red-600"
                 >
-                  🗑
+                  <Trash2 size={16} />
                 </button>
               )}
-
-              {/* View */}
-              <button
-                onClick={() => openItem(item.id)}
-                className="text-blue-600"
-              >
+              <button onClick={() => openItem(item.id)} className="text-blue-600">
                 <Eye size={16} />
               </button>
             </div>
@@ -319,13 +250,13 @@ const Reimbursements = () => {
             onChange={(p) => setPage(p)}
             onPerPageChange={(v) => {
               setPerPage(v);
-              setPage(1); 
+              setPage(1);
             }}
           />
         }
       />
 
-      {/* Modal */}
+      {/* MODAL */}
       {showModal && editing && (
         <Modal
           title={`Reimbursement #${editing.id}`}
@@ -335,35 +266,39 @@ const Reimbursements = () => {
           }}
         >
           <div className="space-y-4 text-sm">
+
             <div>
-              <strong>Provider:</strong>{" "}
-              {providerMap[editing.provider_id] || editing.provider_id}
+              <strong>Provider:</strong>
+              <div className="mt-1">{providerMap[editing.provider_id] || editing.provider_id}</div>
             </div>
 
             <div>
-              <strong>Type:</strong> {editing.type}
+              <strong>Type:</strong>
+              <div className="mt-1">{editing.type}</div>
             </div>
 
             <div>
               <strong>Description:</strong>
               <div className="mt-2 p-3 bg-gray-50 rounded whitespace-pre-line">
-                {editing.description || "—"}
+                {editing.description}
               </div>
             </div>
 
             <div>
-              <strong>Coverage:</strong>
+              <strong>Coverage Details:</strong>
               <div className="mt-2 p-3 bg-gray-50 rounded whitespace-pre-line">
-                {editing.coverage_details || "—"}
+                {editing.coverage_details}
               </div>
             </div>
 
             <div>
               <strong>Date:</strong> {editing.created_at}
             </div>
+
           </div>
         </Modal>
       )}
+
     </div>
   );
 };

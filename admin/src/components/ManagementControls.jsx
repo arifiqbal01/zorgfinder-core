@@ -1,6 +1,7 @@
 import React from "react";
 
 const ManagementControls = ({
+  title = "",
   sort,
   setSort,
   activeTab,
@@ -8,50 +9,67 @@ const ManagementControls = ({
   extraRight = null,
 }) => {
   return (
-    <div className="flex items-center justify-between mb-4">
+    <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
 
-      {/* LEFT SIDE: Active / Trash Toggle */}
-      <div className="flex gap-2 bg-white rounded-lg p-2 shadow-sm">
-        <button
-          onClick={() => setActiveTab("active")}
-          className={`px-3 py-1 rounded ${
-            activeTab === "active" ? "bg-black text-white" : "bg-gray-100"
-          }`}
-        >
-          Active
-        </button>
+      {/* LEFT — PAGE TITLE */}
+      <h1 className="text-2xl font-semibold">{title}</h1>
 
-        <button
-          onClick={() => setActiveTab("trash")}
-          className={`px-3 py-1 rounded ${
-            activeTab === "trash" ? "bg-black text-white" : "bg-gray-100"
-          }`}
-        >
-          Trash
-        </button>
-      </div>
+      {/* RIGHT — TABS + SORT + EXTRA */}
+      <div className="flex items-center gap-4">
 
-      {/* RIGHT SIDE: Sort + Extra Actions */}
-      <div className="flex items-center gap-3">
+        {/* Tabs */}
+        <div className="flex bg-white shadow-sm rounded-lg overflow-hidden">
+          <button
+            onClick={() => setActiveTab("active")}
+            className={`px-4 py-2 text-sm ${
+              activeTab === "active" ? "bg-black text-white" : "bg-gray-100"
+            }`}
+          >
+            Active
+          </button>
 
+          <button
+            onClick={() => setActiveTab("trash")}
+            className={`px-4 py-2 text-sm border-l ${
+              activeTab === "trash" ? "bg-black text-white" : "bg-gray-100"
+            }`}
+          >
+            Trash
+          </button>
+        </div>
+
+        {/* Sort */}
         <div className="flex items-center gap-2">
-          <span className="text-sm">Sort:</span>
+          <label className="text-sm">Sort:</label>
+
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value)}
-            className="input"
+            className="input min-w-[160px]"
           >
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="name_asc">Name A–Z</option>
-            <option value="name_desc">Name Z–A</option>
+            {/* DATE SORTING */}
+            <optgroup label="By Date">
+              <option value="newest">Newest → Oldest</option>
+              <option value="oldest">Oldest → Newest</option>
+            </optgroup>
+
+            {/* ALPHABET SORTING */}
+            <optgroup label="Alphabetical">
+              <option value="alpha_asc">A → Z</option>
+              <option value="alpha_desc">Z → A</option>
+            </optgroup>
+
+            {/* RATING SORT (optional for reviews) */}
+            <optgroup label="Rating (if applicable)">
+              <option value="rating_high">Highest Rating</option>
+              <option value="rating_low">Lowest Rating</option>
+            </optgroup>
           </select>
         </div>
 
-        {/* Inject Bulk Actions or other buttons */}
+        {/* Extra Right Buttons (if any) */}
         {extraRight}
       </div>
-
     </div>
   );
 };

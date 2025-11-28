@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 
-const getNonce = () => window?.wpApiSettings?.nonce || "";
+const getNonce = () => window?.zorgFinderApp?.nonce || "";
 
 /* -----------------------------------------------------------
    GLOBAL IN-MEMORY CACHE (lives as long as page stays open)
