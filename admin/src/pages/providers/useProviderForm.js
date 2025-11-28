@@ -1,80 +1,140 @@
 import { useState, useCallback } from "react";
 
-const getNonce = () =>
-  window?.wpApiSettings?.nonce || "";
+const getNonce = () => window?.wpApiSettings?.nonce || "";
 
+/* -----------------------------------------------------------
+   GLOBAL IN-MEMORY CACHE (lives as long as page stays open)
+----------------------------------------------------------- */
+const providerCache = new Map();
+
+/* Provider structure */
+const emptyProvider = {
+  id: null,
+  name: "",
+  slug: "",
+  type_of_care: "",
+  indication_type: "",
+  organization_type: "",
+  religion: "",
+  has_hkz: 0,
+  email: "",
+  phone: "",
+  website: "",
+  address: "",
+  created_at: "",
+  updated_at: "",
+};
+
+/* Normalize reimbursements to WLZ/ZVW/WMO/Youth */
+const normalizeReimbursements = (input = {}) => {
+  const keys = ["WLZ", "ZVW", "WMO", "Youth"];
+  const out = {};
+
+  keys.forEach((key) => {
+    out[key] = input[key]
+      ? {
+          description: input[key].description || "",
+          coverage_details: input[key].coverage_details || "",
+        }
+      : { description: "", coverage_details: "" };
+  });
+
+  return out;
+};
+
+/* ===========================================================
+   HOOK
+=========================================================== */
 export const useProviderForm = (fetchProviders, closeModal) => {
-  const emptyForm = {
-    name: "",
-    slug: "",
-    type_of_care: "",
-    indication_type: "",
-    organization_type: "",
-    religion: "",
-    has_hkz: 0,
-    email: "",
-    phone: "",
-    website: "",
-    address: "",
-  };
+  const [provider, setProvider] = useState(emptyProvider);
+  const [reimbursements, setReimbursements] = useState(
+    normalizeReimbursements()
+  );
+  const [editingId, setEditingId] = useState(null);
 
-  const [form, setForm] = useState(emptyForm);
-  const [editing, setEditing] = useState(null);
-
-  /* LOAD SINGLE PROVIDER */
-  const loadProvider = useCallback(async (id) => {
-    const res = await fetch(`/wp-json/zorg/v1/providers/${id}`, {
-      headers: { "X-WP-Nonce": getNonce() },
-    });
-
-    const json = await res.json();
-    setEditing(json?.data || null);
-
-    setForm({
-      ...json?.data,
-      has_hkz: json?.data?.has_hkz ? 1 : 0,
-    });
-
-    return json?.data;
+  const reset = useCallback(() => {
+    setProvider(emptyProvider);
+    setReimbursements(normalizeReimbursements());
+    setEditingId(null);
   }, []);
 
-  /* SAVE PROVIDER + REIMBURSEMENTS */
+  /* ===========================================================
+     LOAD PROVIDER (with instant cached load)
+  ============================================================ */
+  const loadProvider = useCallback(async (id) => {
+    // 1) Serve instantly from memory cache
+    if (providerCache.has(id)) {
+      const cached = providerCache.get(id);
+      setProvider(cached.provider);
+      setReimbursements(cached.reimbursements);
+      setEditingId(id);
+      return cached.provider;
+    }
+
+    // 2) Otherwise, fetch from server
+    const res = await fetch(
+      `/wp-json/zorg/v1/providers-with-reimbursements/${id}`,
+      {
+        headers: { "X-WP-Nonce": getNonce() },
+      }
+    );
+
+    const text = await res.text();
+    const json = JSON.parse(text);
+    const wrapped = json?.data || {};
+
+    const p = wrapped.provider;
+    const r = wrapped.reimbursements || {};
+
+    if (!p) throw new Error("Provider missing");
+
+    const normalizedProvider = {
+      id: p.id,
+      name: p.name || "",
+      slug: p.slug || "",
+      type_of_care: p.type_of_care || "",
+      indication_type: p.indication_type || "",
+      organization_type: p.organization_type || "",
+      religion: p.religion || "",
+      has_hkz: p.has_hkz ? 1 : 0,
+      email: p.email || "",
+      phone: p.phone || "",
+      website: p.website || "",
+      address: p.address || "",
+      created_at: p.created_at || "",
+      updated_at: p.updated_at || "",
+    };
+
+    const normalizedReimbs = normalizeReimbursements(r);
+
+    // Fill form
+    setProvider(normalizedProvider);
+    setReimbursements(normalizedReimbs);
+    setEditingId(p.id);
+
+    // Store into cache
+    providerCache.set(id, {
+      provider: normalizedProvider,
+      reimbursements: normalizedReimbs,
+    });
+
+    return normalizedProvider;
+  }, []);
+
+  /* ===========================================================
+     SAVE PROVIDER (also invalidates cache)
+  ============================================================ */
   const saveProvider = useCallback(
-    async (reimbursements) => {
-      const isEditing = !!editing?.id;
-
-      /* ---------------------------------------------------
-       * VALIDATION: At least one reimbursement must exist
-       * --------------------------------------------------- */
-      if (!Array.isArray(reimbursements) || reimbursements.length === 0) {
-        throw new Error("At least one reimbursement type must be filled.");
-      }
-
-      /* ---------------------------------------------------
-       * VALIDATION: One type must have description or coverage
-       * --------------------------------------------------- */
-      const hasValid = reimbursements.some(
-        (r) =>
-          (r.description && r.description.trim() !== "") ||
-          (r.coverage_details && r.coverage_details.trim() !== "")
-      );
-
-      if (!hasValid) {
-        throw new Error(
-          "Please fill at least one reimbursement (description or coverage)."
-        );
-      }
-
-      const url = isEditing
-        ? `/wp-json/zorg/v1/providers-with-reimbursements/${editing.id}`
+    async (reimbursementsArray) => {
+      const url = editingId
+        ? `/wp-json/zorg/v1/providers-with-reimbursements/${editingId}`
         : `/wp-json/zorg/v1/providers-with-reimbursements`;
 
-      const method = isEditing ? "PUT" : "POST";
+      const method = editingId ? "PUT" : "POST";
 
       const payload = {
-        ...form,
-        has_hkz: form.has_hkz ? 1 : 0,
-        reimbursements,
+        ...provider,
+        reimbursements: reimbursementsArray,
       };
 
       const res = await fetch(url, {
@@ -86,25 +146,72 @@ export const useProviderForm = (fetchProviders, closeModal) => {
         body: JSON.stringify(payload),
       });
 
-      const json = await res.json();
+      const text = await res.text();
+      const json = JSON.parse(text);
 
       if (!res.ok) throw new Error(json?.message || "Save failed");
+
+      // Cache invalidation for fresh reload next time
+      if (editingId) providerCache.delete(editingId);
 
       fetchProviders();
       closeModal();
     },
-    [editing, form, fetchProviders, closeModal]
+    [editingId, provider, fetchProviders, closeModal]
   );
 
-  const reset = useCallback(() => {
-    setForm(emptyForm);
-    setEditing(null);
-  }, []);
+  /* ===========================================================
+     FIELD UPDATES (live + cached)
+  ============================================================ */
+  const updateProviderField = useCallback(
+    (field, value) => {
+      setProvider((prev) => ({ ...prev, [field]: value }));
 
+      // Update cache live
+      if (editingId && providerCache.has(editingId)) {
+        const cached = providerCache.get(editingId);
+        cached.provider = { ...cached.provider, [field]: value };
+        providerCache.set(editingId, cached);
+      }
+    },
+    [editingId]
+  );
+
+  const updateReimbursementField = useCallback(
+    (type, field, value) => {
+      setReimbursements((prev) => {
+        const updated = {
+          ...prev,
+          [type]: {
+            ...prev[type],
+            [field]: value,
+          },
+        };
+
+        // Update cache live
+        if (editingId && providerCache.has(editingId)) {
+          const cached = providerCache.get(editingId);
+          cached.reimbursements = updated;
+          providerCache.set(editingId, cached);
+        }
+
+        return updated;
+      });
+    },
+    [editingId]
+  );
+
+  /* ===========================================================
+     RETURN API
+  ============================================================ */
   return {
-    form,
-    setForm,
-    editing,
+    provider,
+    reimbursements,
+    editingId,
+
+    updateProviderField,
+    updateReimbursementField,
+
     loadProvider,
     saveProvider,
     reset,

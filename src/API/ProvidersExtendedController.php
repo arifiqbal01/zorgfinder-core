@@ -24,7 +24,57 @@ class ProvidersExtendedController extends BaseController
                 'permission_callback' => [$this, 'require_admin'],
             ],
         ]);
+
+        // GET single provider + reimbursements
+        register_rest_route($this->namespace, '/providers-with-reimbursements/(?P<id>\d+)', [
+            [
+                'methods'  => 'GET',
+                'callback' => [$this, 'get_provider_with_reimbursements'],
+                'permission_callback' => '__return_true', // public read allowed
+            ],
+        ]);
+
     }
+
+    public function get_provider_with_reimbursements(WP_REST_Request $request)
+{
+    global $wpdb;
+
+    $table_prov = $wpdb->prefix . 'zf_providers';
+    $table_reim = $wpdb->prefix . 'zf_reimbursements';
+
+    $id = (int) $request->get_param('id');
+
+    // 1) Load provider
+    $provider = $wpdb->get_row(
+        $wpdb->prepare("SELECT * FROM $table_prov WHERE id=%d AND deleted_at IS NULL", $id),
+        ARRAY_A
+    );
+
+    if (!$provider) {
+        return $this->error("Provider not found.", 404);
+    }
+
+    // 2) Load reimbursements, grouped by type
+    $rows = $wpdb->get_results(
+        $wpdb->prepare("SELECT * FROM $table_reim WHERE provider_id=%d AND deleted_at IS NULL", $id),
+        ARRAY_A
+    );
+
+    $reimbursements = [];
+    foreach ($rows as $r) {
+        $reimbursements[$r['type']] = [
+            'type'             => $r['type'],
+            'description'      => $r['description'],
+            'coverage_details' => $r['coverage_details'],
+        ];
+    }
+
+    return $this->respond([
+        'provider'       => $provider,
+        'reimbursements' => $reimbursements
+    ]);
+}
 
 
     /* ============================================================
@@ -119,99 +169,109 @@ class ProvidersExtendedController extends BaseController
     /* ============================================================
      * UPDATE PROVIDER + REIMBURSEMENTS (SMART UPSERT)
      * ============================================================ */
-    public function update_provider_with_reimbursements(WP_REST_Request $request)
-    {
-        global $wpdb;
+   public function update_provider_with_reimbursements(WP_REST_Request $request)
+{
+    global $wpdb;
 
-        $table_prov = $wpdb->prefix . 'zf_providers';
-        $table_reim = $wpdb->prefix . 'zf_reimbursements';
+    $table_prov = $wpdb->prefix . 'zf_providers';
+    $table_reim = $wpdb->prefix . 'zf_reimbursements';
 
-        $provider_id = (int)$request->get_param('id');
+    $provider_id = (int)$request->get_param('id');
 
-        // Validate provider exists
-        $exists = $wpdb->get_var($wpdb->prepare(
-            "SELECT id FROM $table_prov WHERE id=%d AND deleted_at IS NULL",
-            $provider_id
-        ));
-        if (! $exists) {
-            return $this->error("Provider not found.", 404);
-        }
+    /* --------------------------------------------------------
+     * 1) VALIDATE PROVIDER EXISTS
+     * -------------------------------------------------------- */
+    $exists = $wpdb->get_var($wpdb->prepare(
+        "SELECT id FROM $table_prov WHERE id=%d AND deleted_at IS NULL",
+        $provider_id
+    ));
 
-        $wpdb->query("START TRANSACTION");
+    if (!$exists) {
+        return $this->error("Provider not found.", 404);
+    }
 
-        try {
+    $wpdb->query("START TRANSACTION");
 
-            /* 1) UPDATE PROVIDER FIELDS */
-            $update = [
-                'name'              => sanitize_text_field($request->get_param('name')),
-                'slug'              => sanitize_title($request->get_param('slug')),
-                'type_of_care'      => sanitize_text_field($request->get_param('type_of_care')),
-                'indication_type'   => sanitize_text_field($request->get_param('indication_type')),
-                'organization_type' => sanitize_text_field($request->get_param('organization_type')),
-                'religion'          => sanitize_text_field($request->get_param('religion')),
-                'has_hkz'           => (int)$request->get_param('has_hkz'),
-                'address'           => sanitize_textarea_field($request->get_param('address')),
-                'email'             => sanitize_email($request->get_param('email')),
-                'phone'             => sanitize_text_field($request->get_param('phone')),
-                'website'           => esc_url_raw($request->get_param('website')),
-                'updated_at'        => current_time('mysql'),
+    try {
+
+        /* --------------------------------------------------------
+         * 2) ALWAYS UPDATE ALL FIELDS (allow empty)
+         * -------------------------------------------------------- */
+
+        $update = [
+            'name'              => sanitize_text_field($request->get_param('name')),
+            'slug'              => sanitize_title($request->get_param('slug')),
+            'type_of_care'      => sanitize_text_field($request->get_param('type_of_care')),
+            'indication_type'   => sanitize_text_field($request->get_param('indication_type')),
+            'organization_type' => sanitize_text_field($request->get_param('organization_type')),
+            'religion'          => sanitize_text_field($request->get_param('religion')),
+            'has_hkz'           => (int)$request->get_param('has_hkz'),
+            'address'           => sanitize_textarea_field($request->get_param('address')),
+            'email'             => sanitize_email($request->get_param('email')),
+            'phone'             => sanitize_text_field($request->get_param('phone')),
+            'website'           => esc_url_raw($request->get_param('website')),
+            'updated_at'        => current_time('mysql'),
+        ];
+
+        // DO NOT FILTER OUT EMPTY VALUES — WE WANT TO CLEAR FIELDS TOO
+        $wpdb->update(
+            $table_prov,
+            $update,
+            ['id' => $provider_id]
+        );
+
+        /* --------------------------------------------------------
+         * 3) REIMBURSEMENTS — UPSERT PER TYPE
+         * -------------------------------------------------------- */
+
+        $reimbursements = $request->get_param('reimbursements') ?: [];
+
+        foreach ($reimbursements as $r) {
+            $type = sanitize_text_field($r['type']);
+
+            $existing_id = $wpdb->get_var($wpdb->prepare(
+                "SELECT id FROM $table_reim 
+                 WHERE provider_id=%d AND type=%s AND deleted_at IS NULL",
+                $provider_id,
+                $type
+            ));
+
+            $data = [
+                'description'      => sanitize_textarea_field($r['description'] ?? ''),
+                'coverage_details' => sanitize_textarea_field($r['coverage_details'] ?? ''),
+                'updated_at'       => current_time('mysql'),
             ];
 
-            // Remove empty values so we don't overwrite with blank
-            $update = array_filter($update, fn($v) => $v !== null && $v !== '');
-
-            if (!empty($update)) {
-                $wpdb->update($table_prov, $update, ['id' => $provider_id]);
+            if ($existing_id) {
+                // Update existing reimbursement
+                $wpdb->update($table_reim, $data, ['id' => $existing_id]);
+            } else {
+                // Insert new reimbursement record
+                $wpdb->insert($table_reim, array_merge([
+                    'provider_id' => $provider_id,
+                    'type'        => $type,
+                    'created_at'  => current_time('mysql'),
+                    'deleted_at'  => null,
+                ], $data));
             }
-
-
-            /* 2) UPDATE or INSERT reimbursements (UPSERT PER TYPE) */
-            $reimbursements = $request->get_param('reimbursements') ?: [];
-
-            foreach ($reimbursements as $r) {
-                $type = sanitize_text_field($r['type']);
-
-                // Does reimbursement for this type already exist?
-                $reim_id = $wpdb->get_var($wpdb->prepare(
-                    "SELECT id FROM $table_reim 
-                     WHERE provider_id=%d AND type=%s AND deleted_at IS NULL",
-                    $provider_id,
-                    $type
-                ));
-
-                $data = [
-                    'description'      => sanitize_textarea_field($r['description']),
-                    'coverage_details' => sanitize_textarea_field($r['coverage_details']),
-                    'updated_at'       => current_time('mysql'),
-                ];
-
-                if ($reim_id) {
-                    // UPDATE existing reimbursement
-                    $wpdb->update($table_reim, $data, ['id' => $reim_id]);
-                } else {
-                    // INSERT new reimbursement for this type
-                    $wpdb->insert($table_reim, array_merge([
-                        'provider_id' => $provider_id,
-                        'type'        => $type,
-                        'created_at'  => current_time('mysql'),
-                        'deleted_at'  => null,
-                    ], $data));
-                }
-            }
-
-            $wpdb->query("COMMIT");
-
-            return $this->respond([
-                'success' => true,
-                'provider_id' => $provider_id,
-                'message' => "Provider and reimbursements updated successfully."
-            ]);
-
-        } catch (\Throwable $e) {
-            $wpdb->query("ROLLBACK");
-            return $this->error($e->getMessage(), 400);
         }
+
+        /* --------------------------------------------------------
+         * 4) COMMIT
+         * -------------------------------------------------------- */
+        $wpdb->query("COMMIT");
+
+        return $this->respond([
+            'success'      => true,
+            'provider_id'  => $provider_id,
+            'message'      => "Provider and reimbursements updated successfully."
+        ]);
+
+    } catch (\Throwable $e) {
+        $wpdb->query("ROLLBACK");
+        return $this->error($e->getMessage(), 400);
     }
+}
 
 
 

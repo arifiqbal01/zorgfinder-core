@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import Loader from "../components/Loader";
-import Table from "../components/Table"; // existing Table component
+import Table from "../components/Table";
+import { useLoading } from "../hooks/useLoading";
+
 import {
   ResponsiveContainer,
   LineChart,
@@ -14,13 +15,6 @@ import {
   Pie,
   Cell,
 } from "recharts";
-
-/**
- * Modern compact Dashboard.jsx
- * - Uses zorgFinderApp (localized by PHP) for restUrl + nonce
- * - Defensive parsing for API shapes
- * - Compact modern cards + charts
- */
 
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
@@ -39,7 +33,7 @@ const fetchJson = async (path, opts = {}) => {
     const txt = await res.text();
     try {
       return { ok: res.ok, status: res.status, json: JSON.parse(txt) };
-    } catch (err) {
+    } catch {
       return { ok: res.ok, status: res.status, json: null, text: txt };
     }
   } catch (err) {
@@ -79,155 +73,167 @@ const StatCard = ({ icon, label, value, hint }) => (
 );
 
 export default function Dashboard() {
-  const [loading, setLoading] = useState(true);
+  const { show, hide } = useLoading();
+
   const [summary, setSummary] = useState(null);
   const [trend, setTrend] = useState([]);
   const [topProviders, setTopProviders] = useState([]);
   const [dist, setDist] = useState({});
   const [rangeDays, setRangeDays] = useState(30);
 
-  // cache helpers
-  const cacheGet = (k) => {
+  // Local cache
+  const cacheGet = (key) => {
     try {
-      const raw = localStorage.getItem(k);
+      const raw = localStorage.getItem(key);
       if (!raw) return null;
       const p = JSON.parse(raw);
       if (Date.now() - p.time > CACHE_TTL) {
-        localStorage.removeItem(k);
+        localStorage.removeItem(key);
         return null;
       }
       return p.data;
-    } catch (e) {
+    } catch {
       return null;
     }
   };
-  const cacheSet = (k, d) => {
+
+  const cacheSet = (key, data) => {
     try {
-      localStorage.setItem(k, JSON.stringify({ time: Date.now(), data: d }));
-    } catch (e) {}
+      localStorage.setItem(key, JSON.stringify({ time: Date.now(), data }));
+    } catch {}
   };
 
   useEffect(() => {
     let mounted = true;
 
     const load = async () => {
-      setLoading(true);
+      show("Loading dashboard…");
 
-      // 1 — summary
+      // SUMMARY
       try {
         const key = "dashboard_summary_v1";
         const cached = cacheGet(key);
+
         if (cached) setSummary(cached);
         else {
           const res = await fetchJson("dashboard/summary");
-          if (res.ok && mounted) {
+          if (res.ok) {
             const payload = res.json?.data ?? res.json?.summary ?? res.json ?? {};
-            setSummary(payload);
-            cacheSet(key, payload);
-          } else {
-            setSummary({});
-          }
+            if (mounted) {
+              setSummary(payload);
+              cacheSet(key, payload);
+            }
+          } else setSummary({});
         }
-      } catch (e) {
+      } catch {
         setSummary({});
       }
 
-      // 2 — trend
+      // TREND
       try {
-        const key = `dashboard_trend_v2_${rangeDays}`;;
+        const key = `dashboard_trend_v2_${rangeDays}`;
         const cached = cacheGet(key);
+
         if (cached) setTrend(cached);
         else {
           const res = await fetchJson(`dashboard/appointments-trend?days=${rangeDays}`);
-          if (res.ok && mounted) {
+
+          if (res.ok) {
             const rows =
-              (Array.isArray(res.json?.data) && res.json.data) ||
-              (Array.isArray(res.json?.trend) && res.json.trend) ||
-              (Array.isArray(res.json?.list) && res.json.list) ||
+              res.json?.data ||
+              res.json?.trend ||
+              res.json?.list ||
               [];
+
             const series = toChartSeries(rows, "date", "count", rangeDays);
-            setTrend(series);
-            cacheSet(key, series);
-          } else {
-            setTrend([]);
-          }
+
+            if (mounted) {
+              setTrend(series);
+              cacheSet(key, series);
+            }
+          } else setTrend([]);
         }
-      } catch (e) {
+      } catch {
         setTrend([]);
       }
 
-      // 3 — top providers
+      // TOP PROVIDERS
       try {
         const key = "dashboard_top_providers";
         const cached = cacheGet(key);
+
         if (cached) setTopProviders(cached);
         else {
           const res = await fetchJson("dashboard/top-providers");
-          if (res.ok && mounted) {
-            const rows = Array.isArray(res.json?.data)
-              ? res.json.data
-              : Array.isArray(res.json)
-              ? res.json
-              : res.json?.data?.items ?? [];
-            setTopProviders(rows);
-            cacheSet(key, rows);
-          } else {
-            setTopProviders([]);
-          }
+          if (res.ok) {
+            const rows =
+              Array.isArray(res.json?.data)
+                ? res.json.data
+                : Array.isArray(res.json)
+                ? res.json
+                : res.json?.data?.items ?? [];
+
+            if (mounted) {
+              setTopProviders(rows);
+              cacheSet(key, rows);
+            }
+          } else setTopProviders([]);
         }
-      } catch (e) {
+      } catch {
         setTopProviders([]);
       }
 
-      // 4 — distribution
+      // DISTRIBUTION
       try {
         const key = "dashboard_distribution";
         const cached = cacheGet(key);
+
         if (cached) setDist(cached);
         else {
           const res = await fetchJson("dashboard/distribution");
-          if (res.ok && mounted) {
+
+          if (res.ok) {
             const payload = res.json?.data ?? res.json ?? {};
+
             const safe = {
-              appointments_status: Array.isArray(payload.appointments_status)
-                ? payload.appointments_status
-                : payload.appointments_status_list ?? payload.statuses ?? [],
-              reimbursements_type: Array.isArray(payload.reimbursements_type)
-                ? payload.reimbursements_type
-                : payload.reimbursements ?? [],
-              favourites_device: Array.isArray(payload.favourites_device)
-                ? payload.favourites_device
-                : payload.favourites ?? [],
+              appointments_status:
+                Array.isArray(payload.appointments_status)
+                  ? payload.appointments_status
+                  : payload.appointments_status_list ?? payload.statuses ?? [],
+
+              reimbursements_type:
+                Array.isArray(payload.reimbursements_type)
+                  ? payload.reimbursements_type
+                  : payload.reimbursements ?? [],
+
+              favourites_device:
+                Array.isArray(payload.favourites_device)
+                  ? payload.favourites_device
+                  : payload.favourites ?? [],
             };
-            setDist(safe);
-            cacheSet(key, safe);
-          } else {
-            setDist({});
-          }
+
+            if (mounted) {
+              setDist(safe);
+              cacheSet(key, safe);
+            }
+          } else setDist({});
         }
-      } catch (e) {
+      } catch {
         setDist({});
       }
 
-      if (mounted) setLoading(false);
+      hide();
     };
 
     load();
-
-    return () => {
-      mounted = false;
-    };
+    return () => (mounted = false);
   }, [rangeDays]);
 
-  if (loading) return <Loader />;
-
-  // safe defaults
   const s = summary || {};
   const tp = Array.isArray(topProviders) ? topProviders : [];
   const d = dist || {};
   const pieColors = ["#2563EB", "#1E3A8A", "#60A5FA", "#93C5FD", "#DBEAFE"];
 
-  // Normalize rows for Table component: array-of-arrays
   const latestReviewsRows = Array.isArray(s.latest_reviews)
     ? s.latest_reviews.map((r) => [
         r.provider_name ?? r.name ?? "",
@@ -246,7 +252,6 @@ export default function Dashboard() {
       ])
     : [];
 
-  // Prepare bar data: recharts expects numeric values
   const barData = tp.map((t) => ({
     name: t.name ?? t.provider_name ?? t.label ?? "Unknown",
     appointments: Number(t.appointments ?? t.count ?? t.total ?? 0),
@@ -254,30 +259,27 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 space-y-4">
-
-      {/* Header */}
+      {/* HEADER */}
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">Overview & analytics</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="bg-white rounded-md border border-gray-200 px-3 py-2 shadow-sm">
-            <select
-              className="text-sm bg-transparent outline-none"
-              value={rangeDays}
-              onChange={(e) => setRangeDays(Number(e.target.value))}
-            >
-              <option value={7}>Last 7 days</option>
-              <option value={30}>Last 30 days</option>
-              <option value={90}>Last 90 days</option>
-            </select>
-          </div>
+        <div className="bg-white rounded-md border border-gray-200 px-3 py-2 shadow-sm">
+          <select
+            className="text-sm bg-transparent outline-none"
+            value={rangeDays}
+            onChange={(e) => setRangeDays(Number(e.target.value))}
+          >
+            <option value={7}>Last 7 days</option>
+            <option value={30}>Last 30 days</option>
+            <option value={90}>Last 90 days</option>
+          </select>
         </div>
       </div>
 
-      {/* KPI row */}
+      {/* KPI ROW */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label="Providers" value={s.total_providers ?? 0} icon="P" hint={s.providers_change ? `${s.providers_change}%` : null} />
         <StatCard label="Appointments" value={s.total_appointments ?? 0} icon="A" hint={s.appointments_change ? `${s.appointments_change}%` : null} />
@@ -285,13 +287,11 @@ export default function Dashboard() {
         <StatCard label="Favourites" value={s.total_favourites ?? 0} icon="★" hint={s.favourites_change ? `${s.favourites_change}%` : null} />
       </div>
 
-      {/* Trend chart */}
+      {/* TREND */}
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base font-semibold text-gray-800">Appointments — last {rangeDays} days</h3>
-          <span className="text-sm text-gray-500">Trend</span>
-        </div>
-
+        <h3 className="text-base font-semibold text-gray-800 mb-3">
+          Appointments — last {rangeDays} days
+        </h3>
         <div className="h-56">
           <ResponsiveContainer>
             <LineChart data={trend}>
@@ -304,13 +304,12 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Bar + Donuts row */}
+      {/* BAR + DONUTS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 lg:col-span-2">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-semibold text-gray-800">Top Providers by Appointments</h3>
-            <span className="text-sm text-gray-500">Top {barData.length}</span>
-          </div>
+          <h3 className="text-base font-semibold text-gray-800 mb-3">
+            Top Providers by Appointments
+          </h3>
           <div className="h-56">
             <ResponsiveContainer>
               <BarChart data={barData} margin={{ left: 8 }}>
@@ -323,7 +322,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Donuts */}
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <h3 className="text-base font-semibold text-gray-800 mb-3">Appointments by Status</h3>
           <div className="h-48">
@@ -340,7 +338,6 @@ export default function Dashboard() {
                   outerRadius={72}
                   paddingAngle={4}
                   stroke="transparent"
-                  labelLine={false}
                 >
                   {(d.appointments_status || []).map((_, i) => (
                     <Cell key={i} fill={pieColors[i % pieColors.length]} />
@@ -353,7 +350,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Small donuts row */}
+      {/* SMALL DONUTS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Reimbursements by Type</h4>
@@ -409,15 +406,18 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Quick stats (optional) */}
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col justify-center">
           <div className="text-sm text-gray-600">Most active provider</div>
-          <div className="text-lg font-semibold text-gray-900 mt-1">{barData[0]?.name ?? "—"}</div>
-          <div className="text-xs text-gray-500 mt-1">{barData[0] ? `${barData[0].appointments} appointments` : ""}</div>
+          <div className="text-lg font-semibold text-gray-900 mt-1">
+            {barData[0]?.name ?? "—"}
+          </div>
+          <div className="text-xs text-gray-500 mt-1">
+            {barData[0] ? `${barData[0].appointments} appointments` : ""}
+          </div>
         </div>
       </div>
 
-      {/* Latest tables */}
+      {/* LATEST TABLES */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-3">
@@ -427,7 +427,7 @@ export default function Dashboard() {
           <Table
             columns={["Provider", "Rating", "Comment", "Date"]}
             data={latestReviewsRows}
-            providers={[]} // Table expects providers array - pass empty to avoid crash
+            providers={[]}
             selected={[]}
             setSelected={() => {}}
             pagination={null}

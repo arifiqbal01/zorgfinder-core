@@ -4,8 +4,7 @@ import Modal from "../../components/Modal";
 import Pagination from "../../components/Pagination";
 import Filters from "../../components/Filters";
 
-import Button from "../../components/Button"; // NEW REUSABLE BUTTON
-
+import Button from "../../components/Button";
 import { Eye, Plus, Trash } from "lucide-react";
 
 import GeneralInfoForm from "./GeneralInfoForm";
@@ -13,13 +12,12 @@ import ReimbursementAccordion from "./ReimbursementAccordion";
 
 import { useProvidersList } from "./useProvidersList";
 import { useProviderForm } from "./useProviderForm";
-import { useReimbursements } from "./useReimbursements";
 
 import { useToast } from "../../hooks/useToast";
 import { useLoading } from "../../hooks/useLoading";
 
 /* ---------------------------------------------------------
- * PROVIDERS PAGE
+ * PROVIDERS PAGE (OPTIMIZED)
  * --------------------------------------------------------- */
 
 const Providers = () => {
@@ -44,49 +42,24 @@ const Providers = () => {
     fetchProviders,
   } = useProvidersList();
 
-  /* MODAL */
+  /* MODAL STATE */
   const [showModal, setShowModal] = useState(false);
   const closeModal = useCallback(() => setShowModal(false), []);
 
-  /* FORM HOOK */
+  /* ENTERPRISE PROVIDER FORM */
   const {
-    form,
-    setForm,
-    editing,
+    provider,
+    reimbursements,
+    updateProviderField,
+    updateReimbursementField,
+    editingId,
     loadProvider,
     saveProvider,
     reset: resetProviderForm,
   } = useProviderForm(fetchProviders, closeModal);
 
-  /* REIMBURSEMENTS HOOK */
-  const {
-    list: reimburseList,
-    updateType,
-    loadForProvider,
-    reset: resetReimbursements,
-  } = useReimbursements();
-
   /* BULK ACTIONS */
   const [selected, setSelected] = useState([]);
-
-  const toggleSelect = (index) => {
-    const row = providers[index];
-    if (!row) return;
-
-    setSelected((prev) =>
-      prev.includes(row.id)
-        ? prev.filter((id) => id !== row.id)
-        : [...prev, row.id]
-    );
-  };
-
-  const toggleSelectAll = () => {
-    if (selected.length === providers.length) {
-      setSelected([]);
-    } else {
-      setSelected(providers.map((p) => p.id));
-    }
-  };
 
   const handleBulkDelete = async () => {
     if (!confirm(`Delete ${selected.length} selected providers?`)) return;
@@ -113,7 +86,9 @@ const Providers = () => {
     }
   };
 
-  /* FILTER SCHEMA */
+  /* ---------------------------------------------------------
+   * FILTER SCHEMA
+   * --------------------------------------------------------- */
   const filterSchema = useMemo(
     () => [
       { type: "search", key: "search", placeholder: "Search providers…" },
@@ -163,35 +138,35 @@ const Providers = () => {
   );
 
   /* ---------------------------------------------------------
-   * OPEN EDIT MODAL
+   * OPEN EDIT MODAL — INSTANT OPEN + BACKGROUND LOADING
    * --------------------------------------------------------- */
   const openModalForProvider = useCallback(
     async (index) => {
       const row = providers[index];
       if (!row) return;
 
+      // OPEN MODAL IMMEDIATELY (no waiting)
+      setShowModal(true);
+
       try {
         loadingOverlay.show("Loading provider…");
 
+        // only 1 API call now
         await loadProvider(row.id);
-        await loadForProvider(row.id);
-
-        setShowModal(true);
       } catch (err) {
         toast.error(err.message || "Failed to load provider");
       } finally {
         loadingOverlay.hide();
       }
     },
-    [providers, loadProvider, loadForProvider, toast, loadingOverlay]
+    [providers, loadProvider, toast, loadingOverlay]
   );
 
   /* ---------------------------------------------------------
-   * OPEN CREATE MODAL
+   * OPEN CREATE NEW MODAL
    * --------------------------------------------------------- */
   const handleAddNew = () => {
     resetProviderForm();
-    resetReimbursements();
     setShowModal(true);
   };
 
@@ -199,16 +174,17 @@ const Providers = () => {
    * SAVE PROVIDER
    * --------------------------------------------------------- */
   const handleSave = useCallback(async () => {
-    const payloadReimbursements = Object.entries(reimburseList)
-      .filter(([_, data]) => data !== null)
-      .map(([type, data]) => ({
-        type,
-        description: data.description || "",
-        coverage_details: data.coverage_details || "",
-      }));
-
     try {
       loadingOverlay.show("Saving provider…");
+
+      // Convert enterprise reimbursement to array
+      const payloadReimbursements = Object.entries(reimbursements).map(
+        ([type, data]) => ({
+          type,
+          description: data.description || "",
+          coverage_details: data.coverage_details || "",
+        })
+      );
 
       await saveProvider(payloadReimbursements);
 
@@ -218,19 +194,53 @@ const Providers = () => {
     } finally {
       loadingOverlay.hide();
     }
-  }, [reimburseList, saveProvider, toast, loadingOverlay]);
+  }, [reimbursements, saveProvider, toast, loadingOverlay]);
 
   /* ---------------------------------------------------------
-   * TABLE SETUP
+   * BADGE SYSTEM
    * --------------------------------------------------------- */
-  const columns = ["Name", "Type of Care", "Email", "Phone", "Website", "Address"];
+  const badge = (label, color) => (
+    <span className={`px-2 py-1 rounded-full text-xs font-medium ${color}`}>
+      {label}
+    </span>
+  );
+
+  const badgeColors = {
+    disability: "bg-blue-100 text-blue-700",
+    GGZ: "bg-purple-100 text-purple-700",
+    youth: "bg-pink-100 text-pink-700",
+    elderly: "bg-orange-100 text-orange-700",
+    PGB: "bg-green-100 text-green-700",
+    ZIN: "bg-teal-100 text-teal-700",
+    BV: "bg-yellow-100 text-yellow-700",
+    Stichting: "bg-indigo-100 text-indigo-700",
+    Islamic: "bg-emerald-100 text-emerald-700",
+    Jewish: "bg-amber-100 text-amber-700",
+    Christian: "bg-sky-100 text-sky-700",
+    None: "bg-gray-100 text-gray-700",
+  };
+
+  /* ---------------------------------------------------------
+   * TABLE CONFIG
+   * --------------------------------------------------------- */
+  const columns = [
+    "Name",
+    "Type of Care",
+    "Indication",
+    "Organization",
+    "Religion",
+    "HKZ",
+  ];
+
   const rows = providers.map((p) => [
     p.name,
-    p.type_of_care,
-    p.email,
-    p.phone,
-    p.website?.replace(/^https?:\/\//, ""),
-    p.address,
+    badge(p.type_of_care, badgeColors[p.type_of_care] || "bg-gray-100 text-gray-700"),
+    badge(p.indication_type, badgeColors[p.indication_type] || "bg-gray-100 text-gray-700"),
+    badge(p.organization_type, badgeColors[p.organization_type] || "bg-gray-100 text-gray-700"),
+    badge(p.religion, badgeColors[p.religion] || "bg-gray-100 text-gray-700"),
+    Number(p.has_hkz) === 1
+      ? badge("HKZ", "bg-green-100 text-green-700")
+      : badge("No", "bg-gray-200 text-gray-600"),
   ]);
 
   const actionsRenderer = (i) => (
@@ -242,14 +252,11 @@ const Providers = () => {
   /* ---------------------------------------------------------
    * RENDER PAGE
    * --------------------------------------------------------- */
-
   return (
     <div className="p-2 space-y-6">
 
       {/* HEADER */}
       <div className="flex justify-between items-center">
-
-        {/* LEFT: TITLE + ACTION BUTTONS */}
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-semibold">Providers</h1>
 
@@ -258,21 +265,21 @@ const Providers = () => {
           </Button>
 
           {selected.length > 0 && (
-            <Button
-              variant="danger"
-              size="md"
-              onClick={handleBulkDelete}
-            >
+            <Button variant="danger" size="md" onClick={handleBulkDelete}>
               <Trash size={16} className="mr-1" />
               Delete Selected ({selected.length})
             </Button>
           )}
         </div>
 
-        {/* RIGHT: SORT + TABS */}
+        {/* SORT + TABS */}
         <div className="flex items-center gap-3">
           <label className="text-sm">Sort:</label>
-          <select value={sort} onChange={(e) => setSort(e.target.value)} className="input">
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className="input"
+          >
             <option value="newest">Newest</option>
             <option value="oldest">Oldest</option>
             <option value="name_asc">Name A–Z</option>
@@ -282,20 +289,23 @@ const Providers = () => {
           <div className="flex gap-2 bg-white rounded-lg p-2 shadow-sm">
             <button
               onClick={() => setActiveTab("active")}
-              className={`px-3 py-1 rounded ${activeTab === "active" ? "bg-black text-white" : "bg-gray-100"}`}
+              className={`px-3 py-1 rounded ${
+                activeTab === "active" ? "bg-black text-white" : "bg-gray-100"
+              }`}
             >
               Active
             </button>
 
             <button
               onClick={() => setActiveTab("trash")}
-              className={`px-3 py-1 rounded ${activeTab === "trash" ? "bg-black text-white" : "bg-gray-100"}`}
+              className={`px-3 py-1 rounded ${
+                activeTab === "trash" ? "bg-black text-white" : "bg-gray-100"
+              }`}
             >
               Trash
             </button>
           </div>
         </div>
-
       </div>
 
       {/* FILTERS */}
@@ -307,10 +317,8 @@ const Providers = () => {
         data={rows}
         providers={providers}
         actions={actionsRenderer}
-        loading={loading}
         selected={selected}
-        toggleSelect={toggleSelect}
-        toggleSelectAll={toggleSelectAll}
+        setSelected={setSelected}
         pagination={
           <Pagination
             page={page}
@@ -327,36 +335,47 @@ const Providers = () => {
 
       {/* MODAL */}
       {showModal && (
-        <Modal title={editing ? `Edit Provider #${editing.id}` : "Add Provider"} onClose={closeModal}>
+        <Modal
+          title={editingId ? `Edit Provider #${editingId}` : "Add Provider"}
+          onClose={closeModal}
+        >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-14">
 
-            {/* LEFT — GENERAL INFO */}
             <div>
-              <h2 className="text-xl font-semibold mb-4">Provider Information</h2>
-              <GeneralInfoForm form={form} setForm={setForm} editing={editing} />
+              <h2 className="text-xl font-semibold mb-4">
+                Provider Information
+              </h2>
+
+              <GeneralInfoForm
+                provider={provider}
+                updateProviderField={updateProviderField}
+                editingId={editingId}
+              />
             </div>
 
-            {/* RIGHT — REIMBURSEMENTS */}
             <div>
               <h2 className="text-xl font-semibold mb-4">Reimbursements</h2>
 
               <ReimbursementAccordion
-                list={reimburseList}
-                updateType={updateType}
+                list={reimbursements}
+                updateType={updateReimbursementField}
               />
             </div>
 
           </div>
 
           <div className="mt-10">
-            <Button variant="primary" size="lg" className="w-full" onClick={handleSave}>
-              {editing ? "Update Provider" : "Save Provider"}
+            <Button
+              variant="primary"
+              size="lg"
+              className="w-full"
+              onClick={handleSave}
+            >
+              {editingId ? "Update Provider" : "Save Provider"}
             </Button>
           </div>
-
         </Modal>
       )}
-
     </div>
   );
 };

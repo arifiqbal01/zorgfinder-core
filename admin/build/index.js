@@ -51225,30 +51225,6 @@ const Header = () => {
 
 /***/ }),
 
-/***/ "./src/components/Loader.jsx":
-/*!***********************************!*\
-  !*** ./src/components/Loader.jsx ***!
-  \***********************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-
-
-const Loader = () => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-  className: "flex justify-center items-center py-12"
-}, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-  className: "animate-spin rounded-full h-10 w-10 border-t-4 border-blue-600 border-solid"
-}));
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Loader);
-
-/***/ }),
-
 /***/ "./src/components/LoadingOverlay.jsx":
 /*!*******************************************!*\
   !*** ./src/components/LoadingOverlay.jsx ***!
@@ -51579,13 +51555,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const Table = ({
-  columns,
-  data,
-  providers,
+  columns = [],
+  data = [],
+  providers = [],
   selected = [],
   setSelected = () => {},
-  actions,
-  pagination
+  actions = null,
+  pagination = null,
+  loading = false
 }) => {
   const allSelected = providers.length > 0 && providers.every(p => selected.includes(p.id));
   const toggleAll = () => {
@@ -51596,12 +51573,10 @@ const Table = ({
     }
   };
   const toggleRow = id => {
-    if (selected.includes(id)) {
-      setSelected(selected.filter(x => x !== id));
-    } else {
-      setSelected([...selected, id]);
-    }
+    if (!id) return;
+    if (selected.includes(id)) setSelected(selected.filter(x => x !== id));else setSelected([...selected, id]);
   };
+  const colSpan = columns.length + (actions ? 2 : 1);
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "bg-white rounded-xl border border-gray-200 overflow-hidden"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("table", {
@@ -51609,7 +51584,7 @@ const Table = ({
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("thead", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("tr", {
     className: "bg-gray-50 border-b border-gray-200"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("th", {
-    className: "py-4 px-4"
+    className: "py-4 px-5 w-12"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
     type: "checkbox",
     className: "accent-blue-600",
@@ -51617,40 +51592,56 @@ const Table = ({
     onChange: toggleAll
   })), columns.map((col, i) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("th", {
     key: i,
-    className: "py-4 px-4 font-medium text-gray-600 text-xs uppercase tracking-wider"
+    className: " py-4 px-5 font-medium text-gray-600 text-xs uppercase tracking-wider text-left "
   }, col)), actions && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("th", {
-    className: "py-4 px-2 w-[40px] text-right"
+    className: "py-4 px-5 w-20 min-w-[60px] text-right"
   }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("tbody", null, data.length ? data.map((row, i) => {
-    const provider = providers[i];
-    const id = provider?.id;
+    const provider = providers[i] || {};
+    const id = provider.id;
     const isSelected = selected.includes(id);
     return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("tr", {
-      key: id,
-      className: `group transition-all ${isSelected ? "bg-blue-50" : "hover:bg-gray-100"} border-b ${i === providers.length - 1 ? "border-none" : ""}`
+      key: id || i,
+      className: `
+                    group transition-all
+                    ${isSelected ? "bg-blue-50" : "hover:bg-gray-50"}
+                    border-b
+                  `
     }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
-      className: "py-4 px-4"
+      className: "py-4 px-5 w-12"
     }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
       type: "checkbox",
       className: "accent-blue-600",
       checked: isSelected,
       onChange: () => toggleRow(id)
-    })), row.map((cell, j) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
-      key: j,
-      className: "py-4 px-4 whitespace-nowrap"
-    }, cell)), actions && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
-      className: "py-4 px-3 w-[40px] text-right"
+    })), row.map((cell, j) => {
+      const header = columns[j];
+      const isAddress = header?.toLowerCase() === "address";
+
+      // ADDRESS → multiline
+      if (isAddress) {
+        return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
+          key: j,
+          className: " py-4 px-5 whitespace-normal break-words text-gray-700 max-w-[320px] leading-5 "
+        }, cell);
+      }
+
+      // OTHER FIELDS → truncate (Name, Email, Website)
+      return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
+        key: j,
+        className: " py-4 px-5 truncate whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px] text-gray-700 ",
+        title: cell
+      }, cell);
+    }), actions && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
+      className: "py-4 px-5 w-20 text-right"
     }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-      className: "opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+      className: " opacity-0 group-hover:opacity-100 transition-opacity duration-150 "
     }, actions(i))));
   }) : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("tr", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
-    colSpan: columns.length + 2,
+    colSpan: colSpan,
     className: "text-center text-gray-500 py-10"
-  }, "No records found."))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("tfoot", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("tr", {
-    className: "bg-white border-t border-gray-200"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
-    colSpan: columns.length + 2,
-    className: "p-4"
-  }, pagination)))));
+  }, loading ? "Loading…" : "No records found.")))), pagination && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "p-4 border-t bg-gray-50 flex items-center justify-between text-sm"
+  }, pagination));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Table);
 
@@ -52166,8 +52157,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _components_Loader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/Loader */ "./src/components/Loader.jsx");
-/* harmony import */ var _components_Table__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/Table */ "./src/components/Table.jsx");
+/* harmony import */ var _components_Table__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/Table */ "./src/components/Table.jsx");
+/* harmony import */ var _hooks_useLoading__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../hooks/useLoading */ "./src/hooks/useLoading.js");
 /* harmony import */ var recharts__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! recharts */ "./node_modules/recharts/es6/component/Tooltip.js");
 /* harmony import */ var recharts__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! recharts */ "./node_modules/recharts/es6/component/ResponsiveContainer.js");
 /* harmony import */ var recharts__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! recharts */ "./node_modules/recharts/es6/component/Cell.js");
@@ -52182,15 +52173,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
- // existing Table component
 
-
-/**
- * Modern compact Dashboard.jsx
- * - Uses zorgFinderApp (localized by PHP) for restUrl + nonce
- * - Defensive parsing for API shapes
- * - Compact modern cards + charts
- */
 
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
@@ -52216,7 +52199,7 @@ const fetchJson = async (path, opts = {}) => {
         status: res.status,
         json: JSON.parse(txt)
       };
-    } catch (err) {
+    } catch {
       return {
         ok: res.ok,
         status: res.status,
@@ -52273,106 +52256,108 @@ const StatCard = ({
 }, hint)));
 function Dashboard() {
   var _s$total_providers, _s$total_appointments, _s$total_reviews, _s$total_favourites, _barData$0$name;
-  const [loading, setLoading] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true);
+  const {
+    show,
+    hide
+  } = (0,_hooks_useLoading__WEBPACK_IMPORTED_MODULE_2__.useLoading)();
   const [summary, setSummary] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
   const [trend, setTrend] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
   const [topProviders, setTopProviders] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
   const [dist, setDist] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
   const [rangeDays, setRangeDays] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(30);
 
-  // cache helpers
-  const cacheGet = k => {
+  // Local cache
+  const cacheGet = key => {
     try {
-      const raw = localStorage.getItem(k);
+      const raw = localStorage.getItem(key);
       if (!raw) return null;
       const p = JSON.parse(raw);
       if (Date.now() - p.time > CACHE_TTL) {
-        localStorage.removeItem(k);
+        localStorage.removeItem(key);
         return null;
       }
       return p.data;
-    } catch (e) {
+    } catch {
       return null;
     }
   };
-  const cacheSet = (k, d) => {
+  const cacheSet = (key, data) => {
     try {
-      localStorage.setItem(k, JSON.stringify({
+      localStorage.setItem(key, JSON.stringify({
         time: Date.now(),
-        data: d
+        data
       }));
-    } catch (e) {}
+    } catch {}
   };
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     let mounted = true;
     const load = async () => {
-      setLoading(true);
+      show("Loading dashboard…");
 
-      // 1 — summary
+      // SUMMARY
       try {
         const key = "dashboard_summary_v1";
         const cached = cacheGet(key);
         if (cached) setSummary(cached);else {
           const res = await fetchJson("dashboard/summary");
-          if (res.ok && mounted) {
+          if (res.ok) {
             var _ref, _ref2, _res$json$data;
             const payload = (_ref = (_ref2 = (_res$json$data = res.json?.data) !== null && _res$json$data !== void 0 ? _res$json$data : res.json?.summary) !== null && _ref2 !== void 0 ? _ref2 : res.json) !== null && _ref !== void 0 ? _ref : {};
-            setSummary(payload);
-            cacheSet(key, payload);
-          } else {
-            setSummary({});
-          }
+            if (mounted) {
+              setSummary(payload);
+              cacheSet(key, payload);
+            }
+          } else setSummary({});
         }
-      } catch (e) {
+      } catch {
         setSummary({});
       }
 
-      // 2 — trend
+      // TREND
       try {
         const key = `dashboard_trend_v2_${rangeDays}`;
-        ;
         const cached = cacheGet(key);
         if (cached) setTrend(cached);else {
           const res = await fetchJson(`dashboard/appointments-trend?days=${rangeDays}`);
-          if (res.ok && mounted) {
-            const rows = Array.isArray(res.json?.data) && res.json.data || Array.isArray(res.json?.trend) && res.json.trend || Array.isArray(res.json?.list) && res.json.list || [];
+          if (res.ok) {
+            const rows = res.json?.data || res.json?.trend || res.json?.list || [];
             const series = toChartSeries(rows, "date", "count", rangeDays);
-            setTrend(series);
-            cacheSet(key, series);
-          } else {
-            setTrend([]);
-          }
+            if (mounted) {
+              setTrend(series);
+              cacheSet(key, series);
+            }
+          } else setTrend([]);
         }
-      } catch (e) {
+      } catch {
         setTrend([]);
       }
 
-      // 3 — top providers
+      // TOP PROVIDERS
       try {
         const key = "dashboard_top_providers";
         const cached = cacheGet(key);
         if (cached) setTopProviders(cached);else {
           const res = await fetchJson("dashboard/top-providers");
-          if (res.ok && mounted) {
+          if (res.ok) {
             var _res$json$data$items;
             const rows = Array.isArray(res.json?.data) ? res.json.data : Array.isArray(res.json) ? res.json : (_res$json$data$items = res.json?.data?.items) !== null && _res$json$data$items !== void 0 ? _res$json$data$items : [];
-            setTopProviders(rows);
-            cacheSet(key, rows);
-          } else {
-            setTopProviders([]);
-          }
+            if (mounted) {
+              setTopProviders(rows);
+              cacheSet(key, rows);
+            }
+          } else setTopProviders([]);
         }
-      } catch (e) {
+      } catch {
         setTopProviders([]);
       }
 
-      // 4 — distribution
+      // DISTRIBUTION
       try {
         const key = "dashboard_distribution";
         const cached = cacheGet(key);
         if (cached) setDist(cached);else {
           const res = await fetchJson("dashboard/distribution");
-          if (res.ok && mounted) {
+          if (res.ok) {
             var _ref3, _res$json$data2, _ref4, _payload$appointments, _payload$reimbursemen, _payload$favourites;
             const payload = (_ref3 = (_res$json$data2 = res.json?.data) !== null && _res$json$data2 !== void 0 ? _res$json$data2 : res.json) !== null && _ref3 !== void 0 ? _ref3 : {};
             const safe = {
@@ -52380,31 +52365,24 @@ function Dashboard() {
               reimbursements_type: Array.isArray(payload.reimbursements_type) ? payload.reimbursements_type : (_payload$reimbursemen = payload.reimbursements) !== null && _payload$reimbursemen !== void 0 ? _payload$reimbursemen : [],
               favourites_device: Array.isArray(payload.favourites_device) ? payload.favourites_device : (_payload$favourites = payload.favourites) !== null && _payload$favourites !== void 0 ? _payload$favourites : []
             };
-            setDist(safe);
-            cacheSet(key, safe);
-          } else {
-            setDist({});
-          }
+            if (mounted) {
+              setDist(safe);
+              cacheSet(key, safe);
+            }
+          } else setDist({});
         }
-      } catch (e) {
+      } catch {
         setDist({});
       }
-      if (mounted) setLoading(false);
+      hide();
     };
     load();
-    return () => {
-      mounted = false;
-    };
+    return () => mounted = false;
   }, [rangeDays]);
-  if (loading) return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Loader__WEBPACK_IMPORTED_MODULE_1__["default"], null);
-
-  // safe defaults
   const s = summary || {};
   const tp = Array.isArray(topProviders) ? topProviders : [];
   const d = dist || {};
   const pieColors = ["#2563EB", "#1E3A8A", "#60A5FA", "#93C5FD", "#DBEAFE"];
-
-  // Normalize rows for Table component: array-of-arrays
   const latestReviewsRows = Array.isArray(s.latest_reviews) ? s.latest_reviews.map(r => {
     var _ref5, _r$provider_name, _r$rating, _ref6, _ref7, _r$comment, _ref8, _r$created_at;
     return [(_ref5 = (_r$provider_name = r.provider_name) !== null && _r$provider_name !== void 0 ? _r$provider_name : r.name) !== null && _ref5 !== void 0 ? _ref5 : "", (_r$rating = r.rating) !== null && _r$rating !== void 0 ? _r$rating : "", (_ref6 = (_ref7 = (_r$comment = r.comment) !== null && _r$comment !== void 0 ? _r$comment : r.comment_text) !== null && _ref7 !== void 0 ? _ref7 : r.text) !== null && _ref6 !== void 0 ? _ref6 : "", (_ref8 = (_r$created_at = r.created_at) !== null && _r$created_at !== void 0 ? _r$created_at : r.date) !== null && _ref8 !== void 0 ? _ref8 : ""];
@@ -52413,8 +52391,6 @@ function Dashboard() {
     var _ref9, _a$provider_name, _ref0, _a$user_name, _ref1, _a$preferred_date, _a$status;
     return [(_ref9 = (_a$provider_name = a.provider_name) !== null && _a$provider_name !== void 0 ? _a$provider_name : a.provider) !== null && _ref9 !== void 0 ? _ref9 : "", (_ref0 = (_a$user_name = a.user_name) !== null && _a$user_name !== void 0 ? _a$user_name : a.user) !== null && _ref0 !== void 0 ? _ref0 : "", (_ref1 = (_a$preferred_date = a.preferred_date) !== null && _a$preferred_date !== void 0 ? _a$preferred_date : a.date) !== null && _ref1 !== void 0 ? _ref1 : "", (_a$status = a.status) !== null && _a$status !== void 0 ? _a$status : ""];
   }) : [];
-
-  // Prepare bar data: recharts expects numeric values
   const barData = tp.map(t => {
     var _ref10, _ref11, _t$name, _ref12, _ref13, _t$appointments;
     return {
@@ -52431,8 +52407,6 @@ function Dashboard() {
   }, "Dashboard"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
     className: "text-sm text-gray-500 mt-1"
   }, "Overview & analytics")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "flex items-center gap-3"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "bg-white rounded-md border border-gray-200 px-3 py-2 shadow-sm"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
     className: "text-sm bg-transparent outline-none",
@@ -52444,7 +52418,7 @@ function Dashboard() {
     value: 30
   }, "Last 30 days"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
     value: 90
-  }, "Last 90 days"))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+  }, "Last 90 days")))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(StatCard, {
     label: "Providers",
@@ -52468,13 +52442,9 @@ function Dashboard() {
     hint: s.favourites_change ? `${s.favourites_change}%` : null
   })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "bg-white rounded-xl p-4 shadow-sm border border-gray-100"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "flex items-center justify-between mb-3"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", {
-    className: "text-base font-semibold text-gray-800"
-  }, "Appointments \u2014 last ", rangeDays, " days"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "text-sm text-gray-500"
-  }, "Trend")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "text-base font-semibold text-gray-800 mb-3"
+  }, "Appointments \u2014 last ", rangeDays, " days"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "h-56"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_4__.ResponsiveContainer, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_11__.LineChart, {
     data: trend
@@ -52503,13 +52473,9 @@ function Dashboard() {
     className: "grid grid-cols-1 lg:grid-cols-3 gap-4"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "bg-white rounded-xl p-4 shadow-sm border border-gray-100 lg:col-span-2"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "flex items-center justify-between mb-3"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", {
-    className: "text-base font-semibold text-gray-800"
-  }, "Top Providers by Appointments"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "text-sm text-gray-500"
-  }, "Top ", barData.length)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "text-base font-semibold text-gray-800 mb-3"
+  }, "Top Providers by Appointments"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "h-56"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_4__.ResponsiveContainer, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_12__.BarChart, {
     data: barData,
@@ -52548,8 +52514,7 @@ function Dashboard() {
     innerRadius: 44,
     outerRadius: 72,
     paddingAngle: 4,
-    stroke: "transparent",
-    labelLine: false
+    stroke: "transparent"
   }, (d.appointments_status || []).map((_, i) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_5__.Cell, {
     key: i,
     fill: pieColors[i % pieColors.length]
@@ -52619,11 +52584,10 @@ function Dashboard() {
     className: "text-base font-semibold text-gray-800"
   }, "Latest Reviews"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
     className: "text-sm text-gray-400"
-  }, latestReviewsRows.length)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Table__WEBPACK_IMPORTED_MODULE_2__["default"], {
+  }, latestReviewsRows.length)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Table__WEBPACK_IMPORTED_MODULE_1__["default"], {
     columns: ["Provider", "Rating", "Comment", "Date"],
     data: latestReviewsRows,
-    providers: [] // Table expects providers array - pass empty to avoid crash
-    ,
+    providers: [],
     selected: [],
     setSelected: () => {},
     pagination: null
@@ -52635,7 +52599,7 @@ function Dashboard() {
     className: "text-base font-semibold text-gray-800"
   }, "Latest Appointments"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
     className: "text-sm text-gray-400"
-  }, latestAppointmentsRows.length)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Table__WEBPACK_IMPORTED_MODULE_2__["default"], {
+  }, latestAppointmentsRows.length)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Table__WEBPACK_IMPORTED_MODULE_1__["default"], {
     columns: ["Provider", "User", "Date", "Status"],
     data: latestAppointmentsRows,
     providers: [],
@@ -53601,37 +53565,31 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 
 const GeneralInfoForm = ({
-  form,
-  setForm,
-  editing
+  provider,
+  updateProviderField,
+  editingId
 }) => {
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("form", {
     className: "space-y-2"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-gray-600"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "ID:"), " ", form.id || "New"), editing && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Created:"), " ", form.created_at), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Updated:"), " ", form.updated_at))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "ID:"), " ", editingId || "New"), editingId && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Created:"), " ", provider.created_at), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Updated:"), " ", provider.updated_at))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "form-grid-2 gap-y-4"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex flex-col gap-1.5"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
     className: "label"
   }, "Name"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
-    value: form.name,
-    onChange: e => setForm({
-      ...form,
-      name: e.target.value
-    }),
+    value: provider.name,
+    onChange: e => updateProviderField("name", e.target.value),
     className: "input"
   })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex flex-col gap-1.5"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
     className: "label"
   }, "Slug"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
-    value: form.slug,
-    onChange: e => setForm({
-      ...form,
-      slug: e.target.value
-    }),
+    value: provider.slug,
+    onChange: e => updateProviderField("slug", e.target.value),
     className: "input"
   }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "form-grid-2 gap-y-4"
@@ -53640,12 +53598,9 @@ const GeneralInfoForm = ({
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
     className: "label"
   }, "Type of Care"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
-    value: form.type_of_care,
+    value: provider.type_of_care,
     className: "input select",
-    onChange: e => setForm({
-      ...form,
-      type_of_care: e.target.value
-    })
+    onChange: e => updateProviderField("type_of_care", e.target.value)
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
     value: ""
   }, "Select"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
@@ -53661,12 +53616,9 @@ const GeneralInfoForm = ({
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
     className: "label"
   }, "Indication Type"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
-    value: form.indication_type,
+    value: provider.indication_type,
     className: "input select",
-    onChange: e => setForm({
-      ...form,
-      indication_type: e.target.value
-    })
+    onChange: e => updateProviderField("indication_type", e.target.value)
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
     value: ""
   }, "Select"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
@@ -53680,12 +53632,9 @@ const GeneralInfoForm = ({
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
     className: "label"
   }, "Organization"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
-    value: form.organization_type,
+    value: provider.organization_type,
     className: "input select",
-    onChange: e => setForm({
-      ...form,
-      organization_type: e.target.value
-    })
+    onChange: e => updateProviderField("organization_type", e.target.value)
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
     value: ""
   }, "Select"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
@@ -53697,12 +53646,9 @@ const GeneralInfoForm = ({
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
     className: "label"
   }, "Religion"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
-    value: form.religion,
+    value: provider.religion,
     className: "input select",
-    onChange: e => setForm({
-      ...form,
-      religion: e.target.value
-    })
+    onChange: e => updateProviderField("religion", e.target.value)
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
     value: ""
   }, "Select"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
@@ -53717,11 +53663,8 @@ const GeneralInfoForm = ({
     className: "flex items-center gap-2 pt-1"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
     type: "checkbox",
-    checked: !!form.has_hkz,
-    onChange: e => setForm({
-      ...form,
-      has_hkz: e.target.checked ? 1 : 0
-    }),
+    checked: !!provider.has_hkz,
+    onChange: e => updateProviderField("has_hkz", e.target.checked ? 1 : 0),
     className: "checkbox"
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
     className: "label !mb-0"
@@ -53732,44 +53675,32 @@ const GeneralInfoForm = ({
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
     className: "label"
   }, "Email"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
-    value: form.email,
-    onChange: e => setForm({
-      ...form,
-      email: e.target.value
-    }),
+    value: provider.email,
+    onChange: e => updateProviderField("email", e.target.value),
     className: "input"
   })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex flex-col gap-1.5"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
     className: "label"
   }, "Phone"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
-    value: form.phone,
-    onChange: e => setForm({
-      ...form,
-      phone: e.target.value
-    }),
+    value: provider.phone,
+    onChange: e => updateProviderField("phone", e.target.value),
     className: "input"
   }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex flex-col gap-1.5"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
     className: "label"
   }, "Website"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
-    value: form.website,
-    onChange: e => setForm({
-      ...form,
-      website: e.target.value
-    }),
+    value: provider.website,
+    onChange: e => updateProviderField("website", e.target.value),
     className: "input"
   })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex flex-col gap-1.5"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
     className: "label"
   }, "Address"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("textarea", {
-    value: form.address,
-    onChange: e => setForm({
-      ...form,
-      address: e.target.value
-    }),
+    value: provider.address,
+    onChange: e => updateProviderField("address", e.target.value),
     className: "textarea h-24"
   })));
 };
@@ -53802,16 +53733,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ReimbursementAccordion__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./ReimbursementAccordion */ "./src/pages/providers/ReimbursementAccordion.jsx");
 /* harmony import */ var _useProvidersList__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./useProvidersList */ "./src/pages/providers/useProvidersList.js");
 /* harmony import */ var _useProviderForm__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./useProviderForm */ "./src/pages/providers/useProviderForm.js");
-/* harmony import */ var _useReimbursements__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./useReimbursements */ "./src/pages/providers/useReimbursements.js");
-/* harmony import */ var _hooks_useToast__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../hooks/useToast */ "./src/hooks/useToast.js");
-/* harmony import */ var _hooks_useLoading__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../hooks/useLoading */ "./src/hooks/useLoading.js");
+/* harmony import */ var _hooks_useToast__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../hooks/useToast */ "./src/hooks/useToast.js");
+/* harmony import */ var _hooks_useLoading__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../hooks/useLoading */ "./src/hooks/useLoading.js");
 
 
 
 
 
-
- // NEW REUSABLE BUTTON
 
 
 
@@ -53823,12 +53751,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 /* ---------------------------------------------------------
- * PROVIDERS PAGE
+ * PROVIDERS PAGE (OPTIMIZED)
  * --------------------------------------------------------- */
 
 const Providers = () => {
-  const toast = (0,_hooks_useToast__WEBPACK_IMPORTED_MODULE_14__.useToast)();
-  const loadingOverlay = (0,_hooks_useLoading__WEBPACK_IMPORTED_MODULE_15__.useLoading)();
+  const toast = (0,_hooks_useToast__WEBPACK_IMPORTED_MODULE_13__.useToast)();
+  const loadingOverlay = (0,_hooks_useLoading__WEBPACK_IMPORTED_MODULE_14__.useLoading)();
 
   /* LIST HOOK */
   const {
@@ -53848,42 +53776,24 @@ const Providers = () => {
     fetchProviders
   } = (0,_useProvidersList__WEBPACK_IMPORTED_MODULE_11__.useProvidersList)();
 
-  /* MODAL */
+  /* MODAL STATE */
   const [showModal, setShowModal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
   const closeModal = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => setShowModal(false), []);
 
-  /* FORM HOOK */
+  /* ENTERPRISE PROVIDER FORM */
   const {
-    form,
-    setForm,
-    editing,
+    provider,
+    reimbursements,
+    updateProviderField,
+    updateReimbursementField,
+    editingId,
     loadProvider,
     saveProvider,
     reset: resetProviderForm
   } = (0,_useProviderForm__WEBPACK_IMPORTED_MODULE_12__.useProviderForm)(fetchProviders, closeModal);
 
-  /* REIMBURSEMENTS HOOK */
-  const {
-    list: reimburseList,
-    updateType,
-    loadForProvider,
-    reset: resetReimbursements
-  } = (0,_useReimbursements__WEBPACK_IMPORTED_MODULE_13__.useReimbursements)();
-
   /* BULK ACTIONS */
   const [selected, setSelected] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
-  const toggleSelect = index => {
-    const row = providers[index];
-    if (!row) return;
-    setSelected(prev => prev.includes(row.id) ? prev.filter(id => id !== row.id) : [...prev, row.id]);
-  };
-  const toggleSelectAll = () => {
-    if (selected.length === providers.length) {
-      setSelected([]);
-    } else {
-      setSelected(providers.map(p => p.id));
-    }
-  };
   const handleBulkDelete = async () => {
     if (!confirm(`Delete ${selected.length} selected providers?`)) return;
     try {
@@ -53904,7 +53814,9 @@ const Providers = () => {
     }
   };
 
-  /* FILTER SCHEMA */
+  /* ---------------------------------------------------------
+   * FILTER SCHEMA
+   * --------------------------------------------------------- */
   const filterSchema = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => [{
     type: "search",
     key: "search",
@@ -53972,29 +53884,31 @@ const Providers = () => {
   }], []);
 
   /* ---------------------------------------------------------
-   * OPEN EDIT MODAL
+   * OPEN EDIT MODAL — INSTANT OPEN + BACKGROUND LOADING
    * --------------------------------------------------------- */
   const openModalForProvider = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async index => {
     const row = providers[index];
     if (!row) return;
+
+    // OPEN MODAL IMMEDIATELY (no waiting)
+    setShowModal(true);
     try {
       loadingOverlay.show("Loading provider…");
+
+      // only 1 API call now
       await loadProvider(row.id);
-      await loadForProvider(row.id);
-      setShowModal(true);
     } catch (err) {
       toast.error(err.message || "Failed to load provider");
     } finally {
       loadingOverlay.hide();
     }
-  }, [providers, loadProvider, loadForProvider, toast, loadingOverlay]);
+  }, [providers, loadProvider, toast, loadingOverlay]);
 
   /* ---------------------------------------------------------
-   * OPEN CREATE MODAL
+   * OPEN CREATE NEW MODAL
    * --------------------------------------------------------- */
   const handleAddNew = () => {
     resetProviderForm();
-    resetReimbursements();
     setShowModal(true);
   };
 
@@ -54002,13 +53916,15 @@ const Providers = () => {
    * SAVE PROVIDER
    * --------------------------------------------------------- */
   const handleSave = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async () => {
-    const payloadReimbursements = Object.entries(reimburseList).filter(([_, data]) => data !== null).map(([type, data]) => ({
-      type,
-      description: data.description || "",
-      coverage_details: data.coverage_details || ""
-    }));
     try {
       loadingOverlay.show("Saving provider…");
+
+      // Convert enterprise reimbursement to array
+      const payloadReimbursements = Object.entries(reimbursements).map(([type, data]) => ({
+        type,
+        description: data.description || "",
+        coverage_details: data.coverage_details || ""
+      }));
       await saveProvider(payloadReimbursements);
       toast.success("Provider saved successfully");
     } catch (err) {
@@ -54016,13 +53932,34 @@ const Providers = () => {
     } finally {
       loadingOverlay.hide();
     }
-  }, [reimburseList, saveProvider, toast, loadingOverlay]);
+  }, [reimbursements, saveProvider, toast, loadingOverlay]);
 
   /* ---------------------------------------------------------
-   * TABLE SETUP
+   * BADGE SYSTEM
    * --------------------------------------------------------- */
-  const columns = ["Name", "Type of Care", "Email", "Phone", "Website", "Address"];
-  const rows = providers.map(p => [p.name, p.type_of_care, p.email, p.phone, p.website?.replace(/^https?:\/\//, ""), p.address]);
+  const badge = (label, color) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: `px-2 py-1 rounded-full text-xs font-medium ${color}`
+  }, label);
+  const badgeColors = {
+    disability: "bg-blue-100 text-blue-700",
+    GGZ: "bg-purple-100 text-purple-700",
+    youth: "bg-pink-100 text-pink-700",
+    elderly: "bg-orange-100 text-orange-700",
+    PGB: "bg-green-100 text-green-700",
+    ZIN: "bg-teal-100 text-teal-700",
+    BV: "bg-yellow-100 text-yellow-700",
+    Stichting: "bg-indigo-100 text-indigo-700",
+    Islamic: "bg-emerald-100 text-emerald-700",
+    Jewish: "bg-amber-100 text-amber-700",
+    Christian: "bg-sky-100 text-sky-700",
+    None: "bg-gray-100 text-gray-700"
+  };
+
+  /* ---------------------------------------------------------
+   * TABLE CONFIG
+   * --------------------------------------------------------- */
+  const columns = ["Name", "Type of Care", "Indication", "Organization", "Religion", "HKZ"];
+  const rows = providers.map(p => [p.name, badge(p.type_of_care, badgeColors[p.type_of_care] || "bg-gray-100 text-gray-700"), badge(p.indication_type, badgeColors[p.indication_type] || "bg-gray-100 text-gray-700"), badge(p.organization_type, badgeColors[p.organization_type] || "bg-gray-100 text-gray-700"), badge(p.religion, badgeColors[p.religion] || "bg-gray-100 text-gray-700"), Number(p.has_hkz) === 1 ? badge("HKZ", "bg-green-100 text-green-700") : badge("No", "bg-gray-200 text-gray-600")]);
   const actionsRenderer = i => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
     className: "text-blue-600",
     onClick: () => openModalForProvider(i)
@@ -54033,7 +53970,6 @@ const Providers = () => {
   /* ---------------------------------------------------------
    * RENDER PAGE
    * --------------------------------------------------------- */
-
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "p-2 space-y-6"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
@@ -54089,10 +54025,8 @@ const Providers = () => {
     data: rows,
     providers: providers,
     actions: actionsRenderer,
-    loading: loading,
     selected: selected,
-    toggleSelect: toggleSelect,
-    toggleSelectAll: toggleSelectAll,
+    setSelected: setSelected,
     pagination: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Pagination__WEBPACK_IMPORTED_MODULE_3__["default"], {
       page: page,
       perPage: perPage,
@@ -54104,21 +54038,21 @@ const Providers = () => {
       }
     })
   }), showModal && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Modal__WEBPACK_IMPORTED_MODULE_2__["default"], {
-    title: editing ? `Edit Provider #${editing.id}` : "Add Provider",
+    title: editingId ? `Edit Provider #${editingId}` : "Add Provider",
     onClose: closeModal
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "grid grid-cols-1 lg:grid-cols-2 gap-14"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
     className: "text-xl font-semibold mb-4"
   }, "Provider Information"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_GeneralInfoForm__WEBPACK_IMPORTED_MODULE_9__["default"], {
-    form: form,
-    setForm: setForm,
-    editing: editing
+    provider: provider,
+    updateProviderField: updateProviderField,
+    editingId: editingId
   })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
     className: "text-xl font-semibold mb-4"
   }, "Reimbursements"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_ReimbursementAccordion__WEBPACK_IMPORTED_MODULE_10__["default"], {
-    list: reimburseList,
-    updateType: updateType
+    list: reimbursements,
+    updateType: updateReimbursementField
   }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "mt-10"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_5__["default"], {
@@ -54126,7 +54060,7 @@ const Providers = () => {
     size: "lg",
     className: "w-full",
     onClick: handleSave
-  }, editing ? "Update Provider" : "Save Provider"))));
+  }, editingId ? "Update Provider" : "Save Provider"))));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Providers);
 
@@ -54210,63 +54144,124 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 
 const getNonce = () => window?.wpApiSettings?.nonce || "";
-const useProviderForm = (fetchProviders, closeModal) => {
-  const emptyForm = {
-    name: "",
-    slug: "",
-    type_of_care: "",
-    indication_type: "",
-    organization_type: "",
-    religion: "",
-    has_hkz: 0,
-    email: "",
-    phone: "",
-    website: "",
-    address: ""
-  };
-  const [form, setForm] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(emptyForm);
-  const [editing, setEditing] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
 
-  /* LOAD SINGLE PROVIDER */
+/* -----------------------------------------------------------
+   GLOBAL IN-MEMORY CACHE (lives as long as page stays open)
+----------------------------------------------------------- */
+const providerCache = new Map();
+
+/* Provider structure */
+const emptyProvider = {
+  id: null,
+  name: "",
+  slug: "",
+  type_of_care: "",
+  indication_type: "",
+  organization_type: "",
+  religion: "",
+  has_hkz: 0,
+  email: "",
+  phone: "",
+  website: "",
+  address: "",
+  created_at: "",
+  updated_at: ""
+};
+
+/* Normalize reimbursements to WLZ/ZVW/WMO/Youth */
+const normalizeReimbursements = (input = {}) => {
+  const keys = ["WLZ", "ZVW", "WMO", "Youth"];
+  const out = {};
+  keys.forEach(key => {
+    out[key] = input[key] ? {
+      description: input[key].description || "",
+      coverage_details: input[key].coverage_details || ""
+    } : {
+      description: "",
+      coverage_details: ""
+    };
+  });
+  return out;
+};
+
+/* ===========================================================
+   HOOK
+=========================================================== */
+const useProviderForm = (fetchProviders, closeModal) => {
+  const [provider, setProvider] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(emptyProvider);
+  const [reimbursements, setReimbursements] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(normalizeReimbursements());
+  const [editingId, setEditingId] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+  const reset = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => {
+    setProvider(emptyProvider);
+    setReimbursements(normalizeReimbursements());
+    setEditingId(null);
+  }, []);
+
+  /* ===========================================================
+     LOAD PROVIDER (with instant cached load)
+  ============================================================ */
   const loadProvider = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async id => {
-    const res = await fetch(`/wp-json/zorg/v1/providers/${id}`, {
+    // 1) Serve instantly from memory cache
+    if (providerCache.has(id)) {
+      const cached = providerCache.get(id);
+      setProvider(cached.provider);
+      setReimbursements(cached.reimbursements);
+      setEditingId(id);
+      return cached.provider;
+    }
+
+    // 2) Otherwise, fetch from server
+    const res = await fetch(`/wp-json/zorg/v1/providers-with-reimbursements/${id}`, {
       headers: {
         "X-WP-Nonce": getNonce()
       }
     });
-    const json = await res.json();
-    setEditing(json?.data || null);
-    setForm({
-      ...json?.data,
-      has_hkz: json?.data?.has_hkz ? 1 : 0
+    const text = await res.text();
+    const json = JSON.parse(text);
+    const wrapped = json?.data || {};
+    const p = wrapped.provider;
+    const r = wrapped.reimbursements || {};
+    if (!p) throw new Error("Provider missing");
+    const normalizedProvider = {
+      id: p.id,
+      name: p.name || "",
+      slug: p.slug || "",
+      type_of_care: p.type_of_care || "",
+      indication_type: p.indication_type || "",
+      organization_type: p.organization_type || "",
+      religion: p.religion || "",
+      has_hkz: p.has_hkz ? 1 : 0,
+      email: p.email || "",
+      phone: p.phone || "",
+      website: p.website || "",
+      address: p.address || "",
+      created_at: p.created_at || "",
+      updated_at: p.updated_at || ""
+    };
+    const normalizedReimbs = normalizeReimbursements(r);
+
+    // Fill form
+    setProvider(normalizedProvider);
+    setReimbursements(normalizedReimbs);
+    setEditingId(p.id);
+
+    // Store into cache
+    providerCache.set(id, {
+      provider: normalizedProvider,
+      reimbursements: normalizedReimbs
     });
-    return json?.data;
+    return normalizedProvider;
   }, []);
 
-  /* SAVE PROVIDER + REIMBURSEMENTS */
-  const saveProvider = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async reimbursements => {
-    const isEditing = !!editing?.id;
-
-    /* ---------------------------------------------------
-     * VALIDATION: At least one reimbursement must exist
-     * --------------------------------------------------- */
-    if (!Array.isArray(reimbursements) || reimbursements.length === 0) {
-      throw new Error("At least one reimbursement type must be filled.");
-    }
-
-    /* ---------------------------------------------------
-     * VALIDATION: One type must have description or coverage
-     * --------------------------------------------------- */
-    const hasValid = reimbursements.some(r => r.description && r.description.trim() !== "" || r.coverage_details && r.coverage_details.trim() !== "");
-    if (!hasValid) {
-      throw new Error("Please fill at least one reimbursement (description or coverage).");
-    }
-    const url = isEditing ? `/wp-json/zorg/v1/providers-with-reimbursements/${editing.id}` : `/wp-json/zorg/v1/providers-with-reimbursements`;
-    const method = isEditing ? "PUT" : "POST";
+  /* ===========================================================
+     SAVE PROVIDER (also invalidates cache)
+  ============================================================ */
+  const saveProvider = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async reimbursementsArray => {
+    const url = editingId ? `/wp-json/zorg/v1/providers-with-reimbursements/${editingId}` : `/wp-json/zorg/v1/providers-with-reimbursements`;
+    const method = editingId ? "PUT" : "POST";
     const payload = {
-      ...form,
-      has_hkz: form.has_hkz ? 1 : 0,
-      reimbursements
+      ...provider,
+      reimbursements: reimbursementsArray
     };
     const res = await fetch(url, {
       method,
@@ -54276,19 +54271,64 @@ const useProviderForm = (fetchProviders, closeModal) => {
       },
       body: JSON.stringify(payload)
     });
-    const json = await res.json();
+    const text = await res.text();
+    const json = JSON.parse(text);
     if (!res.ok) throw new Error(json?.message || "Save failed");
+
+    // Cache invalidation for fresh reload next time
+    if (editingId) providerCache.delete(editingId);
     fetchProviders();
     closeModal();
-  }, [editing, form, fetchProviders, closeModal]);
-  const reset = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => {
-    setForm(emptyForm);
-    setEditing(null);
-  }, []);
+  }, [editingId, provider, fetchProviders, closeModal]);
+
+  /* ===========================================================
+     FIELD UPDATES (live + cached)
+  ============================================================ */
+  const updateProviderField = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)((field, value) => {
+    setProvider(prev => ({
+      ...prev,
+      [field]: value
+    }));
+
+    // Update cache live
+    if (editingId && providerCache.has(editingId)) {
+      const cached = providerCache.get(editingId);
+      cached.provider = {
+        ...cached.provider,
+        [field]: value
+      };
+      providerCache.set(editingId, cached);
+    }
+  }, [editingId]);
+  const updateReimbursementField = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)((type, field, value) => {
+    setReimbursements(prev => {
+      const updated = {
+        ...prev,
+        [type]: {
+          ...prev[type],
+          [field]: value
+        }
+      };
+
+      // Update cache live
+      if (editingId && providerCache.has(editingId)) {
+        const cached = providerCache.get(editingId);
+        cached.reimbursements = updated;
+        providerCache.set(editingId, cached);
+      }
+      return updated;
+    });
+  }, [editingId]);
+
+  /* ===========================================================
+     RETURN API
+  ============================================================ */
   return {
-    form,
-    setForm,
-    editing,
+    provider,
+    reimbursements,
+    editingId,
+    updateProviderField,
+    updateReimbursementField,
     loadProvider,
     saveProvider,
     reset
@@ -54330,7 +54370,7 @@ const useProvidersList = () => {
   const [total, setTotal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0);
   const [loading, setLoading] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
 
-  /* ---------------------- PARAM BUILDER ------------------------ */
+  /* Build Query Params */
   const buildParams = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([k, v]) => {
@@ -54343,7 +54383,7 @@ const useProvidersList = () => {
     return params.toString();
   }, [filters, page, perPage, sort, activeTab]);
 
-  /* ---------------------- FETCH PROVIDERS ---------------------- */
+  /* Fetch Providers */
   const fetchProviders = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async () => {
     const params = buildParams();
     const url = `/wp-json/zorg/v1/providers?${params}`;
@@ -54359,8 +54399,14 @@ const useProvidersList = () => {
       } catch (err) {
         json = {};
       }
-      const list = Array.isArray(json?.data) ? json.data : [];
-      setProviders(list);
+      const rawList = Array.isArray(json?.data) ? json.data : [];
+
+      /* FIX: Normalize has_hkz */
+      const normalized = rawList.map(p => ({
+        ...p,
+        has_hkz: Number(p.has_hkz) === 1 ? 1 : 0
+      }));
+      setProviders(normalized);
       setTotal(json?.total || 0);
     } catch (err) {
       setProviders([]);
@@ -54370,7 +54416,7 @@ const useProvidersList = () => {
     }
   }, [buildParams]);
 
-  /* ---------------------- EFFECTS ---------------------- */
+  /* Effects */
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     fetchProviders();
   }, [fetchProviders]);
@@ -54397,140 +54443,6 @@ const useProvidersList = () => {
     setPerPage,
     loading,
     fetchProviders
-  };
-};
-
-/***/ }),
-
-/***/ "./src/pages/providers/useReimbursements.js":
-/*!**************************************************!*\
-  !*** ./src/pages/providers/useReimbursements.js ***!
-  \**************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   useReimbursements: () => (/* binding */ useReimbursements)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-
-const getNonce = () => window?.wpApiSettings?.nonce || "";
-
-/* Allowed types */
-const TYPES = ["WLZ", "ZVW", "WMO", "Youth"];
-
-/* Empty structured list */
-const emptyStructured = () => TYPES.reduce((acc, t) => {
-  acc[t] = null;
-  return acc;
-}, {});
-const useReimbursements = () => {
-  const [list, setList] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(emptyStructured());
-
-  // Not used much anymore
-  const [form, setForm] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
-    type: "",
-    description: "",
-    coverage_details: ""
-  });
-
-  /* ============================================================
-   * LOAD REIMBURSEMENTS FOR PROVIDER — with logs
-   * ============================================================ */
-  const loadForProvider = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async id => {
-    console.log("%c[useReimbursements] 🔵 loadForProvider called", "color:#2980ff", {
-      id
-    });
-    try {
-      const url = `/wp-json/zorg/v1/reimbursements?provider_id=${id}`;
-      console.log("[useReimbursements] Fetching:", url);
-      const res = await fetch(url, {
-        headers: {
-          "X-WP-Nonce": getNonce()
-        }
-      });
-      console.log("[useReimbursements] Response status:", res.status);
-      const text = await res.text();
-      console.log("[useReimbursements] Raw response text:", text);
-      let json = {};
-      try {
-        json = JSON.parse(text);
-      } catch (err) {
-        console.error("[useReimbursements] ❌ JSON parse failed:", err);
-        return;
-      }
-      console.log("[useReimbursements] Parsed JSON:", json);
-      const rows = Array.isArray(json?.data) ? json.data : [];
-      console.log("[useReimbursements] Rows array:", rows);
-
-      // Normalize
-      const normalized = emptyStructured();
-      rows.forEach(r => {
-        const type = (r.type || "").toUpperCase().trim();
-        console.log("[useReimbursements] Processing row:", r, "-> type:", type);
-        if (normalized.hasOwnProperty(type)) {
-          var _r$id, _r$description, _r$coverage_details;
-          normalized[type] = {
-            id: (_r$id = r.id) !== null && _r$id !== void 0 ? _r$id : null,
-            type,
-            description: (_r$description = r.description) !== null && _r$description !== void 0 ? _r$description : "",
-            coverage_details: (_r$coverage_details = r.coverage_details) !== null && _r$coverage_details !== void 0 ? _r$coverage_details : ""
-          };
-        } else {
-          console.warn("[useReimbursements] ⚠️ Unknown type from DB:", r);
-        }
-      });
-      console.log("%c[useReimbursements] ✅ Normalized mapped list:", "color:green", normalized);
-      setList(normalized);
-      return normalized;
-    } catch (err) {
-      console.error("[useReimbursements] ❌ loadForProvider error:", err);
-      setList(emptyStructured());
-    }
-  }, []);
-
-  /* Reset */
-  const reset = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => {
-    console.log("[useReimbursements] ♻️ reset()");
-    setList(emptyStructured());
-    setForm({
-      type: "",
-      description: "",
-      coverage_details: ""
-    });
-  }, []);
-
-  /* Update one type */
-  const updateType = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)((type, data) => {
-    console.log("[useReimbursements] ✏️ updateType()", type, data);
-    setList(prev => {
-      const updated = {
-        ...prev,
-        [type]: {
-          ...(prev[type] || {
-            id: null,
-            type
-          }),
-          ...data
-        }
-      };
-      console.log("[useReimbursements] Updated structured list:", updated);
-      return updated;
-    });
-  }, []);
-  return {
-    list,
-    setList,
-    updateType,
-    form,
-    setForm,
-    loadForProvider,
-    reset,
-    // legacy
-    addEntry: () => console.warn("addEntry() not used"),
-    removeEntry: () => console.warn("removeEntry() not used")
   };
 };
 

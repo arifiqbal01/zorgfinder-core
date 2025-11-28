@@ -23,7 +23,7 @@ export const useProvidersList = () => {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  /* ---------------------- PARAM BUILDER ------------------------ */
+  /* Build Query Params */
   const buildParams = useCallback(() => {
     const params = new URLSearchParams();
 
@@ -39,7 +39,7 @@ export const useProvidersList = () => {
     return params.toString();
   }, [filters, page, perPage, sort, activeTab]);
 
-  /* ---------------------- FETCH PROVIDERS ---------------------- */
+  /* Fetch Providers */
   const fetchProviders = useCallback(async () => {
     const params = buildParams();
     const url = `/wp-json/zorg/v1/providers?${params}`;
@@ -47,10 +47,7 @@ export const useProvidersList = () => {
     setLoading(true);
 
     try {
-      const res = await fetch(url, {
-        headers: {},
-      });
-
+      const res = await fetch(url, { headers: {} });
       const text = await res.text();
 
       let json = {};
@@ -60,9 +57,15 @@ export const useProvidersList = () => {
         json = {};
       }
 
-      const list = Array.isArray(json?.data) ? json.data : [];
+      const rawList = Array.isArray(json?.data) ? json.data : [];
 
-      setProviders(list);
+      /* FIX: Normalize has_hkz */
+      const normalized = rawList.map((p) => ({
+        ...p,
+        has_hkz: Number(p.has_hkz) === 1 ? 1 : 0,
+      }));
+
+      setProviders(normalized);
       setTotal(json?.total || 0);
     } catch (err) {
       setProviders([]);
@@ -72,7 +75,7 @@ export const useProvidersList = () => {
     }
   }, [buildParams]);
 
-  /* ---------------------- EFFECTS ---------------------- */
+  /* Effects */
   useEffect(() => {
     fetchProviders();
   }, [fetchProviders]);
