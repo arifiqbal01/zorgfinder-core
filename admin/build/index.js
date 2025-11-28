@@ -25297,39 +25297,6 @@ const Star = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__["default"])("S
 
 /***/ }),
 
-/***/ "./node_modules/lucide-react/dist/esm/icons/trash.js":
-/*!***********************************************************!*\
-  !*** ./node_modules/lucide-react/dist/esm/icons/trash.js ***!
-  \***********************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ Trash)
-/* harmony export */ });
-/* harmony import */ var _createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../createLucideIcon.js */ "./node_modules/lucide-react/dist/esm/createLucideIcon.js");
-/**
- * @license lucide-react v0.320.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-
-
-
-const Trash = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__["default"])("Trash", [
-  ["path", { d: "M3 6h18", key: "d0wm0j" }],
-  ["path", { d: "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6", key: "4alrt4" }],
-  ["path", { d: "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2", key: "v07s0e" }]
-]);
-
-
-//# sourceMappingURL=trash.js.map
-
-
-/***/ }),
-
 /***/ "./node_modules/lucide-react/dist/esm/icons/users.js":
 /*!***********************************************************!*\
   !*** ./node_modules/lucide-react/dist/esm/icons/users.js ***!
@@ -51023,6 +50990,57 @@ const Accordion = ({
 
 /***/ }),
 
+/***/ "./src/components/BulkActionsBar.jsx":
+/*!*******************************************!*\
+  !*** ./src/components/BulkActionsBar.jsx ***!
+  \*******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _Button__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Button */ "./src/components/Button.jsx");
+
+
+
+const BulkActionsBar = ({
+  count = 0,
+  onDelete,
+  onRestore,
+  onClearSelection,
+  showRestore = false,
+  showDelete = true
+}) => {
+  if (count === 0) return null; // Nothing selected → nothing shown
+
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "text-sm text-blue-700 font-medium"
+  }, count, " selected"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center gap-2"
+  }, showRestore && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_Button__WEBPACK_IMPORTED_MODULE_1__["default"], {
+    variant: "success",
+    size: "sm",
+    onClick: onRestore
+  }, "Restore Selected"), showDelete && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_Button__WEBPACK_IMPORTED_MODULE_1__["default"], {
+    variant: "danger",
+    size: "sm",
+    onClick: onDelete
+  }, "Delete Selected"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_Button__WEBPACK_IMPORTED_MODULE_1__["default"], {
+    variant: "ghost",
+    size: "sm",
+    onClick: onClearSelection
+  }, "Clear")));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (BulkActionsBar);
+
+/***/ }),
+
 /***/ "./src/components/Button.jsx":
 /*!***********************************!*\
   !*** ./src/components/Button.jsx ***!
@@ -51574,72 +51592,67 @@ const Table = ({
   };
   const toggleRow = id => {
     if (!id) return;
-    if (selected.includes(id)) setSelected(selected.filter(x => x !== id));else setSelected([...selected, id]);
+    if (selected.includes(id)) {
+      setSelected(selected.filter(x => x !== id));
+    } else {
+      setSelected([...selected, id]);
+    }
   };
   const colSpan = columns.length + (actions ? 2 : 1);
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "bg-white rounded-xl border border-gray-200 overflow-hidden"
+    className: "bg-white rounded-xl border border-gray-200 overflow-hidden w-full"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "overflow-x-auto"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("table", {
-    className: "w-full text-sm text-gray-800"
+    className: "w-full text-sm text-gray-800 min-w-max"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("thead", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("tr", {
     className: "bg-gray-50 border-b border-gray-200"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("th", {
-    className: "py-4 px-5 w-12"
+    className: " py-4 px-5 w-12 lg:sticky lg:left-0 lg:bg-gray-50 lg:z-20 lg:border-r "
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
     type: "checkbox",
-    className: "accent-blue-600",
+    className: " accent-blue-600 w-4 h-4 md:w-3.5 md:h-3.5 sm:w-3 sm:h-3 ",
     checked: allSelected,
     onChange: toggleAll
   })), columns.map((col, i) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("th", {
     key: i,
-    className: " py-4 px-5 font-medium text-gray-600 text-xs uppercase tracking-wider text-left "
+    className: " py-4 px-5 font-medium text-gray-600 text-xs uppercase tracking-wider whitespace-nowrap text-left "
   }, col)), actions && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("th", {
-    className: "py-4 px-5 w-20 min-w-[60px] text-right"
+    className: "py-4 px-5 w-16 text-right whitespace-nowrap"
   }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("tbody", null, data.length ? data.map((row, i) => {
     const provider = providers[i] || {};
     const id = provider.id;
     const isSelected = selected.includes(id);
     return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("tr", {
       key: id || i,
-      className: `
-                    group transition-all
-                    ${isSelected ? "bg-blue-50" : "hover:bg-gray-50"}
-                    border-b
-                  `
+      className: `group transition-all border-b ${isSelected ? "bg-blue-50" : "hover:bg-gray-50"}`
     }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
-      className: "py-4 px-5 w-12"
+      className: " py-4 px-5 w-12 lg:sticky lg:left-0 lg:bg-white lg:z-10 lg:border-r "
     }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
       type: "checkbox",
-      className: "accent-blue-600",
+      className: " accent-blue-600 w-4 h-4 md:w-3.5 md:h-3.5 sm:w-3 sm:h-3 ",
       checked: isSelected,
       onChange: () => toggleRow(id)
     })), row.map((cell, j) => {
       const header = columns[j];
-      const isAddress = header?.toLowerCase() === "address";
-
-      // ADDRESS → multiline
-      if (isAddress) {
-        return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
-          key: j,
-          className: " py-4 px-5 whitespace-normal break-words text-gray-700 max-w-[320px] leading-5 "
-        }, cell);
-      }
-
-      // OTHER FIELDS → truncate (Name, Email, Website)
+      const isAddress = header?.toLowerCase?.() === "address";
       return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
         key: j,
-        className: " py-4 px-5 truncate whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px] text-gray-700 ",
-        title: cell
+        className: `
+                            py-4 px-5 text-gray-700 align-top
+                            ${isAddress ? "whitespace-normal break-words leading-5 max-w-[320px]" : "whitespace-nowrap truncate max-w-[200px]"}
+                          `,
+        title: isAddress ? "" : cell
       }, cell);
     }), actions && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
-      className: "py-4 px-5 w-20 text-right"
+      className: " py-4 px-5 w-16 text-right "
     }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-      className: " opacity-0 group-hover:opacity-100 transition-opacity duration-150 "
+      className: " opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 "
     }, actions(i))));
   }) : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("tr", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
     colSpan: colSpan,
     className: "text-center text-gray-500 py-10"
-  }, loading ? "Loading…" : "No records found.")))), pagination && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+  }, loading ? "Loading…" : "No records found."))))), pagination && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "p-4 border-t bg-gray-50 flex items-center justify-between text-sm"
   }, pagination));
 };
@@ -53725,10 +53738,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_Modal__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../components/Modal */ "./src/components/Modal.jsx");
 /* harmony import */ var _components_Pagination__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../components/Pagination */ "./src/components/Pagination.jsx");
 /* harmony import */ var _components_Filters__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../components/Filters */ "./src/components/Filters.jsx");
-/* harmony import */ var _components_Button__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../components/Button */ "./src/components/Button.jsx");
-/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/eye.js");
-/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/plus.js");
-/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/trash.js");
+/* harmony import */ var _components_BulkActionsBar__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../components/BulkActionsBar */ "./src/components/BulkActionsBar.jsx");
+/* harmony import */ var _components_Button__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../components/Button */ "./src/components/Button.jsx");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/eye.js");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/plus.js");
 /* harmony import */ var _GeneralInfoForm__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./GeneralInfoForm */ "./src/pages/providers/GeneralInfoForm.jsx");
 /* harmony import */ var _ReimbursementAccordion__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./ReimbursementAccordion */ "./src/pages/providers/ReimbursementAccordion.jsx");
 /* harmony import */ var _useProvidersList__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./useProvidersList */ "./src/pages/providers/useProvidersList.js");
@@ -53750,15 +53763,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-/* ---------------------------------------------------------
- * PROVIDERS PAGE (OPTIMIZED)
- * --------------------------------------------------------- */
-
 const Providers = () => {
   const toast = (0,_hooks_useToast__WEBPACK_IMPORTED_MODULE_13__.useToast)();
   const loadingOverlay = (0,_hooks_useLoading__WEBPACK_IMPORTED_MODULE_14__.useLoading)();
-
-  /* LIST HOOK */
   const {
     providers,
     total,
@@ -53772,28 +53779,25 @@ const Providers = () => {
     setPage,
     perPage,
     setPerPage,
-    loading,
     fetchProviders
   } = (0,_useProvidersList__WEBPACK_IMPORTED_MODULE_11__.useProvidersList)();
-
-  /* MODAL STATE */
   const [showModal, setShowModal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
   const closeModal = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => setShowModal(false), []);
-
-  /* ENTERPRISE PROVIDER FORM */
   const {
     provider,
     reimbursements,
+    editingId,
     updateProviderField,
     updateReimbursementField,
-    editingId,
     loadProvider,
     saveProvider,
     reset: resetProviderForm
   } = (0,_useProviderForm__WEBPACK_IMPORTED_MODULE_12__.useProviderForm)(fetchProviders, closeModal);
-
-  /* BULK ACTIONS */
   const [selected, setSelected] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+
+  /* ---------------------------------------
+     BULK DELETE (Active Tab)
+  ---------------------------------------- */
   const handleBulkDelete = async () => {
     if (!confirm(`Delete ${selected.length} selected providers?`)) return;
     try {
@@ -53814,9 +53818,32 @@ const Providers = () => {
     }
   };
 
-  /* ---------------------------------------------------------
-   * FILTER SCHEMA
-   * --------------------------------------------------------- */
+  /* ---------------------------------------
+     BULK RESTORE (Trash Tab)
+  ---------------------------------------- */
+  const handleBulkRestore = async () => {
+    if (!confirm(`Restore ${selected.length} providers?`)) return;
+    try {
+      loadingOverlay.show("Restoring…");
+      await Promise.all(selected.map(id => fetch(`/wp-json/zorg/v1/providers/${id}/restore`, {
+        method: "PATCH",
+        headers: {
+          "X-WP-Nonce": window.wpApiSettings.nonce
+        }
+      })));
+      toast.success("Providers restored");
+      setSelected([]);
+      fetchProviders();
+    } catch (err) {
+      toast.error("Restore failed");
+    } finally {
+      loadingOverlay.hide();
+    }
+  };
+
+  /* ---------------------------------------
+     FILTER SCHEMA
+  ---------------------------------------- */
   const filterSchema = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => [{
     type: "search",
     key: "search",
@@ -53883,19 +53910,15 @@ const Providers = () => {
     label: "HKZ Only"
   }], []);
 
-  /* ---------------------------------------------------------
-   * OPEN EDIT MODAL — INSTANT OPEN + BACKGROUND LOADING
-   * --------------------------------------------------------- */
+  /* ---------------------------------------
+     OPEN EDIT PROVIDER
+  ---------------------------------------- */
   const openModalForProvider = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async index => {
     const row = providers[index];
     if (!row) return;
-
-    // OPEN MODAL IMMEDIATELY (no waiting)
     setShowModal(true);
     try {
       loadingOverlay.show("Loading provider…");
-
-      // only 1 API call now
       await loadProvider(row.id);
     } catch (err) {
       toast.error(err.message || "Failed to load provider");
@@ -53904,22 +53927,20 @@ const Providers = () => {
     }
   }, [providers, loadProvider, toast, loadingOverlay]);
 
-  /* ---------------------------------------------------------
-   * OPEN CREATE NEW MODAL
-   * --------------------------------------------------------- */
+  /* ---------------------------------------
+     ADD NEW PROVIDER
+  ---------------------------------------- */
   const handleAddNew = () => {
     resetProviderForm();
     setShowModal(true);
   };
 
-  /* ---------------------------------------------------------
-   * SAVE PROVIDER
-   * --------------------------------------------------------- */
+  /* ---------------------------------------
+     SAVE PROVIDER
+  ---------------------------------------- */
   const handleSave = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async () => {
     try {
       loadingOverlay.show("Saving provider…");
-
-      // Convert enterprise reimbursement to array
       const payloadReimbursements = Object.entries(reimbursements).map(([type, data]) => ({
         type,
         description: data.description || "",
@@ -53934,9 +53955,9 @@ const Providers = () => {
     }
   }, [reimbursements, saveProvider, toast, loadingOverlay]);
 
-  /* ---------------------------------------------------------
-   * BADGE SYSTEM
-   * --------------------------------------------------------- */
+  /* ---------------------------------------
+     BADGE SYSTEM
+  ---------------------------------------- */
   const badge = (label, color) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
     className: `px-2 py-1 rounded-full text-xs font-medium ${color}`
   }, label);
@@ -53955,51 +53976,54 @@ const Providers = () => {
     None: "bg-gray-100 text-gray-700"
   };
 
-  /* ---------------------------------------------------------
-   * TABLE CONFIG
-   * --------------------------------------------------------- */
+  /* ---------------------------------------
+     TABLE
+  ---------------------------------------- */
   const columns = ["Name", "Type of Care", "Indication", "Organization", "Religion", "HKZ"];
-  const rows = providers.map(p => [p.name, badge(p.type_of_care, badgeColors[p.type_of_care] || "bg-gray-100 text-gray-700"), badge(p.indication_type, badgeColors[p.indication_type] || "bg-gray-100 text-gray-700"), badge(p.organization_type, badgeColors[p.organization_type] || "bg-gray-100 text-gray-700"), badge(p.religion, badgeColors[p.religion] || "bg-gray-100 text-gray-700"), Number(p.has_hkz) === 1 ? badge("HKZ", "bg-green-100 text-green-700") : badge("No", "bg-gray-200 text-gray-600")]);
+  const rows = providers.map(p => [p.name, badge(p.type_of_care, badgeColors[p.type_of_care] || "bg-gray-100"), badge(p.indication_type, badgeColors[p.indication_type] || "bg-gray-100"), badge(p.organization_type, badgeColors[p.organization_type] || "bg-gray-100"), badge(p.religion, badgeColors[p.religion] || "bg-gray-100"), Number(p.has_hkz) === 1 ? badge("HKZ", "bg-green-100 text-green-700") : badge("No", "bg-gray-200 text-gray-600")]);
   const actionsRenderer = i => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
     className: "text-blue-600",
     onClick: () => openModalForProvider(i)
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_6__["default"], {
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_7__["default"], {
     size: 16
   }));
 
-  /* ---------------------------------------------------------
-   * RENDER PAGE
-   * --------------------------------------------------------- */
+  /* ---------------------------------------
+     RENDER
+  ---------------------------------------- */
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "p-2 space-y-6"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "flex justify-between items-center"
+    className: "flex flex-wrap items-center justify-between gap-4"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex items-center gap-4"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
     className: "text-2xl font-semibold"
-  }, "Providers"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_5__["default"], {
+  }, "Providers"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_6__["default"], {
     variant: "primary",
     size: "md",
     onClick: handleAddNew
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_7__["default"], {
-    size: 16,
-    className: "mr-1"
-  }), " Add Provider"), selected.length > 0 && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_5__["default"], {
-    variant: "danger",
-    size: "md",
-    onClick: handleBulkDelete
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_8__["default"], {
     size: 16,
     className: "mr-1"
-  }), "Delete Selected (", selected.length, ")")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "flex items-center gap-3"
+  }), "Add Provider")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center gap-4"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex bg-white shadow-sm rounded-lg overflow-hidden"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: () => setActiveTab("active"),
+    className: `px-4 py-2 text-sm font-medium ${activeTab === "active" ? "bg-black text-white" : "bg-gray-100 text-gray-700"}`
+  }, "Active"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: () => setActiveTab("trash"),
+    className: `px-4 py-2 text-sm font-medium border-l ${activeTab === "trash" ? "bg-black text-white" : "bg-gray-100 text-gray-700"}`
+  }, "Trash")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center gap-2"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
     className: "text-sm"
   }, "Sort:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
     value: sort,
     onChange: e => setSort(e.target.value),
-    className: "input"
+    className: "input min-w-[140px]"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
     value: "newest"
   }, "Newest"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
@@ -54008,18 +54032,17 @@ const Providers = () => {
     value: "name_asc"
   }, "Name A\u2013Z"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
     value: "name_desc"
-  }, "Name Z\u2013A")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "flex gap-2 bg-white rounded-lg p-2 shadow-sm"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-    onClick: () => setActiveTab("active"),
-    className: `px-3 py-1 rounded ${activeTab === "active" ? "bg-black text-white" : "bg-gray-100"}`
-  }, "Active"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-    onClick: () => setActiveTab("trash"),
-    className: `px-3 py-1 rounded ${activeTab === "trash" ? "bg-black text-white" : "bg-gray-100"}`
-  }, "Trash")))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Filters__WEBPACK_IMPORTED_MODULE_4__["default"], {
+  }, "Name Z\u2013A"))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Filters__WEBPACK_IMPORTED_MODULE_4__["default"], {
     schema: filterSchema,
     filters: filters,
     setFilters: setFilters
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_BulkActionsBar__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    count: selected.length,
+    onDelete: activeTab === "active" ? handleBulkDelete : undefined,
+    onRestore: activeTab === "trash" ? handleBulkRestore : undefined,
+    onClearSelection: () => setSelected([]),
+    showDelete: activeTab === "active",
+    showRestore: activeTab === "trash"
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Table__WEBPACK_IMPORTED_MODULE_1__["default"], {
     columns: columns,
     data: rows,
@@ -54055,7 +54078,7 @@ const Providers = () => {
     updateType: updateReimbursementField
   }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "mt-10"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_5__["default"], {
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_6__["default"], {
     variant: "primary",
     size: "lg",
     className: "w-full",
@@ -54389,19 +54412,23 @@ const useProvidersList = () => {
     const url = `/wp-json/zorg/v1/providers?${params}`;
     setLoading(true);
     try {
+      const headers = {};
+
+      // Only for trash view, because requires admin
+      if (activeTab === "trash") {
+        headers["X-WP-Nonce"] = window.wpApiSettings?.nonce || "";
+      }
       const res = await fetch(url, {
-        headers: {}
+        headers
       });
       const text = await res.text();
       let json = {};
       try {
         json = JSON.parse(text);
-      } catch (err) {
+      } catch {
         json = {};
       }
       const rawList = Array.isArray(json?.data) ? json.data : [];
-
-      /* FIX: Normalize has_hkz */
       const normalized = rawList.map(p => ({
         ...p,
         has_hkz: Number(p.has_hkz) === 1 ? 1 : 0
@@ -54414,7 +54441,7 @@ const useProvidersList = () => {
     } finally {
       setLoading(false);
     }
-  }, [buildParams]);
+  }, [buildParams, activeTab]);
 
   /* Effects */
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {

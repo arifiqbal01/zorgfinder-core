@@ -41,39 +41,46 @@ export const useProvidersList = () => {
 
   /* Fetch Providers */
   const fetchProviders = useCallback(async () => {
-    const params = buildParams();
-    const url = `/wp-json/zorg/v1/providers?${params}`;
+  const params = buildParams();
+  const url = `/wp-json/zorg/v1/providers?${params}`;
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const res = await fetch(url, { headers: {} });
-      const text = await res.text();
+  try {
+    const headers = {};
 
-      let json = {};
-      try {
-        json = JSON.parse(text);
-      } catch (err) {
-        json = {};
-      }
-
-      const rawList = Array.isArray(json?.data) ? json.data : [];
-
-      /* FIX: Normalize has_hkz */
-      const normalized = rawList.map((p) => ({
-        ...p,
-        has_hkz: Number(p.has_hkz) === 1 ? 1 : 0,
-      }));
-
-      setProviders(normalized);
-      setTotal(json?.total || 0);
-    } catch (err) {
-      setProviders([]);
-      setTotal(0);
-    } finally {
-      setLoading(false);
+    // Only for trash view, because requires admin
+    if (activeTab === "trash") {
+      headers["X-WP-Nonce"] = window.wpApiSettings?.nonce || "";
     }
-  }, [buildParams]);
+
+    const res = await fetch(url, { headers });
+
+    const text = await res.text();
+
+    let json = {};
+    try {
+      json = JSON.parse(text);
+    } catch {
+      json = {};
+    }
+
+    const rawList = Array.isArray(json?.data) ? json.data : [];
+
+    const normalized = rawList.map((p) => ({
+      ...p,
+      has_hkz: Number(p.has_hkz) === 1 ? 1 : 0,
+    }));
+
+    setProviders(normalized);
+    setTotal(json?.total || 0);
+  } catch (err) {
+    setProviders([]);
+    setTotal(0);
+  } finally {
+    setLoading(false);
+  }
+}, [buildParams, activeTab]);
 
   /* Effects */
   useEffect(() => {

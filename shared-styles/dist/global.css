@@ -1115,6 +1115,10 @@ video {
   width: 5rem;
 }
 
+.w-16 {
+  width: 4rem;
+}
+
 .min-w-\[260px\] {
   min-width: 260px;
 }
@@ -1125,6 +1129,19 @@ video {
 
 .min-w-\[60px\] {
   min-width: 60px;
+}
+
+.min-w-\[140px\] {
+  min-width: 140px;
+}
+
+.min-w-\[750px\] {
+  min-width: 750px;
+}
+
+.min-w-max {
+  min-width: -moz-max-content;
+  min-width: max-content;
 }
 
 .max-w-2xl {
@@ -1466,6 +1483,10 @@ video {
   border-top-width: 4px;
 }
 
+.border-l {
+  border-left-width: 1px;
+}
+
 .border-solid {
   border-style: solid;
 }
@@ -1511,6 +1532,11 @@ video {
 
 .border-transparent {
   border-color: transparent;
+}
+
+.border-blue-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(191 219 254 / var(--tw-border-opacity, 1));
 }
 
 .bg-black {
@@ -1819,6 +1845,10 @@ video {
   text-align: justify;
 }
 
+.align-top {
+  vertical-align: top;
+}
+
 .text-2xl {
   font-size: 1.5rem;
   line-height: 2rem;
@@ -2091,6 +2121,10 @@ video {
 
 .opacity-70 {
   opacity: 0.7;
+}
+
+.opacity-100 {
+  opacity: 1;
 }
 
 .\!shadow {
@@ -2856,6 +2890,14 @@ body.wp-admin.toplevel_page_zorgfinder-dashboard #wpbody-content {
 }
 
 @media (min-width: 640px) {
+  .sm\:h-3 {
+    height: 0.75rem;
+  }
+
+  .sm\:w-3 {
+    width: 0.75rem;
+  }
+
   .sm\:max-w-3xl {
     max-width: 48rem;
   }
@@ -2871,12 +2913,28 @@ body.wp-admin.toplevel_page_zorgfinder-dashboard #wpbody-content {
 }
 
 @media (min-width: 768px) {
+  .md\:h-3\.5 {
+    height: 0.875rem;
+  }
+
   .md\:w-64 {
     width: 16rem;
   }
 
+  .md\:w-3\.5 {
+    width: 0.875rem;
+  }
+
+  .md\:min-w-\[900px\] {
+    min-width: 900px;
+  }
+
   .md\:max-w-4xl {
     max-width: 56rem;
+  }
+
+  .md\:max-w-\[200px\] {
+    max-width: 200px;
   }
 
   .md\:grid-cols-2 {
@@ -2893,6 +2951,20 @@ body.wp-admin.toplevel_page_zorgfinder-dashboard #wpbody-content {
 
   .md\:items-center {
     align-items: center;
+  }
+
+  .md\:truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .md\:whitespace-nowrap {
+    white-space: nowrap;
+  }
+
+  .md\:bg-transparent {
+    background-color: transparent;
   }
 
   .md\:p-4 {
@@ -2927,9 +2999,33 @@ body.wp-admin.toplevel_page_zorgfinder-dashboard #wpbody-content {
     font-size: 2.25rem;
     line-height: 2.5rem;
   }
+
+  .md\:opacity-0 {
+    opacity: 0;
+  }
+
+  .group:hover .md\:group-hover\:opacity-100 {
+    opacity: 1;
+  }
 }
 
 @media (min-width: 1024px) {
+  .lg\:sticky {
+    position: sticky;
+  }
+
+  .lg\:left-0 {
+    left: 0px;
+  }
+
+  .lg\:z-10 {
+    z-index: 10;
+  }
+
+  .lg\:z-20 {
+    z-index: 20;
+  }
+
   .lg\:col-span-2 {
     grid-column: span 2 / span 2;
   }
@@ -2954,7 +3050,29 @@ body.wp-admin.toplevel_page_zorgfinder-dashboard #wpbody-content {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
+  .lg\:border-r {
+    border-right-width: 1px;
+  }
+
+  .lg\:bg-gray-50 {
+    --tw-bg-opacity: 1;
+    background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1));
+  }
+
+  .lg\:bg-white {
+    --tw-bg-opacity: 1;
+    background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  }
+
   .lg\:p-8 {
     padding: 2rem;
+  }
+
+  .lg\:opacity-0 {
+    opacity: 0;
+  }
+
+  .group:hover .lg\:group-hover\:opacity-100 {
+    opacity: 1;
   }
 }
