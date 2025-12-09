@@ -10,6 +10,7 @@ import Reviews from './pages/Reviews';
 import Appointments from './pages/Appointments';
 import Favourites from './pages/Favourites';
 import Reimbursements from './pages/Reimbursements';
+import Clients from './pages/Clients';
 
 import { ToastProvider } from './hooks/useToast';
 import { LoadingProvider } from './hooks/useLoading';
@@ -39,6 +40,7 @@ const AppShell = () => (
             <Route path="/appointments" element={<Appointments />} />
             <Route path="/favourites" element={<Favourites />} />
             <Route path="/reimbursements" element={<Reimbursements />} />
+            <Route path="/clients" element={<Clients />} />
           </Routes>
         </div>
       </main>

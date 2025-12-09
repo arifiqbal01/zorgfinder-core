@@ -6,44 +6,55 @@ export function useProviders() {
     const [total, setTotal] = useState(getCache("providers:total") || 0);
     const [loading, setLoading] = useState(!providers.length);
 
-    const fetchProviders = async (params = {}) => {
-        setLoading(true);
+   // src/providers/hooks/useProviders.js  (or wherever your hook lives)
+const fetchProviders = async (params = {}) => {
+  setLoading(true);
 
-        const defaultParams = {
-            per_page: 12,
-            page: 1,
-            ...params
-        };
+  const defaultParams = {
+    per_page: 12,
+    page: 1,
+    ...params
+  };
 
-        const key = `providers:${JSON.stringify(defaultParams)}`;
-        const cached = getCache(key);
+  // CLEAN params: remove undefined, null and empty-string filters
+  const cleanParams = Object.entries(defaultParams).reduce((acc, [k, v]) => {
+    if (v === undefined || v === null) return acc;
+    // keep 0 and boolean false; skip empty string
+    if (typeof v === "string" && v.trim() === "") return acc;
+    acc[k] = v;
+    return acc;
+  }, {});
 
-        if (cached) {
-            setProviders(cached.providers);
-            setTotal(cached.total);
-            setLoading(false);
-        }
+  const key = `providers:${JSON.stringify(cleanParams)}`;
+  const cached = getCache(key);
 
-        try {
-            const qs = new URLSearchParams(defaultParams).toString();
-            const res = await fetch(`/wp-json/zorg/v1/providers?${qs}`);
-            const json = await res.json();
+  if (cached) {
+    setProviders(cached.providers);
+    setTotal(cached.total);
+    setLoading(false);
+  }
 
-            if (json.success) {
-                setProviders(json.data);
-                setTotal(json.total);
+  try {
+    const qs = new URLSearchParams(cleanParams).toString();
+    const res = await fetch(`/wp-json/zorg/v1/providers?${qs}`);
+    const json = await res.json();
 
-                setCache(key, {
-                    providers: json.data,
-                    total: json.total
-                }, 30); // cache 30s
-            }
-        } catch (e) {
-            console.error("Providers fetch failed", e);
-        }
+    if (json.success) {
+      setProviders(json.data);
+      setTotal(json.total);
 
-        setLoading(false);
-    };
+      setCache(key, {
+        providers: json.data,
+        total: json.total
+      }, 30); // cache 30s
+    }
+  } catch (e) {
+    console.error("Providers fetch failed", e);
+  }
+
+  setLoading(false);
+};
+
 
     return { providers, total, loading, fetchProviders };
 }

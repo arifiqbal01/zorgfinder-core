@@ -11,7 +11,8 @@ use ZorgFinder\API\{
     AppointmentsController,
     ReimbursementsController,
     DashboardController,
-    ProvidersExtendedController
+    ProvidersExtendedController,
+    AuthController,
 };
 use ZorgFinder\Blocks\BlockRegistrar;
 
@@ -48,6 +49,7 @@ final class Core {
             (new ReimbursementsController())->register_routes();
             (new DashboardController())->register_routes();
             (new ProvidersExtendedController())->register_routes();
+            (new AuthController())->register_routes();
         });
     }
 

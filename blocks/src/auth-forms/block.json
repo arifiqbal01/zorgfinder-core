@@ -1,0 +1,19 @@
+{
+  "apiVersion": 3,
+  "name": "zorg/auth-forms",
+  "title": "User Login / Register",
+  "category": "widgets",
+  "icon": "admin-users",
+
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./editor.css",
+
+  "style": "file:./style.css",
+
+  "viewScript": "file:./auth-forms.js",
+  "render": "file:./render.php",
+
+  "supports": {
+    "html": false
+  }
+}

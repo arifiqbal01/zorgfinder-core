@@ -17,6 +17,7 @@ const Sidebar = () => {
     { to: "/appointments", label: "Appointments", icon: <CalendarDays size={18} /> },
     { to: "/favourites", label: "Favourites", icon: <Heart size={18} /> },
     { to: "/reimbursements", label: "Reimbursements", icon: <Wallet size={18} /> },
+    { to: "/clients", label: "Clients", icon: <Users size={18} /> },
   ];
 
   return (

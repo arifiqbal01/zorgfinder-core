@@ -21,7 +21,7 @@ class Activator
             $db->run_migrations();
 
             // 2️⃣ Seed demo data if it's a fresh install
-            if ( ! get_option( 'zorgfinder_installed' ) ) {
+            if (! get_option('zorgfinder_installed')) {
                 $db->run_seeders();
             }
 
@@ -29,11 +29,39 @@ class Activator
             error_log('[ZorgFinder Activation Error] ' . $e->getMessage());
         }
 
-        // 3️⃣ Register default plugin options
+        // 3️⃣ Register custom user roles + capabilities
+        self::register_roles();
+
+        // 4️⃣ Register default plugin options
         self::register_default_options();
 
-        // 4️⃣ Flush rewrite rules for REST routes
+        // 5️⃣ Flush rewrite rules for REST routes
         self::flush_rewrite_rules();
+    }
+
+    /**
+     * Create or update custom roles.
+     */
+    private static function register_roles(): void
+    {
+        // Clone Subscriber capabilities as baseline
+        $subscriber = get_role('subscriber');
+        $base_caps  = $subscriber ? $subscriber->capabilities : [ 'read' => true ];
+
+        // Create the role if missing
+        if (! get_role('zf_client')) {
+            add_role(
+                'zf_client',
+                'Client',
+                $base_caps
+            );
+        }
+
+        // Ensure role gets our plugin-specific capability
+        $role = get_role('zf_client');
+        if ($role && ! $role->has_cap('use_zorg_frontend')) {
+            $role->add_cap('use_zorg_frontend');
+        }
     }
 
     /**
@@ -43,7 +71,7 @@ class Activator
     {
         $now = current_time('mysql');
 
-        if ( ! get_option('zorgfinder_installed') ) {
+        if (! get_option('zorgfinder_installed')) {
             add_option('zorgfinder_installed', $now);
         }
 
@@ -55,7 +83,7 @@ class Activator
      */
     private static function flush_rewrite_rules(): void
     {
-        if ( function_exists('flush_rewrite_rules') ) {
+        if (function_exists('flush_rewrite_rules')) {
             flush_rewrite_rules();
         }
     }

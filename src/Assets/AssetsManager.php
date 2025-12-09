@@ -26,6 +26,15 @@ class AssetsManager
             return;
         }
 
+        // Load WordPress REST API JS bootstrap
+        wp_enqueue_script('wp-api');
+
+        // Make sure WP exposes the global REST nonce
+        wp_localize_script('wp-api', 'wpApiSettings', [
+            'root'  => esc_url_raw(rest_url()),
+            'nonce' => wp_create_nonce('wp_rest'),
+        ]);
+
         $asset_file = ZORGFINDER_PATH . 'admin/build/index.asset.php';
         $js_file    = ZORGFINDER_URL . 'admin/build/index.js';
         $css_file   = ZORGFINDER_URL . 'admin/build/style-index.css';
@@ -94,7 +103,8 @@ class AssetsManager
     $review_file       = ZORGFINDER_PATH . 'assets/js/review-form-frontend.js';
     $appointment_file  = ZORGFINDER_PATH . 'blocks/build/appointment-form-frontend.js';
     $providers_file    = ZORGFINDER_PATH . 'blocks/build/providers-frontend.js';
-    $comparison_file   = ZORGFINDER_PATH . 'blocks/build/comparison-frontend.js'; // NEW
+    $comparison_file   = ZORGFINDER_PATH . 'blocks/build/comparison-frontend.js';
+    $auth_forms_file   = ZORGFINDER_PATH . 'blocks/build/auth-forms.js';
 
     $localize = [
         'restUrl'    => rest_url('zorg/v1/'),
@@ -156,6 +166,20 @@ class AssetsManager
             true
         );
         wp_localize_script('zorgfinder-comparison-frontend', 'zorgFinderApp', $localize);
+    }
+
+    /**
+     * Auth Forms FRONTEND (NEW)
+     */
+    if (file_exists($auth_forms_file)) {
+        wp_enqueue_script(
+            'zorgfinder-auth-forms-frontend',
+            ZORGFINDER_URL . 'blocks/build/auth-forms.js',
+            ['wp-element'],
+            filemtime($auth_forms_file),
+            true
+        );
+        wp_localize_script('zorgfinder-auth-forms-frontend', 'zorgFinderApp', $localize);
     }
 }
 

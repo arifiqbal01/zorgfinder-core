@@ -24,6 +24,11 @@ module.exports = {
         __dirname,
         "src/comparison/comparison-frontend.js"
     );
+    // 🔥 NEW: Auth Forms
+    entries["auth-forms"] = path.resolve(
+        __dirname,
+        "src/auth-forms/auth-forms.js"
+    );
 
     return entries;
 },

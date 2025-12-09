@@ -51661,6 +51661,12 @@ const Sidebar = () => {
     icon: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_7__["default"], {
       size: 18
     })
+  }, {
+    to: "/clients",
+    label: "Clients",
+    icon: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_6__["default"], {
+      size: 18
+    })
   }];
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("aside", {
     className: "bg-white flex flex-col"
@@ -52404,6 +52410,144 @@ const Appointments = () => {
   }, editing.status)))));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Appointments);
+
+/***/ }),
+
+/***/ "./src/pages/Clients.jsx":
+/*!*******************************!*\
+  !*** ./src/pages/Clients.jsx ***!
+  \*******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _components_Table__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/Table */ "./src/components/Table.jsx");
+/* harmony import */ var _components_Pagination__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/Pagination */ "./src/components/Pagination.jsx");
+/* harmony import */ var _components_Filters__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../components/Filters */ "./src/components/Filters.jsx");
+/* harmony import */ var _components_Modal__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../components/Modal */ "./src/components/Modal.jsx");
+
+
+
+
+
+
+const getNonce = () => window?.zorgFinderApp?.nonce || "";
+const Clients = () => {
+  const [items, setItems] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [filters, setFilters] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    search: "",
+    language: ""
+  });
+  const [page, setPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1);
+  const [perPage, setPerPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(20);
+  const [total, setTotal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0);
+  const [selected, setSelected] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [showModal, setShowModal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const [editing, setEditing] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+  const headers = {
+    "X-WP-Nonce": getNonce()
+  };
+  const fetchItems = async () => {
+    let url = `/wp-json/wp/v2/users?roles=zf_client&_fields=id,name,email,meta,roles&per_page=${perPage}&page=${page}`;
+    if (filters.search) url += `&search=${filters.search}`;
+    if (filters.language) url += `&meta_key=language&meta_value=${filters.language}`;
+    const res = await fetch(url, {
+      headers: {
+        "X-WP-Nonce": wpApiSettings.nonce
+      },
+      credentials: "same-origin"
+    });
+    const data = await res.json();
+    setItems(Array.isArray(data) ? data : []);
+    setTotal(parseInt(res.headers.get("X-WP-Total") || "0"));
+  };
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    fetchItems();
+  }, [page, perPage, filters]);
+  const deleteClient = async id => {
+    await fetch(`/wp-json/wp/v2/users/${id}?force=false`, {
+      method: "DELETE",
+      headers,
+      credentials: "same-origin"
+    });
+    fetchItems();
+  };
+  const columns = ["Name", "Email", "Phone", "Language"];
+  const rows = items.map(u => [u.name || "—", u.email || "—", u.meta?.phone || "—", u.meta?.language || "—"]);
+  const openItem = u => {
+    setEditing(u);
+    setShowModal(true);
+  };
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "p-2 space-y-6"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
+    className: "text-2xl font-semibold"
+  }, "Clients"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Filters__WEBPACK_IMPORTED_MODULE_3__["default"], {
+    schema: [{
+      type: "search",
+      key: "search",
+      placeholder: "Search users…"
+    }, {
+      type: "select",
+      key: "language",
+      placeholder: "Language",
+      options: [{
+        value: "en",
+        label: "English"
+      }, {
+        value: "nl",
+        label: "Dutch"
+      }, {
+        value: "fr",
+        label: "French"
+      }]
+    }],
+    filters: filters,
+    setFilters: setFilters
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Table__WEBPACK_IMPORTED_MODULE_1__["default"], {
+    columns: columns,
+    data: rows,
+    providers: items,
+    selected: selected,
+    setSelected: setSelected,
+    actions: i => {
+      const u = items[i];
+      return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+        className: "flex items-center gap-3"
+      }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+        onClick: () => openItem(u),
+        className: "text-blue-600"
+      }, "View"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+        onClick: () => deleteClient(u.id),
+        className: "text-red-600"
+      }, "Delete"));
+    },
+    pagination: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Pagination__WEBPACK_IMPORTED_MODULE_2__["default"], {
+      page: page,
+      perPage: perPage,
+      total: total,
+      onChange: setPage,
+      onPerPageChange: n => {
+        setPerPage(n);
+        setPage(1);
+      }
+    })
+  }), showModal && editing && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Modal__WEBPACK_IMPORTED_MODULE_4__["default"], {
+    title: `Client #${editing.id}`,
+    onClose: () => {
+      setShowModal(false);
+      setEditing(null);
+    }
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "space-y-4 text-sm"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Name:"), " ", editing.name), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Email:"), " ", editing.email), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Phone:"), " ", editing.meta?.phone || "—"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Language:"), " ", editing.meta?.language || "—"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Role:"), " ", editing.roles?.join(", ")))));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Clients);
 
 /***/ }),
 
@@ -54888,10 +55032,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _pages_Appointments__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./pages/Appointments */ "./src/pages/Appointments.jsx");
 /* harmony import */ var _pages_Favourites__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./pages/Favourites */ "./src/pages/Favourites.jsx");
 /* harmony import */ var _pages_Reimbursements__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./pages/Reimbursements */ "./src/pages/Reimbursements.jsx");
-/* harmony import */ var _hooks_useToast__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./hooks/useToast */ "./src/hooks/useToast.js");
-/* harmony import */ var _hooks_useLoading__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./hooks/useLoading */ "./src/hooks/useLoading.js");
-/* harmony import */ var _components_LoadingOverlay__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./components/LoadingOverlay */ "./src/components/LoadingOverlay.jsx");
-/* harmony import */ var _shared_styles_dist_global_css__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../shared-styles/dist/global.css */ "../shared-styles/dist/global.css");
+/* harmony import */ var _pages_Clients__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./pages/Clients */ "./src/pages/Clients.jsx");
+/* harmony import */ var _hooks_useToast__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./hooks/useToast */ "./src/hooks/useToast.js");
+/* harmony import */ var _hooks_useLoading__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./hooks/useLoading */ "./src/hooks/useLoading.js");
+/* harmony import */ var _components_LoadingOverlay__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./components/LoadingOverlay */ "./src/components/LoadingOverlay.jsx");
+/* harmony import */ var _shared_styles_dist_global_css__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../../shared-styles/dist/global.css */ "../shared-styles/dist/global.css");
+
 
 
 
@@ -54937,10 +55083,13 @@ const AppShell = () => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div
 }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
   path: "/reimbursements",
   element: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_pages_Reimbursements__WEBPACK_IMPORTED_MODULE_11__["default"], null)
+}), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
+  path: "/clients",
+  element: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_pages_Clients__WEBPACK_IMPORTED_MODULE_12__["default"], null)
 }))))));
 const mount = document.getElementById('zorgfinder-admin-app');
 if (mount) {
-  (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(mount).render((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_3__.HashRouter, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_hooks_useToast__WEBPACK_IMPORTED_MODULE_12__.ToastProvider, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_hooks_useLoading__WEBPACK_IMPORTED_MODULE_13__.LoadingProvider, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(AppShell, null), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_LoadingOverlay__WEBPACK_IMPORTED_MODULE_14__["default"], null)))));
+  (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(mount).render((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_3__.HashRouter, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_hooks_useToast__WEBPACK_IMPORTED_MODULE_13__.ToastProvider, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_hooks_useLoading__WEBPACK_IMPORTED_MODULE_14__.LoadingProvider, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(AppShell, null), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_LoadingOverlay__WEBPACK_IMPORTED_MODULE_15__["default"], null)))));
 }
 })();
 
