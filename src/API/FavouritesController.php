@@ -66,7 +66,7 @@ class FavouritesController extends BaseController
         if (!empty($search)) {
             $like = '%' . $wpdb->esc_like($search) . '%';
             $where .= $wpdb->prepare("
-                AND (p.name LIKE %s OR p.slug LIKE %s OR u.display_name LIKE %s)
+               AND (p.provider LIKE %s OR p.slug LIKE %s OR u.display_name LIKE %s)
             ", $like, $like, $like);
         }
 
@@ -88,7 +88,7 @@ class FavouritesController extends BaseController
                 f.user_id,
                 u.display_name AS user_name,
                 f.provider_id,
-                p.name AS provider_name,
+                p.provider AS provider_name,
                 f.created_at
             FROM $table_fav f
             JOIN $table_prov p ON p.id = f.provider_id

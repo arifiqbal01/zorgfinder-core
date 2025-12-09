@@ -15,13 +15,10 @@ abstract class BaseController extends WP_REST_Controller
     /**
      * Standard JSON response wrapper.
      */
-    protected function respond($data, int $status = 200): WP_REST_Response
-    {
-        return new WP_REST_Response([
-            'success' => true,
-            'data' => $data,
-        ], $status);
-    }
+   protected function respond($data, int $status = 200): WP_REST_Response
+{
+    return new WP_REST_Response($data, $status);
+}
 
     /**
      * Standardized error response.

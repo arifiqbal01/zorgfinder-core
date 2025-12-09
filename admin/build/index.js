@@ -51853,21 +51853,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 
-const getNonce = () => window?.zorgFinderApp?.nonce || "";
-
-/* -----------------------------------------------------------
- * GLOBAL TTL CACHE
- ----------------------------------------------------------- */
+const DEFAULT_CACHE_TTL = 20000;
 const LIST_CACHE = {};
-const CACHE_TTL = 20000;
-const isFresh = entry => entry && Date.now() - entry.timestamp < CACHE_TTL;
-
-/* -----------------------------------------------------------
- * MAP UI SORT → API SORT
- ----------------------------------------------------------- */
-const mapSort = sortKey => {
-  console.log("📌 mapSort() received:", sortKey);
-  switch (sortKey) {
+const getNonce = () => window?.zorgFinderApp?.nonce || "";
+const mapSort = key => {
+  switch (key) {
     case "newest":
       return "date_desc";
     case "oldest":
@@ -51884,12 +51874,7 @@ const mapSort = sortKey => {
       return "date_desc";
   }
 };
-
-/* -----------------------------------------------------------
- * PRODUCTION + DEBUG LIST MANAGER
- ----------------------------------------------------------- */
 const useListManager = (endpoint, initialFilters = {}, requireAuth = true) => {
-  console.log("=== useListManager INIT for:", endpoint, "===");
   const [items, setItems] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
   const [filters, setFilters] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(initialFilters);
   const [sort, setSort] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)("newest");
@@ -51897,108 +51882,62 @@ const useListManager = (endpoint, initialFilters = {}, requireAuth = true) => {
   const [page, setPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1);
   const [perPage, setPerPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(10);
   const [total, setTotal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0);
-  const [loading, setLoading] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
-  const authHeaders = {
+  const authHeaders = requireAuth ? {
     "X-WP-Nonce": getNonce()
-  };
-
-  /* -----------------------------------------------------------
-   * BUILD PARAMS (LOGGING INSIDE)
-   ----------------------------------------------------------- */
+  } : {};
   const buildParams = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => {
     const params = new URLSearchParams();
-    console.log("🔧 Building params…");
     Object.entries(filters).forEach(([k, v]) => {
-      if (v !== "" && v !== null && v !== undefined) {
-        params.append(k, v);
-      }
+      if (v !== "" && v !== null && v !== undefined) params.append(k, v);
     });
     params.append("page", page);
     params.append("per_page", perPage);
-    const mappedSort = mapSort(sort);
-    params.append("sort", mappedSort);
+    params.append("sort", mapSort(sort));
     params.append("trashed", tab === "trash" ? "1" : "0");
-    console.log("🔍 Built params:", Object.fromEntries(params.entries()));
     return params.toString();
   }, [filters, page, perPage, sort, tab]);
-
-  /* -----------------------------------------------------------
-   * FETCH ITEMS (HEAVY LOGGING)
-   ----------------------------------------------------------- */
   const fetchItems = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async () => {
     const params = buildParams();
     const url = `/wp-json/zorg/v1${endpoint}?${params}`;
-    console.log("🚀 FETCH URL:", url);
-    console.log("📨 Headers:", requireAuth ? authHeaders : {});
-    setLoading(true);
     try {
+      var _json$total, _json$total2;
       const res = await fetch(url, {
-        method: "GET",
-        headers: requireAuth ? authHeaders : {}
+        headers: authHeaders
       });
-      console.log("📥 Response Status:", res.status);
-      const raw = await res.text();
-      console.log("📄 RAW TEXT RESPONSE:", raw);
-      let json = {};
-      try {
-        json = JSON.parse(raw);
-      } catch (e) {
-        console.error("❌ JSON PARSE FAILED:", e);
-      }
-      console.log("📦 JSON RESPONSE:", json);
+      const text = await res.text();
+      const json = JSON.parse(text);
       const list = Array.isArray(json?.data) ? json.data : [];
-      const totalVal = json?.total || list.length;
-      console.log("📊 Normalized list:", list);
-      console.log("📊 Total:", totalVal);
       setItems(list);
-      setTotal(totalVal);
+      setTotal((_json$total = json?.total) !== null && _json$total !== void 0 ? _json$total : list.length);
       LIST_CACHE[url] = {
         timestamp: Date.now(),
         data: {
           items: list,
-          total: totalVal
+          total: (_json$total2 = json?.total) !== null && _json$total2 !== void 0 ? _json$total2 : list.length
         }
       };
-      console.log("💾 Cached:", LIST_CACHE[url]);
-    } catch (err) {
-      console.error("🔥 FETCH FAILED:", err);
+    } catch {
       const cached = LIST_CACHE[url];
-      if (isFresh(cached)) {
-        console.log("♻ Loading from cache:", cached);
+      if (cached && Date.now() - cached.timestamp < DEFAULT_CACHE_TTL) {
         setItems(cached.data.items);
         setTotal(cached.data.total);
       } else {
         setItems([]);
         setTotal(0);
       }
-    } finally {
-      setLoading(false);
-      console.log("🟦 Loading finished");
     }
-  }, [endpoint, buildParams, requireAuth]);
-
-  /* -----------------------------------------------------------
-   * REFETCH ON CHANGES
-   ----------------------------------------------------------- */
+  }, [buildParams, endpoint]);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
-    console.log("🔄 Filters/sort/perPage/tab changed → resetting page to 1");
     setPage(1);
     fetchItems();
   }, [filters, sort, perPage, tab]);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
-    console.log("📄 Page changed:", page);
     fetchItems();
   }, [page]);
-
-  /* -----------------------------------------------------------
-   * DELETE / RESTORE
-   ----------------------------------------------------------- */
   const invalidateCache = () => {
-    console.log("🧹 Clearing cache for endpoint:", endpoint);
     Object.keys(LIST_CACHE).filter(key => key.includes(endpoint)).forEach(k => delete LIST_CACHE[k]);
   };
   const deleteItem = async id => {
-    console.log("🗑 Deleting:", id);
     await fetch(`/wp-json/zorg/v1${endpoint}/${id}`, {
       method: "DELETE",
       headers: authHeaders
@@ -52007,7 +51946,6 @@ const useListManager = (endpoint, initialFilters = {}, requireAuth = true) => {
     fetchItems();
   };
   const restoreItem = async id => {
-    console.log("♻ Restoring:", id);
     await fetch(`/wp-json/zorg/v1${endpoint}/${id}/restore`, {
       method: "PATCH",
       headers: authHeaders
@@ -52028,7 +51966,6 @@ const useListManager = (endpoint, initialFilters = {}, requireAuth = true) => {
     perPage,
     setPerPage,
     total,
-    loading,
     fetchItems,
     deleteItem,
     restoreItem
@@ -52181,6 +52118,8 @@ const Appointments = () => {
   const [providerMap, setProviderMap] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
   const [usersMap, setUsersMap] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
   const [expandedNoteId, setExpandedNoteId] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+  const [showModal, setShowModal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const [editing, setEditing] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
   const {
     items,
     filters,
@@ -52200,21 +52139,15 @@ const Appointments = () => {
   } = (0,_hooks_useListManager__WEBPACK_IMPORTED_MODULE_10__.useListManager)("/appointments", {
     search: "",
     provider_id: "",
-    status: "",
-    date: ""
+    status: ""
   }, true);
   const [selected, setSelected] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
-  const [showModal, setShowModal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
-  const [editing, setEditing] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
   const authHeaders = {
     "X-WP-Nonce": getNonce()
   };
 
-  /* ---------------------------------------------------------
-     LOAD PROVIDERS + USERS
-  --------------------------------------------------------- */
+  /* LOAD PROVIDERS + USERS */
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
-    // Providers
     (async () => {
       try {
         const res = await fetch(`/wp-json/zorg/v1/providers?per_page=999`, {
@@ -52223,14 +52156,12 @@ const Appointments = () => {
         const json = await res.json();
         if (json?.success) {
           const map = {};
-          json.data.forEach(p => map[p.id] = p.name);
+          json.data.forEach(p => map[p.id] = p.provider);
           setProviders(json.data);
           setProviderMap(map);
         }
       } catch {}
     })();
-
-    // Users
     (async () => {
       try {
         const res = await fetch(`/wp-json/wp/v2/users?per_page=100`, {
@@ -52247,15 +52178,7 @@ const Appointments = () => {
       } catch {}
     })();
   }, []);
-
-  /* ---------------------------------------------------------
-     PROVIDERS THAT HAVE APPOINTMENTS
-  --------------------------------------------------------- */
   const appointmentProviders = providers.filter(p => items.some(it => it.provider_id === p.id));
-
-  /* ---------------------------------------------------------
-     STATUS ACTIONS
-  --------------------------------------------------------- */
   const updateStatus = async (id, status) => {
     await fetch(`/wp-json/zorg/v1/appointments/${id}`, {
       method: "PATCH",
@@ -52269,12 +52192,6 @@ const Appointments = () => {
     });
     fetchItems();
   };
-  const handleConfirm = id => updateStatus(id, "confirmed");
-  const handleReject = id => updateStatus(id, "rejected");
-
-  /* ---------------------------------------------------------
-     OPEN APPOINTMENT
-  --------------------------------------------------------- */
   const openAppointment = async id => {
     try {
       const res = await fetch(`/wp-json/zorg/v1/appointments/${id}`, {
@@ -52287,27 +52204,15 @@ const Appointments = () => {
       }
     } catch {}
   };
-
-  /* ---------------------------------------------------------
-     CLICK OUTSIDE TO COLLAPSE NOTES
-  --------------------------------------------------------- */
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     const handler = () => setExpandedNoteId(null);
     window.addEventListener("click", handler);
     return () => window.removeEventListener("click", handler);
   }, []);
 
-  /* ---------------------------------------------------------
-     TABLE CONFIG
-  --------------------------------------------------------- */
-  const columns = ["Provider", "User", "Date", "Time", "Status", "Notes", "Created"];
-  const rows = items.map(it => [providerMap[it.provider_id] || `#${it.provider_id}`, usersMap[it.user_id] || `User #${it.user_id}`, it.preferred_date, it.time_slot, it.status === "confirmed" ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "text-green-600 font-semibold"
-  }, "Confirmed") : it.status === "rejected" ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "text-red-600 font-semibold"
-  }, "Rejected") : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "text-yellow-600 font-semibold"
-  }, "Pending"), /* NOTES EXPAND/COLLAPSE */
+  /* TABLE CONFIG — NEW ORDER */
+  const columns = ["Name", "Email", "Phone", "Provider", "Notes", "Status"];
+  const rows = items.map(it => [it.name || "—", it.email || "—", it.phone || "—", providerMap[it.provider_id] || `#${it.provider_id}`, /* NOTES COLUMN */
   (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
     onClick: e => e.stopPropagation()
   }, expandedNoteId === it.id ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
@@ -52325,11 +52230,14 @@ const Appointments = () => {
       e.stopPropagation();
       setExpandedNoteId(it.id);
     }
-  }, "..."))), it.created_at]);
-
-  /* ---------------------------------------------------------
-     RENDER
-  --------------------------------------------------------- */
+  }, "..."))), /* STATUS */
+  it.status === "confirmed" ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "text-green-600 font-semibold"
+  }, "Confirmed") : it.status === "rejected" ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "text-red-600 font-semibold"
+  }, "Rejected") : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "text-yellow-600 font-semibold"
+  }, "Pending")]);
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "p-2 space-y-6"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_ManagementControls__WEBPACK_IMPORTED_MODULE_9__["default"], {
@@ -52349,7 +52257,7 @@ const Appointments = () => {
       placeholder: "Provider",
       options: appointmentProviders.map(p => ({
         value: p.id,
-        label: p.name
+        label: p.provider
       }))
     }, {
       type: "select",
@@ -52365,10 +52273,6 @@ const Appointments = () => {
         value: "rejected",
         label: "Rejected"
       }]
-    }, {
-      type: "date",
-      key: "date",
-      placeholder: "Select date"
     }],
     filters: filters,
     setFilters: setFilters
@@ -52420,15 +52324,15 @@ const Appointments = () => {
     providers: items,
     selected: selected,
     setSelected: setSelected,
-    actions: i => {
-      const it = items[i];
+    actions: index => {
+      const it = items[index];
       return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
         className: "flex items-center gap-3"
       }, tab !== "trash" && it.status !== "confirmed" && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-        onClick: () => handleConfirm(it.id),
+        onClick: () => updateStatus(it.id, "confirmed"),
         className: "text-green-600"
       }, "\u2714"), tab !== "trash" && it.status !== "rejected" && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-        onClick: () => handleReject(it.id),
+        onClick: () => updateStatus(it.id, "rejected"),
         className: "text-yellow-600"
       }, "\u2716"), tab === "trash" ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
         onClick: () => restoreItem(it.id),
@@ -52461,9 +52365,43 @@ const Appointments = () => {
     }
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "space-y-4 text-sm"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Provider:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, providerMap[editing.provider_id])), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "User:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, usersMap[editing.user_id])), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Date:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, editing.preferred_date)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Time:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, editing.time_slot)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Status:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, editing.status)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Notes:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "p-3 bg-gray-50 rounded whitespace-pre-line"
-  }, editing.notes || "—")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Created:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, editing.created_at)))));
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "border rounded-lg p-4 bg-gray-50"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h4", {
+    className: "font-semibold mb-2 text-gray-700"
+  }, "Contact Details"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex justify-between py-1"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "text-gray-500"
+  }, "Name:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, editing.name)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex justify-between py-1"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "text-gray-500"
+  }, "Email:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, editing.email)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex justify-between py-1"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "text-gray-500"
+  }, "Phone:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, editing.phone))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "border rounded-lg p-4 bg-gray-50"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h4", {
+    className: "font-semibold mb-2 text-gray-700"
+  }, "Provider"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, providerMap[editing.provider_id])), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "border rounded-lg p-4 bg-gray-50"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h4", {
+    className: "font-semibold mb-2 text-gray-700"
+  }, "User (Optional)"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, editing.user_id ? usersMap[editing.user_id] : "Visitor")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "border rounded-lg p-4 bg-gray-50"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h4", {
+    className: "font-semibold mb-2 text-gray-700"
+  }, "Notes"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "whitespace-pre-line"
+  }, editing.notes || "—")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "border rounded-lg p-4 bg-gray-50"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h4", {
+    className: "font-semibold mb-2 text-gray-700"
+  }, "Status"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "capitalize"
+  }, editing.status)))));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Appointments);
 
@@ -52570,7 +52508,7 @@ const StatCard = ({
   className: "bg-white/95 rounded-xl p-3 shadow-sm border border-gray-100 flex items-center gap-3"
 }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
   className: "w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-semibold"
-}, icon !== null && icon !== void 0 ? icon : label?.charAt(0)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+}, icon !== null && icon !== void 0 ? icon : label.charAt(0)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
   className: "flex flex-col"
 }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
   className: "text-xs text-gray-500"
@@ -52591,17 +52529,16 @@ function Dashboard() {
   const [dist, setDist] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
   const [rangeDays, setRangeDays] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(30);
 
-  // Local cache
+  /* -----------------------------------------
+     LocalStorage Caching
+  ----------------------------------------- */
   const cacheGet = key => {
     try {
       const raw = localStorage.getItem(key);
       if (!raw) return null;
-      const p = JSON.parse(raw);
-      if (Date.now() - p.time > CACHE_TTL) {
-        localStorage.removeItem(key);
-        return null;
-      }
-      return p.data;
+      const obj = JSON.parse(raw);
+      if (Date.now() - obj.time > CACHE_TTL) return null;
+      return obj.data;
     } catch {
       return null;
     }
@@ -52614,87 +52551,100 @@ function Dashboard() {
       }));
     } catch {}
   };
+
+  /* -----------------------------------------
+     MAIN EFFECT (LOAD DASHBOARD)
+  ----------------------------------------- */
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     let mounted = true;
     const load = async () => {
       show("Loading dashboard…");
 
-      // SUMMARY
+      /* ---------------------------
+         SUMMARY
+      --------------------------- */
       try {
-        const key = "dashboard_summary_v1";
+        const key = "df_summary";
         const cached = cacheGet(key);
         if (cached) setSummary(cached);else {
           const res = await fetchJson("dashboard/summary");
           if (res.ok) {
-            var _ref, _ref2, _res$json$data;
-            const payload = (_ref = (_ref2 = (_res$json$data = res.json?.data) !== null && _res$json$data !== void 0 ? _res$json$data : res.json?.summary) !== null && _ref2 !== void 0 ? _ref2 : res.json) !== null && _ref !== void 0 ? _ref : {};
+            var _res$json;
+            const payload = (_res$json = res.json) !== null && _res$json !== void 0 ? _res$json : {};
             if (mounted) {
               setSummary(payload);
               cacheSet(key, payload);
             }
-          } else setSummary({});
+          }
         }
       } catch {
         setSummary({});
       }
 
-      // TREND
+      /* ---------------------------
+         APPOINTMENT TREND
+      --------------------------- */
       try {
-        const key = `dashboard_trend_v2_${rangeDays}`;
+        const key = `df_trend_${rangeDays}`;
         const cached = cacheGet(key);
         if (cached) setTrend(cached);else {
+          var _res$json$data;
           const res = await fetchJson(`dashboard/appointments-trend?days=${rangeDays}`);
-          if (res.ok) {
-            const rows = res.json?.data || res.json?.trend || res.json?.list || [];
-            const series = toChartSeries(rows, "date", "count", rangeDays);
-            if (mounted) {
-              setTrend(series);
-              cacheSet(key, series);
-            }
-          } else setTrend([]);
+          const rows = res.ok ? (_res$json$data = res.json?.data) !== null && _res$json$data !== void 0 ? _res$json$data : [] : [];
+          const series = toChartSeries(rows, "date", "count", rangeDays);
+          if (mounted) {
+            setTrend(series);
+            cacheSet(key, series);
+          }
         }
       } catch {
         setTrend([]);
       }
 
-      // TOP PROVIDERS
+      /* ---------------------------
+         TOP PROVIDERS
+      --------------------------- */
       try {
-        const key = "dashboard_top_providers";
+        const key = "df_top_providers";
         const cached = cacheGet(key);
         if (cached) setTopProviders(cached);else {
           const res = await fetchJson("dashboard/top-providers");
-          if (res.ok) {
-            var _res$json$data$items;
-            const rows = Array.isArray(res.json?.data) ? res.json.data : Array.isArray(res.json) ? res.json : (_res$json$data$items = res.json?.data?.items) !== null && _res$json$data$items !== void 0 ? _res$json$data$items : [];
-            if (mounted) {
-              setTopProviders(rows);
-              cacheSet(key, rows);
-            }
-          } else setTopProviders([]);
+          const rows = Array.isArray(res.json) ? res.json : Array.isArray(res.json?.data) ? res.json.data : [];
+          const normalized = rows.map(p => {
+            var _ref, _ref2, _p$provider;
+            return {
+              ...p,
+              provider: (_ref = (_ref2 = (_p$provider = p.provider) !== null && _p$provider !== void 0 ? _p$provider : p.provider_name) !== null && _ref2 !== void 0 ? _ref2 : p.name) !== null && _ref !== void 0 ? _ref : "Unknown"
+            };
+          });
+          if (mounted) {
+            setTopProviders(normalized);
+            cacheSet(key, normalized);
+          }
         }
       } catch {
         setTopProviders([]);
       }
 
-      // DISTRIBUTION
+      /* ---------------------------
+         DISTRIBUTION
+      --------------------------- */
       try {
-        const key = "dashboard_distribution";
+        const key = "df_distribution";
         const cached = cacheGet(key);
         if (cached) setDist(cached);else {
+          var _res$json2;
           const res = await fetchJson("dashboard/distribution");
-          if (res.ok) {
-            var _ref3, _res$json$data2, _ref4, _payload$appointments, _payload$reimbursemen, _payload$favourites;
-            const payload = (_ref3 = (_res$json$data2 = res.json?.data) !== null && _res$json$data2 !== void 0 ? _res$json$data2 : res.json) !== null && _ref3 !== void 0 ? _ref3 : {};
-            const safe = {
-              appointments_status: Array.isArray(payload.appointments_status) ? payload.appointments_status : (_ref4 = (_payload$appointments = payload.appointments_status_list) !== null && _payload$appointments !== void 0 ? _payload$appointments : payload.statuses) !== null && _ref4 !== void 0 ? _ref4 : [],
-              reimbursements_type: Array.isArray(payload.reimbursements_type) ? payload.reimbursements_type : (_payload$reimbursemen = payload.reimbursements) !== null && _payload$reimbursemen !== void 0 ? _payload$reimbursemen : [],
-              favourites_device: Array.isArray(payload.favourites_device) ? payload.favourites_device : (_payload$favourites = payload.favourites) !== null && _payload$favourites !== void 0 ? _payload$favourites : []
-            };
-            if (mounted) {
-              setDist(safe);
-              cacheSet(key, safe);
-            }
-          } else setDist({});
+          const payload = (_res$json2 = res.json) !== null && _res$json2 !== void 0 ? _res$json2 : {};
+          const safe = {
+            appointments_status: Array.isArray(payload.appointments_status) ? payload.appointments_status : [],
+            reimbursements_type: Array.isArray(payload.reimbursements_type) ? payload.reimbursements_type : [],
+            favourites_device: Array.isArray(payload.favourites_device) ? payload.favourites_device : []
+          };
+          if (mounted) {
+            setDist(safe);
+            cacheSet(key, safe);
+          }
         }
       } catch {
         setDist({});
@@ -52704,35 +52654,43 @@ function Dashboard() {
     load();
     return () => mounted = false;
   }, [rangeDays]);
+
+  /* -----------------------------------------
+     PROCESS DASHBOARD DATA
+  ----------------------------------------- */
   const s = summary || {};
   const tp = Array.isArray(topProviders) ? topProviders : [];
   const d = dist || {};
   const pieColors = ["#2563EB", "#1E3A8A", "#60A5FA", "#93C5FD", "#DBEAFE"];
   const latestReviewsRows = Array.isArray(s.latest_reviews) ? s.latest_reviews.map(r => {
-    var _ref5, _r$provider_name, _r$rating, _ref6, _ref7, _r$comment, _ref8, _r$created_at;
-    return [(_ref5 = (_r$provider_name = r.provider_name) !== null && _r$provider_name !== void 0 ? _r$provider_name : r.name) !== null && _ref5 !== void 0 ? _ref5 : "", (_r$rating = r.rating) !== null && _r$rating !== void 0 ? _r$rating : "", (_ref6 = (_ref7 = (_r$comment = r.comment) !== null && _r$comment !== void 0 ? _r$comment : r.comment_text) !== null && _ref7 !== void 0 ? _ref7 : r.text) !== null && _ref6 !== void 0 ? _ref6 : "", (_ref8 = (_r$created_at = r.created_at) !== null && _r$created_at !== void 0 ? _r$created_at : r.date) !== null && _ref8 !== void 0 ? _ref8 : ""];
+    var _ref3, _r$provider_name, _r$rating_overall, _r$comment, _r$created_at;
+    return [(_ref3 = (_r$provider_name = r.provider_name) !== null && _r$provider_name !== void 0 ? _r$provider_name : r.provider) !== null && _ref3 !== void 0 ? _ref3 : "Unknown", (_r$rating_overall = r.rating_overall) !== null && _r$rating_overall !== void 0 ? _r$rating_overall : "", (_r$comment = r.comment) !== null && _r$comment !== void 0 ? _r$comment : "", (_r$created_at = r.created_at) !== null && _r$created_at !== void 0 ? _r$created_at : ""];
   }) : [];
   const latestAppointmentsRows = Array.isArray(s.latest_appointments) ? s.latest_appointments.map(a => {
-    var _ref9, _a$provider_name, _ref0, _a$user_name, _ref1, _a$preferred_date, _a$status;
-    return [(_ref9 = (_a$provider_name = a.provider_name) !== null && _a$provider_name !== void 0 ? _a$provider_name : a.provider) !== null && _ref9 !== void 0 ? _ref9 : "", (_ref0 = (_a$user_name = a.user_name) !== null && _a$user_name !== void 0 ? _a$user_name : a.user) !== null && _ref0 !== void 0 ? _ref0 : "", (_ref1 = (_a$preferred_date = a.preferred_date) !== null && _a$preferred_date !== void 0 ? _a$preferred_date : a.date) !== null && _ref1 !== void 0 ? _ref1 : "", (_a$status = a.status) !== null && _a$status !== void 0 ? _a$status : ""];
+    var _ref4, _a$provider_name, _a$user_name, _a$created_at, _a$status;
+    return [(_ref4 = (_a$provider_name = a.provider_name) !== null && _a$provider_name !== void 0 ? _a$provider_name : a.provider) !== null && _ref4 !== void 0 ? _ref4 : "Unknown", (_a$user_name = a.user_name) !== null && _a$user_name !== void 0 ? _a$user_name : "Visitor", (_a$created_at = a.created_at) !== null && _a$created_at !== void 0 ? _a$created_at : "", (_a$status = a.status) !== null && _a$status !== void 0 ? _a$status : ""];
   }) : [];
   const barData = tp.map(t => {
-    var _ref10, _ref11, _t$name, _ref12, _ref13, _t$appointments;
+    var _t$provider, _t$appointments;
     return {
-      name: (_ref10 = (_ref11 = (_t$name = t.name) !== null && _t$name !== void 0 ? _t$name : t.provider_name) !== null && _ref11 !== void 0 ? _ref11 : t.label) !== null && _ref10 !== void 0 ? _ref10 : "Unknown",
-      appointments: Number((_ref12 = (_ref13 = (_t$appointments = t.appointments) !== null && _t$appointments !== void 0 ? _t$appointments : t.count) !== null && _ref13 !== void 0 ? _ref13 : t.total) !== null && _ref12 !== void 0 ? _ref12 : 0)
+      name: (_t$provider = t.provider) !== null && _t$provider !== void 0 ? _t$provider : "Unknown",
+      appointments: Number((_t$appointments = t.appointments) !== null && _t$appointments !== void 0 ? _t$appointments : 0)
     };
   });
+
+  /* -----------------------------------------
+     RENDER DASHBOARD
+  ----------------------------------------- */
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "p-4 space-y-4"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "flex items-start justify-between gap-4"
+    className: "flex items-start justify-between"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
-    className: "text-2xl font-semibold text-gray-900"
+    className: "text-2xl font-semibold"
   }, "Dashboard"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
-    className: "text-sm text-gray-500 mt-1"
+    className: "text-sm text-gray-500"
   }, "Overview & analytics")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "bg-white rounded-md border border-gray-200 px-3 py-2 shadow-sm"
+    className: "bg-white rounded-md border px-3 py-2 shadow-sm"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
     className: "text-sm bg-transparent outline-none",
     value: rangeDays,
@@ -52748,27 +52706,23 @@ function Dashboard() {
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(StatCard, {
     label: "Providers",
     value: (_s$total_providers = s.total_providers) !== null && _s$total_providers !== void 0 ? _s$total_providers : 0,
-    icon: "P",
-    hint: s.providers_change ? `${s.providers_change}%` : null
+    icon: "P"
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(StatCard, {
     label: "Appointments",
     value: (_s$total_appointments = s.total_appointments) !== null && _s$total_appointments !== void 0 ? _s$total_appointments : 0,
-    icon: "A",
-    hint: s.appointments_change ? `${s.appointments_change}%` : null
+    icon: "A"
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(StatCard, {
     label: "Reviews",
     value: (_s$total_reviews = s.total_reviews) !== null && _s$total_reviews !== void 0 ? _s$total_reviews : 0,
-    icon: "R",
-    hint: s.reviews_change ? `${s.reviews_change}%` : null
+    icon: "R"
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(StatCard, {
     label: "Favourites",
     value: (_s$total_favourites = s.total_favourites) !== null && _s$total_favourites !== void 0 ? _s$total_favourites : 0,
-    icon: "\u2605",
-    hint: s.favourites_change ? `${s.favourites_change}%` : null
+    icon: "\u2605"
   })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "bg-white rounded-xl p-4 shadow-sm border border-gray-100"
+    className: "bg-white rounded-xl p-4 shadow-sm border"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", {
-    className: "text-base font-semibold text-gray-800 mb-3"
+    className: "text-base font-semibold mb-3"
   }, "Appointments \u2014 last ", rangeDays, " days"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "h-56"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_4__.ResponsiveContainer, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_11__.LineChart, {
@@ -52777,18 +52731,12 @@ function Dashboard() {
     dataKey: "date",
     tick: {
       fontSize: 11
-    },
-    tickLine: false
+    }
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_10__.YAxis, {
     tick: {
       fontSize: 11
-    },
-    tickLine: false
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_3__.Tooltip, {
-    wrapperStyle: {
-      fontSize: 12
     }
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_7__.Line, {
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_3__.Tooltip, null), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_7__.Line, {
     type: "monotone",
     dataKey: "count",
     stroke: "#2563EB",
@@ -52797,16 +52745,13 @@ function Dashboard() {
   }))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "grid grid-cols-1 lg:grid-cols-3 gap-4"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "bg-white rounded-xl p-4 shadow-sm border border-gray-100 lg:col-span-2"
+    className: "bg-white rounded-xl p-4 shadow-sm border lg:col-span-2"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", {
-    className: "text-base font-semibold text-gray-800 mb-3"
+    className: "text-base font-semibold mb-3"
   }, "Top Providers by Appointments"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "h-56"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_4__.ResponsiveContainer, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_12__.BarChart, {
-    data: barData,
-    margin: {
-      left: 8
-    }
+    data: barData
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_9__.XAxis, {
     dataKey: "name",
     tick: {
@@ -52818,20 +52763,20 @@ function Dashboard() {
     }
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_3__.Tooltip, null), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_8__.Bar, {
     dataKey: "appointments",
-    radius: [6, 6, 6, 6],
-    fill: "#2563EB"
+    fill: "#2563EB",
+    radius: [6, 6, 6, 6]
   }))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "bg-white rounded-xl p-4 shadow-sm border border-gray-100"
+    className: "bg-white rounded-xl p-4 shadow-sm border"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", {
-    className: "text-base font-semibold text-gray-800 mb-3"
+    className: "text-base font-semibold mb-3"
   }, "Appointments by Status"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "h-48"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_4__.ResponsiveContainer, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_13__.PieChart, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_6__.Pie, {
     data: (d.appointments_status || []).map(it => {
-      var _ref14, _it$status, _ref15, _it$total;
+      var _it$status, _it$total;
       return {
-        name: (_ref14 = (_it$status = it.status) !== null && _it$status !== void 0 ? _it$status : it.name) !== null && _ref14 !== void 0 ? _ref14 : "",
-        value: Number((_ref15 = (_it$total = it.total) !== null && _it$total !== void 0 ? _it$total : it.count) !== null && _ref15 !== void 0 ? _ref15 : 0)
+        name: (_it$status = it.status) !== null && _it$status !== void 0 ? _it$status : "",
+        value: Number((_it$total = it.total) !== null && _it$total !== void 0 ? _it$total : 0)
       };
     }),
     dataKey: "value",
@@ -52846,17 +52791,17 @@ function Dashboard() {
   }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_3__.Tooltip, null)))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "bg-white rounded-xl p-4 shadow-sm border border-gray-100"
+    className: "bg-white rounded-xl p-4 shadow-sm border"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h4", {
-    className: "text-sm font-medium text-gray-700 mb-2"
+    className: "text-sm font-medium mb-2"
   }, "Reimbursements by Type"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "h-36"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_4__.ResponsiveContainer, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_13__.PieChart, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_6__.Pie, {
     data: (d.reimbursements_type || []).map(it => {
-      var _ref16, _it$type, _ref17, _it$total2;
+      var _it$type, _it$total2;
       return {
-        name: (_ref16 = (_it$type = it.type) !== null && _it$type !== void 0 ? _it$type : it.name) !== null && _ref16 !== void 0 ? _ref16 : "",
-        value: Number((_ref17 = (_it$total2 = it.total) !== null && _it$total2 !== void 0 ? _it$total2 : it.count) !== null && _ref17 !== void 0 ? _ref17 : 0)
+        name: (_it$type = it.type) !== null && _it$type !== void 0 ? _it$type : "",
+        value: Number((_it$total2 = it.total) !== null && _it$total2 !== void 0 ? _it$total2 : 0)
       };
     }),
     dataKey: "value",
@@ -52869,17 +52814,17 @@ function Dashboard() {
     key: i,
     fill: pieColors[i % pieColors.length]
   }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_3__.Tooltip, null))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "bg-white rounded-xl p-4 shadow-sm border border-gray-100"
+    className: "bg-white rounded-xl p-4 shadow-sm border"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h4", {
-    className: "text-sm font-medium text-gray-700 mb-2"
+    className: "text-sm font-medium mb-2"
   }, "Favourites by Device"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "h-36"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_4__.ResponsiveContainer, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_13__.PieChart, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_6__.Pie, {
     data: (d.favourites_device || []).map(it => {
-      var _ref18, _it$device, _ref19, _it$total3;
+      var _it$device, _it$total3;
       return {
-        name: (_ref18 = (_it$device = it.device) !== null && _it$device !== void 0 ? _it$device : it.name) !== null && _ref18 !== void 0 ? _ref18 : "",
-        value: Number((_ref19 = (_it$total3 = it.total) !== null && _it$total3 !== void 0 ? _it$total3 : it.count) !== null && _ref19 !== void 0 ? _ref19 : 0)
+        name: (_it$device = it.device) !== null && _it$device !== void 0 ? _it$device : "",
+        value: Number((_it$total3 = it.total) !== null && _it$total3 !== void 0 ? _it$total3 : 0)
       };
     }),
     dataKey: "value",
@@ -52892,21 +52837,21 @@ function Dashboard() {
     key: i,
     fill: pieColors[i % pieColors.length]
   }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_3__.Tooltip, null))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col justify-center"
+    className: "bg-white rounded-xl p-4 shadow-sm border flex flex-col justify-center"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "text-sm text-gray-600"
   }, "Most active provider"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "text-lg font-semibold text-gray-900 mt-1"
+    className: "text-lg font-semibold mt-1"
   }, (_barData$0$name = barData[0]?.name) !== null && _barData$0$name !== void 0 ? _barData$0$name : "—"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "text-xs text-gray-500 mt-1"
   }, barData[0] ? `${barData[0].appointments} appointments` : ""))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "grid grid-cols-1 lg:grid-cols-2 gap-4"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "bg-white rounded-xl p-4 shadow-sm border border-gray-100"
+    className: "bg-white rounded-xl p-4 shadow-sm border"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex items-center justify-between mb-3"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h4", {
-    className: "text-base font-semibold text-gray-800"
+    className: "text-base font-semibold"
   }, "Latest Reviews"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
     className: "text-sm text-gray-400"
   }, latestReviewsRows.length)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Table__WEBPACK_IMPORTED_MODULE_1__["default"], {
@@ -52917,11 +52862,11 @@ function Dashboard() {
     setSelected: () => {},
     pagination: null
   })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "bg-white rounded-xl p-4 shadow-sm border border-gray-100"
+    className: "bg-white rounded-xl p-4 shadow-sm border"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex items-center justify-between mb-3"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h4", {
-    className: "text-base font-semibold text-gray-800"
+    className: "text-base font-semibold"
   }, "Latest Appointments"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
     className: "text-sm text-gray-400"
   }, latestAppointmentsRows.length)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Table__WEBPACK_IMPORTED_MODULE_1__["default"], {
@@ -53245,7 +53190,7 @@ const Reimbursements = () => {
         if (json?.success && Array.isArray(json.data)) {
           setProviders(json.data);
           const map = {};
-          json.data.forEach(p => map[p.id] = p.name);
+          json.data.forEach(p => map[p.id] = p.provider);
           setProviderMap(map);
         }
       } catch {
@@ -53342,7 +53287,7 @@ const Reimbursements = () => {
       placeholder: "Provider",
       options: providers.map(p => ({
         value: p.id,
-        label: p.name
+        label: p.provider
       }))
     }, {
       type: "select",
@@ -53461,14 +53406,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
-// Correct nonce source
 const getNonce = () => window?.zorgFinderApp?.nonce || "";
 const Reviews = () => {
-  // NEW: expanded comment state
   const [expandedCommentId, setExpandedCommentId] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
-
-  /* Load reviews */
   const {
     items,
     filters,
@@ -53499,12 +53439,7 @@ const Reviews = () => {
   const authHeaders = {
     "X-WP-Nonce": getNonce()
   };
-
-  /* ---------------------------------------------------------
-     LOAD PROVIDERS + USERS
-  --------------------------------------------------------- */
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
-    // PROVIDERS
     (async () => {
       try {
         const res = await fetch(`/wp-json/zorg/v1/providers?per_page=999`, {
@@ -53513,14 +53448,12 @@ const Reviews = () => {
         const json = await res.json();
         if (json?.success) {
           const map = {};
-          json.data.forEach(p => map[p.id] = p.name);
+          json.data.forEach(p => map[p.id] = p.provider);
           setProviders(json.data);
           setProviderMap(map);
         }
       } catch {}
     })();
-
-    // USERS
     (async () => {
       try {
         const res = await fetch(`/wp-json/wp/v2/users?per_page=100`, {
@@ -53537,15 +53470,7 @@ const Reviews = () => {
       } catch {}
     })();
   }, []);
-
-  /* ---------------------------------------------------------
-     PROVIDERS WITH REVIEWS ONLY
-  --------------------------------------------------------- */
   const reviewedProviders = providers.filter(p => items.some(r => r.provider_id === p.id));
-
-  /* ---------------------------------------------------------
-     APPROVE / PENDING
-  --------------------------------------------------------- */
   const setApproved = async (id, status) => {
     await fetch(`/wp-json/zorg/v1/reviews/${id}`, {
       method: "PATCH",
@@ -53559,10 +53484,6 @@ const Reviews = () => {
     });
     fetchItems();
   };
-
-  /* ---------------------------------------------------------
-     OPEN REVIEW
-  --------------------------------------------------------- */
   const openItem = async id => {
     try {
       const res = await fetch(`/wp-json/zorg/v1/reviews/${id}`, {
@@ -53575,77 +53496,38 @@ const Reviews = () => {
       }
     } catch {}
   };
-
-  /* ---------------------------------------------------------
-     BULK ACTIONS
-  --------------------------------------------------------- */
-  const bulkDelete = async () => {
-    for (const id of selected) await deleteItem(id);
-    setSelected([]);
-    fetchItems();
-  };
-  const bulkRestore = async () => {
-    for (const id of selected) await restoreItem(id);
-    setSelected([]);
-    fetchItems();
-  };
-  const bulkApprove = async () => {
-    for (const id of selected) await setApproved(id, 1);
-    setSelected([]);
-    fetchItems();
-  };
-  const bulkPending = async () => {
-    for (const id of selected) await setApproved(id, 0);
-    setSelected([]);
-    fetchItems();
-  };
-
-  /* ---------------------------------------------------------
-     Close expanded comment when clicking outside
-  --------------------------------------------------------- */
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     const handleClickOutside = () => setExpandedCommentId(null);
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
   }, []);
-
-  /* ---------------------------------------------------------
-     TABLE CONFIG
-  --------------------------------------------------------- */
-  const columns = ["Provider", "User", "Rating", "Status", "Comment", "Date"];
+  const columns = ["Provider", "User", "Overall", "Status", "Comment", "Date"];
   const rows = items.map(r => [providerMap[r.provider_id] || `#${r.provider_id}`, usersMap[r.user_id] || `User #${r.user_id}`, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex items-center gap-2"
-  }, r.rating, " ", (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_8__["default"], {
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, r.rating_overall), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_8__["default"], {
     size: 14
   })), Number(r.approved) === 1 ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
     className: "text-green-600 font-semibold"
   }, "Approved") : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
     className: "text-yellow-600 font-semibold"
-  }, "Pending"), /* COMMENT CELL WITH TRUNCATION + EXPAND */
-  (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
+  }, "Pending"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
     onClick: e => e.stopPropagation()
-  }, expandedCommentId === r.id ? /* FULL COMMENT */
-  (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+  }, expandedCommentId === r.id ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "p-2 bg-gray-50 rounded leading-relaxed whitespace-pre-line"
   }, r.comment), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
     className: "text-blue-600 text-xs mt-1 underline",
     onClick: () => setExpandedCommentId(null)
-  }, "Collapse")) : /* TRUNCATED COMMENT */
-  (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+  }, "Collapse")) : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "relative max-w-[260px]"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "line-clamp-3 whitespace-pre-line"
-  }, r.comment), r.comment.length > 80 && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+  }, r.comment), r.comment && r.comment.length > 80 && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
     className: "absolute bottom-0 right-0 bg-white pl-1 text-blue-600 text-sm",
     onClick: e => {
       e.stopPropagation();
       setExpandedCommentId(r.id);
     }
   }, "..."))), r.created_at]);
-
-  /* ---------------------------------------------------------
-     RENDER
-  --------------------------------------------------------- */
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "p-2 space-y-6"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
@@ -53674,7 +53556,11 @@ const Reviews = () => {
     value: "newest"
   }, "Newest"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
     value: "oldest"
-  }, "Oldest"))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Filters__WEBPACK_IMPORTED_MODULE_3__["default"], {
+  }, "Oldest"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "highest"
+  }, "Highest"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "lowest"
+  }, "Lowest"))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Filters__WEBPACK_IMPORTED_MODULE_3__["default"], {
     schema: [{
       type: "search",
       key: "search",
@@ -53685,7 +53571,7 @@ const Reviews = () => {
       placeholder: "Provider",
       options: reviewedProviders.map(p => ({
         value: p.id,
-        label: p.name
+        label: p.provider
       }))
     }, {
       type: "select",
@@ -53706,22 +53592,56 @@ const Reviews = () => {
   }, tab === "trash" ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_5__["default"], {
     variant: "success",
     size: "sm",
-    onClick: bulkRestore
+    onClick: async () => {
+      for (const id of selected) await restoreItem(id);
+      setSelected([]);
+      fetchItems();
+    }
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_7__["default"], {
     size: 14,
     className: "mr-1"
   }), " Restore Selected") : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_5__["default"], {
     variant: "success",
     size: "sm",
-    onClick: bulkApprove
+    onClick: async () => {
+      for (const id of selected) await fetch(`/wp-json/zorg/v1/reviews/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "X-WP-Nonce": getNonce()
+        },
+        body: JSON.stringify({
+          approved: 1
+        })
+      });
+      setSelected([]);
+      fetchItems();
+    }
   }, "Approve Selected"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_5__["default"], {
     variant: "warning",
     size: "sm",
-    onClick: bulkPending
+    onClick: async () => {
+      for (const id of selected) await fetch(`/wp-json/zorg/v1/reviews/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "X-WP-Nonce": getNonce()
+        },
+        body: JSON.stringify({
+          approved: 0
+        })
+      });
+      setSelected([]);
+      fetchItems();
+    }
   }, "Mark Pending"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_5__["default"], {
     variant: "danger",
     size: "sm",
-    onClick: bulkDelete
+    onClick: async () => {
+      for (const id of selected) await deleteItem(id);
+      setSelected([]);
+      fetchItems();
+    }
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_9__["default"], {
     size: 14,
     className: "mr-1"
@@ -53782,15 +53702,57 @@ const Reviews = () => {
     className: "mt-1"
   }, providerMap[editing.provider_id])), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "User:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "mt-1"
-  }, usersMap[editing.user_id])), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Rating:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+  }, usersMap[editing.user_id])), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Overall:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "mt-1 flex items-center gap-2"
-  }, editing.rating, " ", (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_8__["default"], {
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, editing.rating_overall), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_8__["default"], {
     size: 16
-  }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Status:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "mt-1"
-  }, Number(editing.approved) === 1 ? "Approved" : "Pending")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Comment:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+  }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "grid grid-cols-2 gap-3"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "p-3 bg-gray-50 rounded"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "text-xs text-gray-500"
+  }, "Staff Behavior"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "font-medium"
+  }, editing.rating_staff, " ", (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_8__["default"], {
+    size: 14
+  }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "p-3 bg-gray-50 rounded"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "text-xs text-gray-500"
+  }, "Communication"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "font-medium"
+  }, editing.rating_communication, " ", (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_8__["default"], {
+    size: 14
+  }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "p-3 bg-gray-50 rounded"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "text-xs text-gray-500"
+  }, "Cleanliness"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "font-medium"
+  }, editing.rating_cleanliness, " ", (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_8__["default"], {
+    size: 14
+  }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "p-3 bg-gray-50 rounded"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "text-xs text-gray-500"
+  }, "Facilities"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "font-medium"
+  }, editing.rating_facilities, " ", (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_8__["default"], {
+    size: 14
+  }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "p-3 bg-gray-50 rounded col-span-2"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "text-xs text-gray-500"
+  }, "Professionalism"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "font-medium"
+  }, editing.rating_professionalism, " ", (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_8__["default"], {
+    size: 14
+  })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Comment:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "mt-2 p-3 bg-gray-50 rounded whitespace-pre-line"
-  }, editing.comment)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Date:"), " ", editing.created_at))));
+  }, editing.comment || "—")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Status:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "mt-1"
+  }, Number(editing.approved) === 1 ? "Approved" : "Pending")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Date:"), " ", editing.created_at))));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Reviews);
 
@@ -53810,11 +53772,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 
+
 const GeneralInfoForm = ({
   provider,
   updateProviderField,
   editingId
 }) => {
+  const valueOrEmptyArray = v => Array.isArray(v) ? v : v ? v : [];
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("form", {
     className: "space-y-2"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
@@ -53825,9 +53789,9 @@ const GeneralInfoForm = ({
     className: "flex flex-col gap-1.5"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
     className: "label"
-  }, "Name"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
-    value: provider.name,
-    onChange: e => updateProviderField("name", e.target.value),
+  }, "Provider"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    value: provider.provider,
+    onChange: e => updateProviderField("provider", e.target.value),
     className: "input"
   })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex flex-col gap-1.5"
@@ -53838,6 +53802,46 @@ const GeneralInfoForm = ({
     onChange: e => updateProviderField("slug", e.target.value),
     className: "input"
   }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "form-grid-2 gap-y-4"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex flex-col gap-1.5"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "label"
+  }, "Target Genders"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
+    multiple: true,
+    className: "input select h-28",
+    value: valueOrEmptyArray(provider.target_genders),
+    onChange: e => updateProviderField("target_genders", Array.from(e.target.selectedOptions).map(o => o.value))
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "male"
+  }, "Male"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "female"
+  }, "Female"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "non_binary"
+  }, "Non-binary"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "transgender"
+  }, "Transgender"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "other"
+  }, "Other"))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex flex-col gap-1.5"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "label"
+  }, "Target Age Groups"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
+    multiple: true,
+    className: "input select h-28",
+    value: valueOrEmptyArray(provider.target_age_groups),
+    onChange: e => updateProviderField("target_age_groups", Array.from(e.target.selectedOptions).map(o => o.value))
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "children"
+  }, "Children (0\u201312)"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "youth"
+  }, "Youth (12\u201318)"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "adults"
+  }, "Adults (18\u201365)"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "seniors"
+  }, "Seniors (65+)"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "all"
+  }, "All Ages")))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "form-grid-2 gap-y-4"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex flex-col gap-1.5"
@@ -54028,9 +54032,9 @@ const Providers = () => {
   } = (0,_useProviderForm__WEBPACK_IMPORTED_MODULE_12__.useProviderForm)(fetchProviders, closeModal);
   const [selected, setSelected] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
 
-  /* ---------------------------------------
-     BULK DELETE (Active Tab)
-  ---------------------------------------- */
+  /* -----------------------
+     BULK DELETE
+  ------------------------*/
   const handleBulkDelete = async () => {
     if (!confirm(`Delete ${selected.length} selected providers?`)) return;
     try {
@@ -54038,22 +54042,22 @@ const Providers = () => {
       await Promise.all(selected.map(id => fetch(`/wp-json/zorg/v1/providers/${id}`, {
         method: "DELETE",
         headers: {
-          "X-WP-Nonce": window.wpApiSettings.nonce
+          "X-WP-Nonce": window.wpApiSettings?.nonce
         }
       })));
       toast.success("Selected providers deleted");
       setSelected([]);
       fetchProviders();
-    } catch (err) {
+    } catch {
       toast.error("Delete failed");
     } finally {
       loadingOverlay.hide();
     }
   };
 
-  /* ---------------------------------------
-     BULK RESTORE (Trash Tab)
-  ---------------------------------------- */
+  /* -----------------------
+     BULK RESTORE
+  ------------------------*/
   const handleBulkRestore = async () => {
     if (!confirm(`Restore ${selected.length} providers?`)) return;
     try {
@@ -54061,22 +54065,22 @@ const Providers = () => {
       await Promise.all(selected.map(id => fetch(`/wp-json/zorg/v1/providers/${id}/restore`, {
         method: "PATCH",
         headers: {
-          "X-WP-Nonce": window.wpApiSettings.nonce
+          "X-WP-Nonce": window.wpApiSettings?.nonce
         }
       })));
       toast.success("Providers restored");
       setSelected([]);
       fetchProviders();
-    } catch (err) {
+    } catch {
       toast.error("Restore failed");
     } finally {
       loadingOverlay.hide();
     }
   };
 
-  /* ---------------------------------------
-     FILTER SCHEMA
-  ---------------------------------------- */
+  /* -----------------------
+     FILTERS SCHEMA
+  ------------------------*/
   const filterSchema = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => [{
     type: "search",
     key: "search",
@@ -54138,14 +54142,54 @@ const Providers = () => {
       label: "None"
     }]
   }, {
+    type: "select",
+    key: "gender",
+    placeholder: "Target Gender",
+    options: [{
+      value: "male",
+      label: "Male"
+    }, {
+      value: "female",
+      label: "Female"
+    }, {
+      value: "non_binary",
+      label: "Non-binary"
+    }, {
+      value: "transgender",
+      label: "Transgender"
+    }, {
+      value: "other",
+      label: "Other"
+    }]
+  }, {
+    type: "select",
+    key: "age_group",
+    placeholder: "Age Group",
+    options: [{
+      value: "children",
+      label: "Children (0–12)"
+    }, {
+      value: "youth",
+      label: "Youth (12–18)"
+    }, {
+      value: "adults",
+      label: "Adults (18–65)"
+    }, {
+      value: "seniors",
+      label: "Seniors (65+)"
+    }, {
+      value: "all",
+      label: "All Ages"
+    }]
+  }, {
     type: "checkbox",
     key: "has_hkz",
     label: "HKZ Only"
   }], []);
 
-  /* ---------------------------------------
-     OPEN EDIT PROVIDER
-  ---------------------------------------- */
+  /* -----------------------
+     OPEN MODAL FOR EDIT
+  ------------------------*/
   const openModalForProvider = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async index => {
     const row = providers[index];
     if (!row) return;
@@ -54158,19 +54202,19 @@ const Providers = () => {
     } finally {
       loadingOverlay.hide();
     }
-  }, [providers, loadProvider, toast, loadingOverlay]);
+  }, [providers, loadProvider]);
 
-  /* ---------------------------------------
+  /* -----------------------
      ADD NEW PROVIDER
-  ---------------------------------------- */
+  ------------------------*/
   const handleAddNew = () => {
     resetProviderForm();
     setShowModal(true);
   };
 
-  /* ---------------------------------------
+  /* -----------------------
      SAVE PROVIDER
-  ---------------------------------------- */
+  ------------------------*/
   const handleSave = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async () => {
     try {
       loadingOverlay.show("Saving provider…");
@@ -54186,13 +54230,13 @@ const Providers = () => {
     } finally {
       loadingOverlay.hide();
     }
-  }, [reimbursements, saveProvider, toast, loadingOverlay]);
+  }, [reimbursements, saveProvider]);
 
-  /* ---------------------------------------
-     BADGE SYSTEM
-  ---------------------------------------- */
-  const badge = (label, color) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: `px-2 py-1 rounded-full text-xs font-medium ${color}`
+  /* -----------------------
+     BADGE HELPERS
+  ------------------------*/
+  const badge = (label, className = "") => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: `px-2 py-1 rounded-full text-xs font-medium ${className}`
   }, label);
   const badgeColors = {
     disability: "bg-blue-100 text-blue-700",
@@ -54209,11 +54253,29 @@ const Providers = () => {
     None: "bg-gray-100 text-gray-700"
   };
 
-  /* ---------------------------------------
-     TABLE
-  ---------------------------------------- */
-  const columns = ["Name", "Type of Care", "Indication", "Organization", "Religion", "HKZ"];
-  const rows = providers.map(p => [p.name, badge(p.type_of_care, badgeColors[p.type_of_care] || "bg-gray-100"), badge(p.indication_type, badgeColors[p.indication_type] || "bg-gray-100"), badge(p.organization_type, badgeColors[p.organization_type] || "bg-gray-100"), badge(p.religion, badgeColors[p.religion] || "bg-gray-100"), Number(p.has_hkz) === 1 ? badge("HKZ", "bg-green-100 text-green-700") : badge("No", "bg-gray-200 text-gray-600")]);
+  /* -----------------------
+     TABLE COLUMNS
+  ------------------------*/
+  const columns = ["Provider", "Target Genders", "Type of Care", "Indication", "Organization", "Religion", "HKZ"];
+
+  /* -----------------------
+     TABLE ROW RENDER
+  ------------------------*/
+  const rows = providers.map(p => [p.provider, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex flex-wrap gap-1"
+  }, (p.target_genders || []).length ? p.target_genders.map(g => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    key: g,
+    className: "px-2 py-1 rounded bg-gray-100 text-gray-700 text-xs"
+  }, g)) : "—"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex flex-wrap gap-1"
+  }, (p.target_age_groups || []).map(g => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    key: g,
+    className: "px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs"
+  }, g))), badge(p.type_of_care, badgeColors[p.type_of_care] || "bg-gray-100"), badge(p.indication_type, badgeColors[p.indication_type] || "bg-gray-100"), badge(p.organization_type, badgeColors[p.organization_type] || "bg-gray-100"), badge(p.religion, badgeColors[p.religion] || "bg-gray-100"), Number(p.has_hkz) === 1 ? badge("HKZ", "bg-green-100 text-green-700") : badge("No", "bg-gray-200 text-gray-600")]);
+
+  /* -----------------------
+     ACTION BUTTON
+  ------------------------*/
   const actionsRenderer = i => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
     className: "text-blue-600",
     onClick: () => openModalForProvider(i)
@@ -54221,9 +54283,9 @@ const Providers = () => {
     size: 16
   }));
 
-  /* ---------------------------------------
+  /* -----------------------
      RENDER
-  ---------------------------------------- */
+  ------------------------*/
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "p-2 space-y-6"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
@@ -54263,9 +54325,9 @@ const Providers = () => {
     value: "oldest"
   }, "Oldest"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
     value: "name_asc"
-  }, "Name A\u2013Z"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+  }, "Provider A\u2013Z"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
     value: "name_desc"
-  }, "Name Z\u2013A"))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Filters__WEBPACK_IMPORTED_MODULE_4__["default"], {
+  }, "Provider Z\u2013A"))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Filters__WEBPACK_IMPORTED_MODULE_4__["default"], {
     schema: filterSchema,
     filters: filters,
     setFilters: setFilters
@@ -54401,16 +54463,14 @@ __webpack_require__.r(__webpack_exports__);
 
 const getNonce = () => window?.zorgFinderApp?.nonce || "";
 
-/* -----------------------------------------------------------
-   GLOBAL IN-MEMORY CACHE (lives as long as page stays open)
------------------------------------------------------------ */
+/* Cache for instant reload */
 const providerCache = new Map();
-
-/* Provider structure */
 const emptyProvider = {
   id: null,
-  name: "",
+  provider: "",
   slug: "",
+  target_genders: [],
+  target_age_groups: [],
   type_of_care: "",
   indication_type: "",
   organization_type: "",
@@ -54423,8 +54483,6 @@ const emptyProvider = {
   created_at: "",
   updated_at: ""
 };
-
-/* Normalize reimbursements to WLZ/ZVW/WMO/Youth */
 const normalizeReimbursements = (input = {}) => {
   const keys = ["WLZ", "ZVW", "WMO", "Youth"];
   const out = {};
@@ -54439,10 +54497,6 @@ const normalizeReimbursements = (input = {}) => {
   });
   return out;
 };
-
-/* ===========================================================
-   HOOK
-=========================================================== */
 const useProviderForm = (fetchProviders, closeModal) => {
   const [provider, setProvider] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(emptyProvider);
   const [reimbursements, setReimbursements] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(normalizeReimbursements());
@@ -54452,12 +54506,7 @@ const useProviderForm = (fetchProviders, closeModal) => {
     setReimbursements(normalizeReimbursements());
     setEditingId(null);
   }, []);
-
-  /* ===========================================================
-     LOAD PROVIDER (with instant cached load)
-  ============================================================ */
   const loadProvider = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async id => {
-    // 1) Serve instantly from memory cache
     if (providerCache.has(id)) {
       const cached = providerCache.get(id);
       setProvider(cached.provider);
@@ -54465,8 +54514,6 @@ const useProviderForm = (fetchProviders, closeModal) => {
       setEditingId(id);
       return cached.provider;
     }
-
-    // 2) Otherwise, fetch from server
     const res = await fetch(`/wp-json/zorg/v1/providers-with-reimbursements/${id}`, {
       headers: {
         "X-WP-Nonce": getNonce()
@@ -54480,8 +54527,10 @@ const useProviderForm = (fetchProviders, closeModal) => {
     if (!p) throw new Error("Provider missing");
     const normalizedProvider = {
       id: p.id,
-      name: p.name || "",
+      provider: p.provider || "",
       slug: p.slug || "",
+      target_genders: Array.isArray(p.target_genders) ? p.target_genders : p.target_genders ? JSON.parse(p.target_genders) : [],
+      target_age_groups: Array.isArray(p.target_age_groups) ? p.target_age_groups : p.target_age_groups ? JSON.parse(p.target_age_groups) : [],
       type_of_care: p.type_of_care || "",
       indication_type: p.indication_type || "",
       organization_type: p.organization_type || "",
@@ -54495,28 +54544,23 @@ const useProviderForm = (fetchProviders, closeModal) => {
       updated_at: p.updated_at || ""
     };
     const normalizedReimbs = normalizeReimbursements(r);
-
-    // Fill form
     setProvider(normalizedProvider);
     setReimbursements(normalizedReimbs);
     setEditingId(p.id);
-
-    // Store into cache
     providerCache.set(id, {
       provider: normalizedProvider,
       reimbursements: normalizedReimbs
     });
     return normalizedProvider;
   }, []);
-
-  /* ===========================================================
-     SAVE PROVIDER (also invalidates cache)
-  ============================================================ */
   const saveProvider = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async reimbursementsArray => {
     const url = editingId ? `/wp-json/zorg/v1/providers-with-reimbursements/${editingId}` : `/wp-json/zorg/v1/providers-with-reimbursements`;
     const method = editingId ? "PUT" : "POST";
     const payload = {
       ...provider,
+      provider: provider.provider,
+      target_genders: provider.target_genders,
+      target_age_groups: provider.target_age_groups,
       reimbursements: reimbursementsArray
     };
     const res = await fetch(url, {
@@ -54530,23 +54574,15 @@ const useProviderForm = (fetchProviders, closeModal) => {
     const text = await res.text();
     const json = JSON.parse(text);
     if (!res.ok) throw new Error(json?.message || "Save failed");
-
-    // Cache invalidation for fresh reload next time
     if (editingId) providerCache.delete(editingId);
     fetchProviders();
     closeModal();
   }, [editingId, provider, fetchProviders, closeModal]);
-
-  /* ===========================================================
-     FIELD UPDATES (live + cached)
-  ============================================================ */
   const updateProviderField = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)((field, value) => {
     setProvider(prev => ({
       ...prev,
       [field]: value
     }));
-
-    // Update cache live
     if (editingId && providerCache.has(editingId)) {
       const cached = providerCache.get(editingId);
       cached.provider = {
@@ -54565,8 +54601,6 @@ const useProviderForm = (fetchProviders, closeModal) => {
           [field]: value
         }
       };
-
-      // Update cache live
       if (editingId && providerCache.has(editingId)) {
         const cached = providerCache.get(editingId);
         cached.reimbursements = updated;
@@ -54575,10 +54609,6 @@ const useProviderForm = (fetchProviders, closeModal) => {
       return updated;
     });
   }, [editingId]);
-
-  /* ===========================================================
-     RETURN API
-  ============================================================ */
   return {
     provider,
     reimbursements,
@@ -54617,20 +54647,19 @@ const useProvidersList = () => {
     indication_type: "",
     organization_type: "",
     religion: "",
-    has_hkz: ""
+    has_hkz: "",
+    gender: "",
+    age_group: ""
   });
   const [sort, setSort] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)("newest");
   const [activeTab, setActiveTab] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)("active");
   const [page, setPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1);
   const [perPage, setPerPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(DEFAULT_PER_PAGE);
   const [total, setTotal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0);
-  const [loading, setLoading] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
-
-  /* Build Query Params */
   const buildParams = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([k, v]) => {
-      if (v) params.append(k, v);
+      if (v !== "" && v != null) params.append(k, v);
     });
     params.append("page", page);
     params.append("per_page", perPage);
@@ -54638,45 +54667,45 @@ const useProvidersList = () => {
     params.append("trashed", activeTab === "trash" ? "1" : "0");
     return params.toString();
   }, [filters, page, perPage, sort, activeTab]);
-
-  /* Fetch Providers */
   const fetchProviders = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async () => {
     const params = buildParams();
     const url = `/wp-json/zorg/v1/providers?${params}`;
-    setLoading(true);
+    console.log("[Providers] Fetch URL:", url);
     try {
       const headers = {};
-
-      // Only for trash view, because requires admin
-      if (activeTab === "trash") {
-        headers["X-WP-Nonce"] = window.wpApiSettings?.nonce || "";
-      }
+      if (activeTab === "trash") headers["X-WP-Nonce"] = getNonce();
       const res = await fetch(url, {
         headers
       });
-      const text = await res.text();
+      const raw = await res.text();
+      console.log("[Providers] Raw:", raw);
       let json = {};
       try {
-        json = JSON.parse(text);
-      } catch {
-        json = {};
+        json = JSON.parse(raw);
+      } catch (err) {
+        console.error("[Providers] JSON error:", err);
+        setProviders([]);
+        return;
       }
-      const rawList = Array.isArray(json?.data) ? json.data : [];
-      const normalized = rawList.map(p => ({
+      const list = Array.isArray(json?.data) ? json.data : [];
+      const normalized = list.map(p => ({
         ...p,
+        provider: p.provider,
+        target_genders: Array.isArray(p.target_genders) ? p.target_genders : p.target_genders ? JSON.parse(p.target_genders) : [],
+        target_age_groups: Array.isArray(p.target_age_groups) ? p.target_age_groups : p.target_age_groups ? JSON.parse(p.target_age_groups) : [],
         has_hkz: Number(p.has_hkz) === 1 ? 1 : 0
       }));
       setProviders(normalized);
+
+      // TOTAL now comes from root-level json
       setTotal(json?.total || 0);
+      console.log("[Providers] Final count:", normalized.length);
     } catch (err) {
+      console.error("[Providers] Fetch error:", err);
       setProviders([]);
       setTotal(0);
-    } finally {
-      setLoading(false);
     }
   }, [buildParams, activeTab]);
-
-  /* Effects */
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     fetchProviders();
   }, [fetchProviders]);
@@ -54701,7 +54730,6 @@ const useProvidersList = () => {
     setPage,
     perPage,
     setPerPage,
-    loading,
     fetchProviders
   };
 };

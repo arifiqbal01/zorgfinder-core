@@ -57,15 +57,15 @@ class DashboardController extends BaseController
         $pending   = (int) $wpdb->get_var("SELECT COUNT(*) FROM $apps WHERE status='pending' AND deleted_at IS NULL");
         $rejected  = (int) $wpdb->get_var("SELECT COUNT(*) FROM $apps WHERE status='rejected' AND deleted_at IS NULL");
 
-        // Average rating
+        // Average rating (corrected rating column)
         $avg_rating = round((float) $wpdb->get_var("
-            SELECT AVG(rating) FROM $reviews 
+            SELECT AVG(rating_overall) FROM $reviews 
             WHERE approved=1 AND deleted_at IS NULL
         "), 2);
 
-        // Latest reviews
+        // Latest reviews — patched provider column
         $latest_reviews = $wpdb->get_results("
-            SELECT r.*, p.name AS provider_name
+            SELECT r.*, p.provider AS provider_name
             FROM $reviews r
             JOIN $providers p ON p.id = r.provider_id
             WHERE r.deleted_at IS NULL
@@ -73,12 +73,12 @@ class DashboardController extends BaseController
             LIMIT 5
         ", ARRAY_A);
 
-        // Latest appointments
+        // Latest appointments — patched provider column
         $latest_appointments = $wpdb->get_results("
-            SELECT a.*, p.name AS provider_name, u.display_name AS user_name
+            SELECT a.*, p.provider AS provider_name, u.display_name AS user_name
             FROM $apps a
             JOIN $providers p ON p.id = a.provider_id
-            JOIN $wpdb->users u ON u.ID = a.user_id
+            LEFT JOIN $wpdb->users u ON u.ID = a.user_id
             WHERE a.deleted_at IS NULL
             ORDER BY a.created_at DESC
             LIMIT 5
@@ -106,28 +106,27 @@ class DashboardController extends BaseController
      * APPOINTMENTS TREND (FOR LINE CHART)
      */
     public function get_appointments_trend(WP_REST_Request $request)
-{
-    global $wpdb;
+    {
+        global $wpdb;
 
-    $days = intval($request->get_param('days')) ?: 30;
+        $days = intval($request->get_param('days')) ?: 30;
 
-    $table = "{$wpdb->prefix}zf_appointments";
+        $table = "{$wpdb->prefix}zf_appointments";
 
-    // IMPORTANT: use NOW(), not CURDATE()
-    $rows = $wpdb->get_results($wpdb->prepare("
-        SELECT DATE(created_at) AS date, COUNT(*) AS count
-        FROM $table
-        WHERE created_at >= DATE_SUB(NOW(), INTERVAL %d DAY)
-        AND deleted_at IS NULL
-        GROUP BY DATE(created_at)
-        ORDER BY date ASC
-    ", $days), ARRAY_A);
+        $rows = $wpdb->get_results($wpdb->prepare("
+            SELECT DATE(created_at) AS date, COUNT(*) AS count
+            FROM $table
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL %d DAY)
+            AND deleted_at IS NULL
+            GROUP BY DATE(created_at)
+            ORDER BY date ASC
+        ", $days), ARRAY_A);
 
-    return $this->respond([
-        "range" => $days,
-        "data"  => $rows,
-    ]);
-}
+        return $this->respond([
+            "range" => $days,
+            "data"  => $rows,
+        ]);
+    }
 
     /**
      * TOP PROVIDERS (BY REVIEWS, FAVOURITES, APPOINTMENTS)
@@ -144,7 +143,7 @@ class DashboardController extends BaseController
         $rows = $wpdb->get_results("
             SELECT 
                 p.id,
-                p.name,
+                p.provider,
                 (SELECT COUNT(*) FROM $apps WHERE provider_id = p.id AND deleted_at IS NULL) AS appointments,
                 (SELECT COUNT(*) FROM $reviews WHERE provider_id = p.id AND approved = 1 AND deleted_at IS NULL) AS reviews,
                 (SELECT COUNT(*) FROM $favourites WHERE provider_id = p.id AND deleted_at IS NULL) AS favourites
@@ -184,7 +183,7 @@ class DashboardController extends BaseController
             GROUP BY type
         ", ARRAY_A);
 
-        // Device analytics
+        // Device analytics (if still stored in favourites)
         $device = $wpdb->get_results("
             SELECT device, COUNT(*) as total
             FROM $fav

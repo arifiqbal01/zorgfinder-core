@@ -25,12 +25,17 @@ const getApiBase = () => {
 
 const fetchJson = async (path, opts = {}) => {
   const headers = { ...(opts.headers || {}) };
-  if (window?.zorgFinderApp?.nonce) headers["X-WP-Nonce"] = window.zorgFinderApp.nonce;
+  if (window?.zorgFinderApp?.nonce)
+    headers["X-WP-Nonce"] = window.zorgFinderApp.nonce;
 
-  const url = /^https?:\/\//i.test(path) ? path : getApiBase() + path.replace(/^\/+/, "");
+  const url = /^https?:\/\//i.test(path)
+    ? path
+    : getApiBase() + path.replace(/^\/+/, "");
+
   try {
     const res = await fetch(url, { ...opts, headers });
     const txt = await res.text();
+
     try {
       return { ok: res.ok, status: res.status, json: JSON.parse(txt) };
     } catch {
@@ -43,26 +48,30 @@ const fetchJson = async (path, opts = {}) => {
 
 const toChartSeries = (rows, dateKey = "date", valueKey = "count", days = 30) => {
   if (!Array.isArray(rows)) return [];
+
   const map = {};
   rows.forEach((r) => {
-    if (r && r[dateKey] !== undefined) map[r[dateKey]] = Number(r[valueKey] ?? 0);
+    if (r && r[dateKey] !== undefined)
+      map[r[dateKey]] = Number(r[valueKey] ?? 0);
   });
 
   const series = [];
   const today = new Date();
+
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
     const iso = d.toISOString().slice(0, 10);
     series.push({ date: iso, count: map[iso] || 0 });
   }
+
   return series;
 };
 
 const StatCard = ({ icon, label, value, hint }) => (
   <div className="bg-white/95 rounded-xl p-3 shadow-sm border border-gray-100 flex items-center gap-3">
     <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-semibold">
-      {icon ?? label?.charAt(0)}
+      {icon ?? label.charAt(0)}
     </div>
     <div className="flex flex-col">
       <span className="text-xs text-gray-500">{label}</span>
@@ -81,17 +90,16 @@ export default function Dashboard() {
   const [dist, setDist] = useState({});
   const [rangeDays, setRangeDays] = useState(30);
 
-  // Local cache
+  /* -----------------------------------------
+     LocalStorage Caching
+  ----------------------------------------- */
   const cacheGet = (key) => {
     try {
       const raw = localStorage.getItem(key);
       if (!raw) return null;
-      const p = JSON.parse(raw);
-      if (Date.now() - p.time > CACHE_TTL) {
-        localStorage.removeItem(key);
-        return null;
-      }
-      return p.data;
+      const obj = JSON.parse(raw);
+      if (Date.now() - obj.time > CACHE_TTL) return null;
+      return obj.data;
     } catch {
       return null;
     }
@@ -99,124 +107,132 @@ export default function Dashboard() {
 
   const cacheSet = (key, data) => {
     try {
-      localStorage.setItem(key, JSON.stringify({ time: Date.now(), data }));
+      localStorage.setItem(
+        key,
+        JSON.stringify({ time: Date.now(), data })
+      );
     } catch {}
   };
 
+  /* -----------------------------------------
+     MAIN EFFECT (LOAD DASHBOARD)
+  ----------------------------------------- */
   useEffect(() => {
     let mounted = true;
 
     const load = async () => {
       show("Loading dashboard…");
 
-      // SUMMARY
+      /* ---------------------------
+         SUMMARY
+      --------------------------- */
       try {
-        const key = "dashboard_summary_v1";
+        const key = "df_summary";
         const cached = cacheGet(key);
 
         if (cached) setSummary(cached);
         else {
           const res = await fetchJson("dashboard/summary");
           if (res.ok) {
-            const payload = res.json?.data ?? res.json?.summary ?? res.json ?? {};
+            const payload = res.json ?? {};
             if (mounted) {
               setSummary(payload);
               cacheSet(key, payload);
             }
-          } else setSummary({});
+          }
         }
       } catch {
         setSummary({});
       }
 
-      // TREND
+      /* ---------------------------
+         APPOINTMENT TREND
+      --------------------------- */
       try {
-        const key = `dashboard_trend_v2_${rangeDays}`;
+        const key = `df_trend_${rangeDays}`;
         const cached = cacheGet(key);
 
         if (cached) setTrend(cached);
         else {
-          const res = await fetchJson(`dashboard/appointments-trend?days=${rangeDays}`);
+          const res = await fetchJson(
+            `dashboard/appointments-trend?days=${rangeDays}`
+          );
+          const rows = res.ok ? res.json?.data ?? [] : [];
+          const series = toChartSeries(rows, "date", "count", rangeDays);
 
-          if (res.ok) {
-            const rows =
-              res.json?.data ||
-              res.json?.trend ||
-              res.json?.list ||
-              [];
-
-            const series = toChartSeries(rows, "date", "count", rangeDays);
-
-            if (mounted) {
-              setTrend(series);
-              cacheSet(key, series);
-            }
-          } else setTrend([]);
+          if (mounted) {
+            setTrend(series);
+            cacheSet(key, series);
+          }
         }
       } catch {
         setTrend([]);
       }
 
-      // TOP PROVIDERS
+      /* ---------------------------
+         TOP PROVIDERS
+      --------------------------- */
       try {
-        const key = "dashboard_top_providers";
+        const key = "df_top_providers";
         const cached = cacheGet(key);
 
         if (cached) setTopProviders(cached);
         else {
           const res = await fetchJson("dashboard/top-providers");
-          if (res.ok) {
-            const rows =
-              Array.isArray(res.json?.data)
-                ? res.json.data
-                : Array.isArray(res.json)
-                ? res.json
-                : res.json?.data?.items ?? [];
 
-            if (mounted) {
-              setTopProviders(rows);
-              cacheSet(key, rows);
-            }
-          } else setTopProviders([]);
+          const rows = Array.isArray(res.json)
+            ? res.json
+            : Array.isArray(res.json?.data)
+            ? res.json.data
+            : [];
+
+          const normalized = rows.map((p) => ({
+            ...p,
+            provider: p.provider ?? p.provider_name ?? p.name ?? "Unknown",
+          }));
+
+          if (mounted) {
+            setTopProviders(normalized);
+            cacheSet(key, normalized);
+          }
         }
       } catch {
         setTopProviders([]);
       }
 
-      // DISTRIBUTION
+      /* ---------------------------
+         DISTRIBUTION
+      --------------------------- */
       try {
-        const key = "dashboard_distribution";
+        const key = "df_distribution";
         const cached = cacheGet(key);
 
         if (cached) setDist(cached);
         else {
           const res = await fetchJson("dashboard/distribution");
+          const payload = res.json ?? {};
 
-          if (res.ok) {
-            const payload = res.json?.data ?? res.json ?? {};
+          const safe = {
+            appointments_status:
+              Array.isArray(payload.appointments_status)
+                ? payload.appointments_status
+                : [],
 
-            const safe = {
-              appointments_status:
-                Array.isArray(payload.appointments_status)
-                  ? payload.appointments_status
-                  : payload.appointments_status_list ?? payload.statuses ?? [],
+            reimbursements_type:
+              Array.isArray(payload.reimbursements_type)
+                ? payload.reimbursements_type
+                : [],
 
-              reimbursements_type:
-                Array.isArray(payload.reimbursements_type)
-                  ? payload.reimbursements_type
-                  : payload.reimbursements ?? [],
+            favourites_device:
+              Array.isArray(payload.favourites_device)
+                ? payload.favourites_device
+                : [],
+          };
 
-              favourites_device:
-                Array.isArray(payload.favourites_device)
-                  ? payload.favourites_device
-                  : payload.favourites ?? [],
-            };
-
-            if (mounted) {
-              setDist(safe);
-              cacheSet(key, safe);
-            }
-          } else setDist({});
+          if (mounted) {
+            setDist(safe);
+            cacheSet(key, safe);
+          }
         }
       } catch {
         setDist({});
@@ -229,44 +245,51 @@ export default function Dashboard() {
     return () => (mounted = false);
   }, [rangeDays]);
 
+  /* -----------------------------------------
+     PROCESS DASHBOARD DATA
+  ----------------------------------------- */
   const s = summary || {};
   const tp = Array.isArray(topProviders) ? topProviders : [];
   const d = dist || {};
+
   const pieColors = ["#2563EB", "#1E3A8A", "#60A5FA", "#93C5FD", "#DBEAFE"];
 
   const latestReviewsRows = Array.isArray(s.latest_reviews)
     ? s.latest_reviews.map((r) => [
-        r.provider_name ?? r.name ?? "",
-        r.rating ?? "",
-        r.comment ?? r.comment_text ?? r.text ?? "",
-        r.created_at ?? r.date ?? "",
+        r.provider_name ?? r.provider ?? "Unknown",
+        r.rating_overall ?? "",
+        r.comment ?? "",
+        r.created_at ?? "",
       ])
     : [];
 
   const latestAppointmentsRows = Array.isArray(s.latest_appointments)
     ? s.latest_appointments.map((a) => [
-        a.provider_name ?? a.provider ?? "",
-        a.user_name ?? a.user ?? "",
-        a.preferred_date ?? a.date ?? "",
+        a.provider_name ?? a.provider ?? "Unknown",
+        a.user_name ?? "Visitor",
+        a.created_at ?? "",
         a.status ?? "",
       ])
     : [];
 
   const barData = tp.map((t) => ({
-    name: t.name ?? t.provider_name ?? t.label ?? "Unknown",
-    appointments: Number(t.appointments ?? t.count ?? t.total ?? 0),
+    name: t.provider ?? "Unknown",
+    appointments: Number(t.appointments ?? 0),
   }));
 
+  /* -----------------------------------------
+     RENDER DASHBOARD
+  ----------------------------------------- */
   return (
     <div className="p-4 space-y-4">
       {/* HEADER */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">Overview & analytics</p>
+          <h1 className="text-2xl font-semibold">Dashboard</h1>
+          <p className="text-sm text-gray-500">Overview & analytics</p>
         </div>
 
-        <div className="bg-white rounded-md border border-gray-200 px-3 py-2 shadow-sm">
+        <div className="bg-white rounded-md border px-3 py-2 shadow-sm">
           <select
             className="text-sm bg-transparent outline-none"
             value={rangeDays}
@@ -279,58 +302,68 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* KPI ROW */}
+      {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard label="Providers" value={s.total_providers ?? 0} icon="P" hint={s.providers_change ? `${s.providers_change}%` : null} />
-        <StatCard label="Appointments" value={s.total_appointments ?? 0} icon="A" hint={s.appointments_change ? `${s.appointments_change}%` : null} />
-        <StatCard label="Reviews" value={s.total_reviews ?? 0} icon="R" hint={s.reviews_change ? `${s.reviews_change}%` : null} />
-        <StatCard label="Favourites" value={s.total_favourites ?? 0} icon="★" hint={s.favourites_change ? `${s.favourites_change}%` : null} />
+        <StatCard label="Providers" value={s.total_providers ?? 0} icon="P" />
+        <StatCard label="Appointments" value={s.total_appointments ?? 0} icon="A" />
+        <StatCard label="Reviews" value={s.total_reviews ?? 0} icon="R" />
+        <StatCard label="Favourites" value={s.total_favourites ?? 0} icon="★" />
       </div>
 
-      {/* TREND */}
-      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <h3 className="text-base font-semibold text-gray-800 mb-3">
+      {/* LINE CHART */}
+      <div className="bg-white rounded-xl p-4 shadow-sm border">
+        <h3 className="text-base font-semibold mb-3">
           Appointments — last {rangeDays} days
         </h3>
         <div className="h-56">
           <ResponsiveContainer>
             <LineChart data={trend}>
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} tickLine={false} />
-              <YAxis tick={{ fontSize: 11 }} tickLine={false} />
-              <Tooltip wrapperStyle={{ fontSize: 12 }} />
-              <Line type="monotone" dataKey="count" stroke="#2563EB" strokeWidth={2} dot={false} />
+              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} />
+              <Tooltip />
+              <Line
+                type="monotone"
+                dataKey="count"
+                stroke="#2563EB"
+                strokeWidth={2}
+                dot={false}
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* BAR + DONUTS */}
+      {/* TOP PROVIDERS + STATUS PIE */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 lg:col-span-2">
-          <h3 className="text-base font-semibold text-gray-800 mb-3">
+        {/* BAR CHART */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border lg:col-span-2">
+          <h3 className="text-base font-semibold mb-3">
             Top Providers by Appointments
           </h3>
           <div className="h-56">
             <ResponsiveContainer>
-              <BarChart data={barData} margin={{ left: 8 }}>
+              <BarChart data={barData}>
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip />
-                <Bar dataKey="appointments" radius={[6, 6, 6, 6]} fill="#2563EB" />
+                <Bar dataKey="appointments" fill="#2563EB" radius={[6, 6, 6, 6]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <h3 className="text-base font-semibold text-gray-800 mb-3">Appointments by Status</h3>
+        {/* APPOINTMENT STATUS PIE */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border">
+          <h3 className="text-base font-semibold mb-3">
+            Appointments by Status
+          </h3>
           <div className="h-48">
             <ResponsiveContainer>
               <PieChart>
                 <Pie
                   data={(d.appointments_status || []).map((it) => ({
-                    name: it.status ?? it.name ?? "",
-                    value: Number(it.total ?? it.count ?? 0),
+                    name: it.status ?? "",
+                    value: Number(it.total ?? 0),
                   }))}
                   dataKey="value"
                   nameKey="name"
@@ -352,15 +385,16 @@ export default function Dashboard() {
 
       {/* SMALL DONUTS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Reimbursements by Type</h4>
+        {/* REIMBURSEMENTS */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border">
+          <h4 className="text-sm font-medium mb-2">Reimbursements by Type</h4>
           <div className="h-36">
             <ResponsiveContainer>
               <PieChart>
                 <Pie
                   data={(d.reimbursements_type || []).map((it) => ({
-                    name: it.type ?? it.name ?? "",
-                    value: Number(it.total ?? it.count ?? 0),
+                    name: it.type ?? "",
+                    value: Number(it.total ?? 0),
                   }))}
                   dataKey="value"
                   nameKey="name"
@@ -379,15 +413,16 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Favourites by Device</h4>
+        {/* FAVOURITES DEVICE */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border">
+          <h4 className="text-sm font-medium mb-2">Favourites by Device</h4>
           <div className="h-36">
             <ResponsiveContainer>
               <PieChart>
                 <Pie
                   data={(d.favourites_device || []).map((it) => ({
-                    name: it.device ?? it.name ?? "",
-                    value: Number(it.total ?? it.count ?? 0),
+                    name: it.device ?? "",
+                    value: Number(it.total ?? 0),
                   }))}
                   dataKey="value"
                   nameKey="name"
@@ -406,24 +441,31 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col justify-center">
+        {/* MOST ACTIVE PROVIDER */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border flex flex-col justify-center">
           <div className="text-sm text-gray-600">Most active provider</div>
-          <div className="text-lg font-semibold text-gray-900 mt-1">
+          <div className="text-lg font-semibold mt-1">
             {barData[0]?.name ?? "—"}
           </div>
           <div className="text-xs text-gray-500 mt-1">
-            {barData[0] ? `${barData[0].appointments} appointments` : ""}
+            {barData[0]
+              ? `${barData[0].appointments} appointments`
+              : ""}
           </div>
         </div>
       </div>
 
-      {/* LATEST TABLES */}
+      {/* LATEST ACTIVITY TABLES */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        {/* LATEST REVIEWS */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-base font-semibold text-gray-800">Latest Reviews</h4>
-            <span className="text-sm text-gray-400">{latestReviewsRows.length}</span>
+            <h4 className="text-base font-semibold">Latest Reviews</h4>
+            <span className="text-sm text-gray-400">
+              {latestReviewsRows.length}
+            </span>
           </div>
+
           <Table
             columns={["Provider", "Rating", "Comment", "Date"]}
             data={latestReviewsRows}
@@ -434,11 +476,15 @@ export default function Dashboard() {
           />
         </div>
 
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        {/* LATEST APPOINTMENTS */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-base font-semibold text-gray-800">Latest Appointments</h4>
-            <span className="text-sm text-gray-400">{latestAppointmentsRows.length}</span>
+            <h4 className="text-base font-semibold">Latest Appointments</h4>
+            <span className="text-sm text-gray-400">
+              {latestAppointmentsRows.length}
+            </span>
           </div>
+
           <Table
             columns={["Provider", "User", "Date", "Status"]}
             data={latestAppointmentsRows}

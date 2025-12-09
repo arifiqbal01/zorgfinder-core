@@ -71,7 +71,7 @@ const Reimbursements = () => {
         if (json?.success && Array.isArray(json.data)) {
           setProviders(json.data);
           const map = {};
-          json.data.forEach((p) => (map[p.id] = p.name));
+          json.data.forEach((p) => (map[p.id] = p.provider));
           setProviderMap(map);
         }
       } catch {
@@ -177,7 +177,7 @@ const Reimbursements = () => {
             type: "select",
             key: "provider_id",
             placeholder: "Provider",
-            options: providers.map((p) => ({ value: p.id, label: p.name })),
+           options: providers.map((p) => ({ value: p.id, label: p.provider })),
           },
           {
             type: "select",

@@ -1,11 +1,11 @@
 import { useState, useCallback, useEffect } from "react";
 
 const DEFAULT_PER_PAGE = 10;
-
 const getNonce = () => window?.zorgFinderApp?.nonce || "";
 
 export const useProvidersList = () => {
   const [providers, setProviders] = useState([]);
+
   const [filters, setFilters] = useState({
     search: "",
     type_of_care: "",
@@ -13,6 +13,8 @@ export const useProvidersList = () => {
     organization_type: "",
     religion: "",
     has_hkz: "",
+    gender: "",
+    age_group: "",
   });
 
   const [sort, setSort] = useState("newest");
@@ -20,14 +22,12 @@ export const useProvidersList = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(DEFAULT_PER_PAGE);
   const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
 
-  /* Build Query Params */
   const buildParams = useCallback(() => {
     const params = new URLSearchParams();
 
     Object.entries(filters).forEach(([k, v]) => {
-      if (v) params.append(k, v);
+      if (v !== "" && v != null) params.append(k, v);
     });
 
     params.append("page", page);
@@ -38,50 +38,63 @@ export const useProvidersList = () => {
     return params.toString();
   }, [filters, page, perPage, sort, activeTab]);
 
-  /* Fetch Providers */
   const fetchProviders = useCallback(async () => {
-  const params = buildParams();
-  const url = `/wp-json/zorg/v1/providers?${params}`;
+    const params = buildParams();
+    const url = `/wp-json/zorg/v1/providers?${params}`;
 
-  setLoading(true);
+    console.log("[Providers] Fetch URL:", url);
 
-  try {
-    const headers = {};
-
-    // Only for trash view, because requires admin
-    if (activeTab === "trash") {
-      headers["X-WP-Nonce"] = window.wpApiSettings?.nonce || "";
-    }
-
-    const res = await fetch(url, { headers });
-
-    const text = await res.text();
-
-    let json = {};
     try {
-      json = JSON.parse(text);
-    } catch {
-      json = {};
+      const headers = {};
+      if (activeTab === "trash") headers["X-WP-Nonce"] = getNonce();
+
+      const res = await fetch(url, { headers });
+      const raw = await res.text();
+
+      console.log("[Providers] Raw:", raw);
+
+      let json = {};
+      try {
+        json = JSON.parse(raw);
+      } catch (err) {
+        console.error("[Providers] JSON error:", err);
+        setProviders([]);
+        return;
+      }
+
+        const list = Array.isArray(json?.data) ? json.data : [];
+
+        const normalized = list.map((p) => ({
+          ...p,
+          provider: p.provider,
+          target_genders: Array.isArray(p.target_genders)
+            ? p.target_genders
+            : p.target_genders
+            ? JSON.parse(p.target_genders)
+            : [],
+          target_age_groups: Array.isArray(p.target_age_groups)
+            ? p.target_age_groups
+            : p.target_age_groups
+            ? JSON.parse(p.target_age_groups)
+            : [],
+          has_hkz: Number(p.has_hkz) === 1 ? 1 : 0,
+        }));
+
+        setProviders(normalized);
+
+        // TOTAL now comes from root-level json
+        setTotal(json?.total || 0);
+
+
+      console.log("[Providers] Final count:", normalized.length);
+
+    } catch (err) {
+      console.error("[Providers] Fetch error:", err);
+      setProviders([]);
+      setTotal(0);
     }
+  }, [buildParams, activeTab]);
 
-    const rawList = Array.isArray(json?.data) ? json.data : [];
-
-    const normalized = rawList.map((p) => ({
-      ...p,
-      has_hkz: Number(p.has_hkz) === 1 ? 1 : 0,
-    }));
-
-    setProviders(normalized);
-    setTotal(json?.total || 0);
-  } catch (err) {
-    setProviders([]);
-    setTotal(0);
-  } finally {
-    setLoading(false);
-  }
-}, [buildParams, activeTab]);
-
-  /* Effects */
   useEffect(() => {
     fetchProviders();
   }, [fetchProviders]);
@@ -109,7 +122,6 @@ export const useProvidersList = () => {
     setPage,
     perPage,
     setPerPage,
-    loading,
     fetchProviders,
   };
 };

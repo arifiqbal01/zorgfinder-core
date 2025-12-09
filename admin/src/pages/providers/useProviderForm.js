@@ -2,16 +2,15 @@ import { useState, useCallback } from "react";
 
 const getNonce = () => window?.zorgFinderApp?.nonce || "";
 
-/* -----------------------------------------------------------
-   GLOBAL IN-MEMORY CACHE (lives as long as page stays open)
------------------------------------------------------------ */
+/* Cache for instant reload */
 const providerCache = new Map();
 
-/* Provider structure */
 const emptyProvider = {
   id: null,
-  name: "",
+  provider: "",
   slug: "",
+  target_genders: [],
+  target_age_groups: [],
   type_of_care: "",
   indication_type: "",
   organization_type: "",
@@ -25,7 +24,6 @@ const emptyProvider = {
   updated_at: "",
 };
 
-/* Normalize reimbursements to WLZ/ZVW/WMO/Youth */
 const normalizeReimbursements = (input = {}) => {
   const keys = ["WLZ", "ZVW", "WMO", "Youth"];
   const out = {};
@@ -42,9 +40,6 @@ const normalizeReimbursements = (input = {}) => {
   return out;
 };
 
-/* ===========================================================
-   HOOK
-=========================================================== */
 export const useProviderForm = (fetchProviders, closeModal) => {
   const [provider, setProvider] = useState(emptyProvider);
   const [reimbursements, setReimbursements] = useState(
@@ -58,11 +53,7 @@ export const useProviderForm = (fetchProviders, closeModal) => {
     setEditingId(null);
   }, []);
 
-  /* ===========================================================
-     LOAD PROVIDER (with instant cached load)
-  ============================================================ */
   const loadProvider = useCallback(async (id) => {
-    // 1) Serve instantly from memory cache
     if (providerCache.has(id)) {
       const cached = providerCache.get(id);
       setProvider(cached.provider);
@@ -71,7 +62,6 @@ export const useProviderForm = (fetchProviders, closeModal) => {
       return cached.provider;
     }
 
-    // 2) Otherwise, fetch from server
     const res = await fetch(
       `/wp-json/zorg/v1/providers-with-reimbursements/${id}`,
       {
@@ -90,8 +80,18 @@ export const useProviderForm = (fetchProviders, closeModal) => {
 
     const normalizedProvider = {
       id: p.id,
-      name: p.name || "",
+      provider: p.provider || "",
       slug: p.slug || "",
+      target_genders: Array.isArray(p.target_genders)
+        ? p.target_genders
+        : p.target_genders
+        ? JSON.parse(p.target_genders)
+        : [],
+      target_age_groups: Array.isArray(p.target_age_groups)
+        ? p.target_age_groups
+        : p.target_age_groups
+        ? JSON.parse(p.target_age_groups)
+        : [],
       type_of_care: p.type_of_care || "",
       indication_type: p.indication_type || "",
       organization_type: p.organization_type || "",
@@ -107,12 +107,10 @@ export const useProviderForm = (fetchProviders, closeModal) => {
 
     const normalizedReimbs = normalizeReimbursements(r);
 
-    // Fill form
     setProvider(normalizedProvider);
     setReimbursements(normalizedReimbs);
     setEditingId(p.id);
 
-    // Store into cache
     providerCache.set(id, {
       provider: normalizedProvider,
       reimbursements: normalizedReimbs,
@@ -121,9 +119,6 @@ export const useProviderForm = (fetchProviders, closeModal) => {
     return normalizedProvider;
   }, []);
 
-  /* ===========================================================
-     SAVE PROVIDER (also invalidates cache)
-  ============================================================ */
   const saveProvider = useCallback(
     async (reimbursementsArray) => {
       const url = editingId
@@ -134,6 +129,9 @@ export const useProviderForm = (fetchProviders, closeModal) => {
 
       const payload = {
         ...provider,
+        provider: provider.provider,
+        target_genders: provider.target_genders,
+        target_age_groups: provider.target_age_groups,
         reimbursements: reimbursementsArray,
       };
 
@@ -151,7 +149,6 @@ export const useProviderForm = (fetchProviders, closeModal) => {
 
       if (!res.ok) throw new Error(json?.message || "Save failed");
 
-      // Cache invalidation for fresh reload next time
       if (editingId) providerCache.delete(editingId);
 
       fetchProviders();
@@ -160,14 +157,10 @@ export const useProviderForm = (fetchProviders, closeModal) => {
     [editingId, provider, fetchProviders, closeModal]
   );
 
-  /* ===========================================================
-     FIELD UPDATES (live + cached)
-  ============================================================ */
   const updateProviderField = useCallback(
     (field, value) => {
       setProvider((prev) => ({ ...prev, [field]: value }));
 
-      // Update cache live
       if (editingId && providerCache.has(editingId)) {
         const cached = providerCache.get(editingId);
         cached.provider = { ...cached.provider, [field]: value };
@@ -188,7 +181,6 @@ export const useProviderForm = (fetchProviders, closeModal) => {
           },
         };
 
-        // Update cache live
         if (editingId && providerCache.has(editingId)) {
           const cached = providerCache.get(editingId);
           cached.reimbursements = updated;
@@ -201,9 +193,6 @@ export const useProviderForm = (fetchProviders, closeModal) => {
     [editingId]
   );
 
-  /* ===========================================================
-     RETURN API
-  ============================================================ */
   return {
     provider,
     reimbursements,

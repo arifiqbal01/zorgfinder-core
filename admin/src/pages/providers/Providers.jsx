@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import Table from "../../components/Table";
 import Modal from "../../components/Modal";
 import Pagination from "../../components/Pagination";
@@ -6,7 +6,7 @@ import Filters from "../../components/Filters";
 import BulkActionsBar from "../../components/BulkActionsBar";
 
 import Button from "../../components/Button";
-import { Eye, Plus, Trash } from "lucide-react";
+import { Eye, Plus } from "lucide-react";
 
 import GeneralInfoForm from "./GeneralInfoForm";
 import ReimbursementAccordion from "./ReimbursementAccordion";
@@ -53,9 +53,9 @@ const Providers = () => {
 
   const [selected, setSelected] = useState([]);
 
-  /* ---------------------------------------
-     BULK DELETE (Active Tab)
-  ---------------------------------------- */
+  /* -----------------------
+     BULK DELETE
+  ------------------------*/
   const handleBulkDelete = async () => {
     if (!confirm(`Delete ${selected.length} selected providers?`)) return;
 
@@ -66,7 +66,7 @@ const Providers = () => {
         selected.map((id) =>
           fetch(`/wp-json/zorg/v1/providers/${id}`, {
             method: "DELETE",
-            headers: { "X-WP-Nonce": window.wpApiSettings.nonce },
+            headers: { "X-WP-Nonce": window.wpApiSettings?.nonce },
           })
         )
       );
@@ -74,16 +74,16 @@ const Providers = () => {
       toast.success("Selected providers deleted");
       setSelected([]);
       fetchProviders();
-    } catch (err) {
+    } catch {
       toast.error("Delete failed");
     } finally {
       loadingOverlay.hide();
     }
   };
 
-  /* ---------------------------------------
-     BULK RESTORE (Trash Tab)
-  ---------------------------------------- */
+  /* -----------------------
+     BULK RESTORE
+  ------------------------*/
   const handleBulkRestore = async () => {
     if (!confirm(`Restore ${selected.length} providers?`)) return;
 
@@ -94,7 +94,7 @@ const Providers = () => {
         selected.map((id) =>
           fetch(`/wp-json/zorg/v1/providers/${id}/restore`, {
             method: "PATCH",
-            headers: { "X-WP-Nonce": window.wpApiSettings.nonce },
+            headers: { "X-WP-Nonce": window.wpApiSettings?.nonce },
           })
         )
       );
@@ -102,19 +102,20 @@ const Providers = () => {
       toast.success("Providers restored");
       setSelected([]);
       fetchProviders();
-    } catch (err) {
+    } catch {
       toast.error("Restore failed");
     } finally {
       loadingOverlay.hide();
     }
   };
 
-  /* ---------------------------------------
-     FILTER SCHEMA
-  ---------------------------------------- */
+  /* -----------------------
+     FILTERS SCHEMA
+  ------------------------*/
   const filterSchema = useMemo(
     () => [
       { type: "search", key: "search", placeholder: "Search providers…" },
+
       {
         type: "select",
         key: "type_of_care",
@@ -126,6 +127,7 @@ const Providers = () => {
           { value: "elderly", label: "Elderly" },
         ],
       },
+
       {
         type: "select",
         key: "indication_type",
@@ -135,6 +137,7 @@ const Providers = () => {
           { value: "ZIN", label: "ZIN" },
         ],
       },
+
       {
         type: "select",
         key: "organization_type",
@@ -144,6 +147,7 @@ const Providers = () => {
           { value: "Stichting", label: "Stichting" },
         ],
       },
+
       {
         type: "select",
         key: "religion",
@@ -155,14 +159,41 @@ const Providers = () => {
           { value: "None", label: "None" },
         ],
       },
+
+      {
+        type: "select",
+        key: "gender",
+        placeholder: "Target Gender",
+        options: [
+          { value: "male", label: "Male" },
+          { value: "female", label: "Female" },
+          { value: "non_binary", label: "Non-binary" },
+          { value: "transgender", label: "Transgender" },
+          { value: "other", label: "Other" },
+        ],
+      },
+
+      {
+        type: "select",
+        key: "age_group",
+        placeholder: "Age Group",
+        options: [
+          { value: "children", label: "Children (0–12)" },
+          { value: "youth", label: "Youth (12–18)" },
+          { value: "adults", label: "Adults (18–65)" },
+          { value: "seniors", label: "Seniors (65+)" },
+          { value: "all", label: "All Ages" },
+        ],
+      },
+
       { type: "checkbox", key: "has_hkz", label: "HKZ Only" },
     ],
     []
   );
 
-  /* ---------------------------------------
-     OPEN EDIT PROVIDER
-  ---------------------------------------- */
+  /* -----------------------
+     OPEN MODAL FOR EDIT
+  ------------------------*/
   const openModalForProvider = useCallback(
     async (index) => {
       const row = providers[index];
@@ -179,20 +210,20 @@ const Providers = () => {
         loadingOverlay.hide();
       }
     },
-    [providers, loadProvider, toast, loadingOverlay]
+    [providers, loadProvider]
   );
 
-  /* ---------------------------------------
+  /* -----------------------
      ADD NEW PROVIDER
-  ---------------------------------------- */
+  ------------------------*/
   const handleAddNew = () => {
     resetProviderForm();
     setShowModal(true);
   };
 
-  /* ---------------------------------------
+  /* -----------------------
      SAVE PROVIDER
-  ---------------------------------------- */
+  ------------------------*/
   const handleSave = useCallback(async () => {
     try {
       loadingOverlay.show("Saving provider…");
@@ -206,20 +237,19 @@ const Providers = () => {
       );
 
       await saveProvider(payloadReimbursements);
-
       toast.success("Provider saved successfully");
     } catch (err) {
       toast.error(err.message || "Save failed");
     } finally {
       loadingOverlay.hide();
     }
-  }, [reimbursements, saveProvider, toast, loadingOverlay]);
+  }, [reimbursements, saveProvider]);
 
-  /* ---------------------------------------
-     BADGE SYSTEM
-  ---------------------------------------- */
-  const badge = (label, color) => (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${color}`}>
+  /* -----------------------
+     BADGE HELPERS
+  ------------------------*/
+  const badge = (label, className = "") => (
+    <span className={`px-2 py-1 rounded-full text-xs font-medium ${className}`}>
       {label}
     </span>
   );
@@ -239,11 +269,12 @@ const Providers = () => {
     None: "bg-gray-100 text-gray-700",
   };
 
-  /* ---------------------------------------
-     TABLE
-  ---------------------------------------- */
+  /* -----------------------
+     TABLE COLUMNS
+  ------------------------*/
   const columns = [
-    "Name",
+    "Provider",
+    "Target Genders",
     "Type of Care",
     "Indication",
     "Organization",
@@ -251,33 +282,65 @@ const Providers = () => {
     "HKZ",
   ];
 
+  /* -----------------------
+     TABLE ROW RENDER
+  ------------------------*/
   const rows = providers.map((p) => [
-    p.name,
+    p.provider,
+
+    <div className="flex flex-wrap gap-1">
+      {(p.target_genders || []).length
+        ? p.target_genders.map((g) => (
+            <span
+              key={g}
+              className="px-2 py-1 rounded bg-gray-100 text-gray-700 text-xs"
+            >
+              {g}
+            </span>
+          ))
+        : "—"}
+    </div>,
+
+    <div className="flex flex-wrap gap-1">
+      {(p.target_age_groups || []).map((g) => (
+        <span
+          key={g}
+          className="px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs"
+        >
+          {g}
+        </span>
+      ))}
+    </div>,
+
     badge(p.type_of_care, badgeColors[p.type_of_care] || "bg-gray-100"),
     badge(p.indication_type, badgeColors[p.indication_type] || "bg-gray-100"),
-    badge(p.organization_type, badgeColors[p.organization_type] || "bg-gray-100"),
+    badge(
+      p.organization_type,
+      badgeColors[p.organization_type] || "bg-gray-100"
+    ),
     badge(p.religion, badgeColors[p.religion] || "bg-gray-100"),
+
     Number(p.has_hkz) === 1
       ? badge("HKZ", "bg-green-100 text-green-700")
       : badge("No", "bg-gray-200 text-gray-600"),
   ]);
 
+  /* -----------------------
+     ACTION BUTTON
+  ------------------------*/
   const actionsRenderer = (i) => (
     <button className="text-blue-600" onClick={() => openModalForProvider(i)}>
       <Eye size={16} />
     </button>
   );
 
-  /* ---------------------------------------
+  /* -----------------------
      RENDER
-  ---------------------------------------- */
+  ------------------------*/
   return (
     <div className="p-2 space-y-6">
-
       {/* HEADER */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-
-        {/* LEFT */}
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-semibold">Providers</h1>
 
@@ -287,10 +350,7 @@ const Providers = () => {
           </Button>
         </div>
 
-        {/* RIGHT: Toggle + Sort */}
         <div className="flex items-center gap-4">
-
-          {/* Active/Trash */}
           <div className="flex bg-white shadow-sm rounded-lg overflow-hidden">
             <button
               onClick={() => setActiveTab("active")}
@@ -314,7 +374,6 @@ const Providers = () => {
             </button>
           </div>
 
-          {/* Sorting */}
           <div className="flex items-center gap-2">
             <label className="text-sm">Sort:</label>
             <select
@@ -324,11 +383,10 @@ const Providers = () => {
             >
               <option value="newest">Newest</option>
               <option value="oldest">Oldest</option>
-              <option value="name_asc">Name A–Z</option>
-              <option value="name_desc">Name Z–A</option>
+              <option value="name_asc">Provider A–Z</option>
+              <option value="name_desc">Provider Z–A</option>
             </select>
           </div>
-
         </div>
       </div>
 
@@ -378,6 +436,7 @@ const Providers = () => {
               <h2 className="text-xl font-semibold mb-4">
                 Provider Information
               </h2>
+
               <GeneralInfoForm
                 provider={provider}
                 updateProviderField={updateProviderField}
@@ -386,9 +445,8 @@ const Providers = () => {
             </div>
 
             <div>
-              <h2 className="text-xl font-semibold mb-4">
-                Reimbursements
-              </h2>
+              <h2 className="text-xl font-semibold mb-4">Reimbursements</h2>
+
               <ReimbursementAccordion
                 list={reimbursements}
                 updateType={updateReimbursementField}
@@ -408,7 +466,6 @@ const Providers = () => {
           </div>
         </Modal>
       )}
-
     </div>
   );
 };

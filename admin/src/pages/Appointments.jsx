@@ -15,6 +15,8 @@ const Appointments = () => {
   const [providerMap, setProviderMap] = useState({});
   const [usersMap, setUsersMap] = useState({});
   const [expandedNoteId, setExpandedNoteId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState(null);
 
   const {
     items,
@@ -37,23 +39,16 @@ const Appointments = () => {
     {
       search: "",
       provider_id: "",
-      status: "",
-      date: ""
+      status: ""
     },
     true
   );
 
   const [selected, setSelected] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState(null);
-
   const authHeaders = { "X-WP-Nonce": getNonce() };
 
-  /* ---------------------------------------------------------
-     LOAD PROVIDERS + USERS
-  --------------------------------------------------------- */
+  /* LOAD PROVIDERS + USERS */
   useEffect(() => {
-    // Providers
     (async () => {
       try {
         const res = await fetch(`/wp-json/zorg/v1/providers?per_page=999`, {
@@ -63,14 +58,13 @@ const Appointments = () => {
 
         if (json?.success) {
           const map = {};
-          json.data.forEach(p => (map[p.id] = p.name));
+          json.data.forEach(p => (map[p.id] = p.provider));
           setProviders(json.data);
           setProviderMap(map);
         }
       } catch {}
     })();
 
-    // Users
     (async () => {
       try {
         const res = await fetch(`/wp-json/wp/v2/users?per_page=100`, {
@@ -89,16 +83,10 @@ const Appointments = () => {
     })();
   }, []);
 
-  /* ---------------------------------------------------------
-     PROVIDERS THAT HAVE APPOINTMENTS
-  --------------------------------------------------------- */
   const appointmentProviders = providers.filter(p =>
     items.some(it => it.provider_id === p.id)
   );
 
-  /* ---------------------------------------------------------
-     STATUS ACTIONS
-  --------------------------------------------------------- */
   const updateStatus = async (id, status) => {
     await fetch(`/wp-json/zorg/v1/appointments/${id}`, {
       method: "PATCH",
@@ -112,12 +100,6 @@ const Appointments = () => {
     fetchItems();
   };
 
-  const handleConfirm = (id) => updateStatus(id, "confirmed");
-  const handleReject = (id) => updateStatus(id, "rejected");
-
-  /* ---------------------------------------------------------
-     OPEN APPOINTMENT
-  --------------------------------------------------------- */
   const openAppointment = async (id) => {
     try {
       const res = await fetch(`/wp-json/zorg/v1/appointments/${id}`, {
@@ -132,35 +114,29 @@ const Appointments = () => {
     } catch {}
   };
 
-  /* ---------------------------------------------------------
-     CLICK OUTSIDE TO COLLAPSE NOTES
-  --------------------------------------------------------- */
   useEffect(() => {
     const handler = () => setExpandedNoteId(null);
     window.addEventListener("click", handler);
     return () => window.removeEventListener("click", handler);
   }, []);
 
-  /* ---------------------------------------------------------
-     TABLE CONFIG
-  --------------------------------------------------------- */
-  const columns = ["Provider", "User", "Date", "Time", "Status", "Notes", "Created"];
+  /* TABLE CONFIG — NEW ORDER */
+  const columns = [
+    "Name",
+    "Email",
+    "Phone",
+    "Provider",
+    "Notes",
+    "Status",
+  ];
 
   const rows = items.map(it => [
+    it.name || "—",
+    it.email || "—",
+    it.phone || "—",
     providerMap[it.provider_id] || `#${it.provider_id}`,
-    usersMap[it.user_id] || `User #${it.user_id}`,
-    it.preferred_date,
-    it.time_slot,
 
-    it.status === "confirmed" ? (
-      <span className="text-green-600 font-semibold">Confirmed</span>
-    ) : it.status === "rejected" ? (
-      <span className="text-red-600 font-semibold">Rejected</span>
-    ) : (
-      <span className="text-yellow-600 font-semibold">Pending</span>
-    ),
-
-    /* NOTES EXPAND/COLLAPSE */
+    /* NOTES COLUMN */
     <td onClick={(e) => e.stopPropagation()}>
       {expandedNoteId === it.id ? (
         <div>
@@ -194,12 +170,16 @@ const Appointments = () => {
       )}
     </td>,
 
-    it.created_at
+    /* STATUS */
+    it.status === "confirmed" ? (
+      <span className="text-green-600 font-semibold">Confirmed</span>
+    ) : it.status === "rejected" ? (
+      <span className="text-red-600 font-semibold">Rejected</span>
+    ) : (
+      <span className="text-yellow-600 font-semibold">Pending</span>
+    )
   ]);
 
-  /* ---------------------------------------------------------
-     RENDER
-  --------------------------------------------------------- */
   return (
     <div className="p-2 space-y-6">
 
@@ -211,7 +191,6 @@ const Appointments = () => {
         setActiveTab={setTab}
       />
 
-      {/* FILTERS */}
       <Filters
         schema={[
           { type: "search", key: "search", placeholder: "Search…" },
@@ -221,7 +200,7 @@ const Appointments = () => {
             placeholder: "Provider",
             options: appointmentProviders.map(p => ({
               value: p.id,
-              label: p.name,
+              label: p.provider,
             })),
           },
           {
@@ -233,8 +212,7 @@ const Appointments = () => {
               { value: "confirmed", label: "Confirmed" },
               { value: "rejected", label: "Rejected" },
             ],
-          },
-          { type: "date", key: "date", placeholder: "Select date" },
+          }
         ]}
         filters={filters}
         setFilters={setFilters}
@@ -308,18 +286,18 @@ const Appointments = () => {
         providers={items}
         selected={selected}
         setSelected={setSelected}
-        actions={(i) => {
-          const it = items[i];
+        actions={(index) => {
+          const it = items[index];
           return (
             <div className="flex items-center gap-3">
               {tab !== "trash" && it.status !== "confirmed" && (
-                <button onClick={() => handleConfirm(it.id)} className="text-green-600">
+                <button onClick={() => updateStatus(it.id, "confirmed")} className="text-green-600">
                   ✔
                 </button>
               )}
 
               {tab !== "trash" && it.status !== "rejected" && (
-                <button onClick={() => handleReject(it.id)} className="text-yellow-600">
+                <button onClick={() => updateStatus(it.id, "rejected")} className="text-yellow-600">
                   ✖
                 </button>
               )}
@@ -357,7 +335,7 @@ const Appointments = () => {
         }
       />
 
-      {/* MODAL */}
+      {/* MODERNISED MODAL */}
       {showModal && editing && (
         <Modal
           title={`Appointment #${editing.id}`}
@@ -367,42 +345,55 @@ const Appointments = () => {
           }}
         >
           <div className="space-y-4 text-sm">
-            <div>
-              <strong>Provider:</strong>
-              <div>{providerMap[editing.provider_id]}</div>
-            </div>
 
-            <div>
-              <strong>User:</strong>
-              <div>{usersMap[editing.user_id]}</div>
-            </div>
+            {/* SECTION */}
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <h4 className="font-semibold mb-2 text-gray-700">Contact Details</h4>
 
-            <div>
-              <strong>Date:</strong>
-              <div>{editing.preferred_date}</div>
-            </div>
+              <div className="flex justify-between py-1">
+                <span className="text-gray-500">Name:</span>
+                <span>{editing.name}</span>
+              </div>
 
-            <div>
-              <strong>Time:</strong>
-              <div>{editing.time_slot}</div>
-            </div>
+              <div className="flex justify-between py-1">
+                <span className="text-gray-500">Email:</span>
+                <span>{editing.email}</span>
+              </div>
 
-            <div>
-              <strong>Status:</strong>
-              <div>{editing.status}</div>
-            </div>
-
-            <div>
-              <strong>Notes:</strong>
-              <div className="p-3 bg-gray-50 rounded whitespace-pre-line">
-                {editing.notes || "—"}
+              <div className="flex justify-between py-1">
+                <span className="text-gray-500">Phone:</span>
+                <span>{editing.phone}</span>
               </div>
             </div>
 
-            <div>
-              <strong>Created:</strong>
-              <div>{editing.created_at}</div>
+            {/* SECTION */}
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <h4 className="font-semibold mb-2 text-gray-700">Provider</h4>
+
+              <div>{providerMap[editing.provider_id]}</div>
             </div>
+
+            {/* SECTION */}
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <h4 className="font-semibold mb-2 text-gray-700">User (Optional)</h4>
+
+              <div>{editing.user_id ? usersMap[editing.user_id] : "Visitor"}</div>
+            </div>
+
+            {/* SECTION */}
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <h4 className="font-semibold mb-2 text-gray-700">Notes</h4>
+
+              <div className="whitespace-pre-line">{editing.notes || "—"}</div>
+            </div>
+
+            {/* SECTION */}
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <h4 className="font-semibold mb-2 text-gray-700">Status</h4>
+
+              <div className="capitalize">{editing.status}</div>
+            </div>
+
           </div>
         </Modal>
       )}

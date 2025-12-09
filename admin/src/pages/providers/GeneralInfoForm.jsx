@@ -1,4 +1,8 @@
+import React from "react";
+
 const GeneralInfoForm = ({ provider, updateProviderField, editingId }) => {
+  const valueOrEmptyArray = (v) => (Array.isArray(v) ? v : v ? v : []);
+
   return (
     <form className="space-y-2">
 
@@ -13,13 +17,13 @@ const GeneralInfoForm = ({ provider, updateProviderField, editingId }) => {
         )}
       </div>
 
-      {/* Name + Slug */}
+      {/* Provider + Slug */}
       <div className="form-grid-2 gap-y-4">
         <div className="flex flex-col gap-1.5">
-          <label className="label">Name</label>
+          <label className="label">Provider</label>
           <input
-            value={provider.name}
-            onChange={(e) => updateProviderField("name", e.target.value)}
+            value={provider.provider}
+            onChange={(e) => updateProviderField("provider", e.target.value)}
             className="input"
           />
         </div>
@@ -32,6 +36,53 @@ const GeneralInfoForm = ({ provider, updateProviderField, editingId }) => {
             className="input"
           />
         </div>
+      </div>
+
+      {/* Gender + Age */}
+      <div className="form-grid-2 gap-y-4">
+
+        <div className="flex flex-col gap-1.5">
+          <label className="label">Target Genders</label>
+          <select
+            multiple
+            className="input select h-28"
+            value={valueOrEmptyArray(provider.target_genders)}
+            onChange={(e) =>
+              updateProviderField(
+                "target_genders",
+                Array.from(e.target.selectedOptions).map((o) => o.value)
+              )
+            }
+          >
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="non_binary">Non-binary</option>
+            <option value="transgender">Transgender</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="label">Target Age Groups</label>
+          <select
+            multiple
+            className="input select h-28"
+            value={valueOrEmptyArray(provider.target_age_groups)}
+            onChange={(e) =>
+              updateProviderField(
+                "target_age_groups",
+                Array.from(e.target.selectedOptions).map((o) => o.value)
+              )
+            }
+          >
+            <option value="children">Children (0–12)</option>
+            <option value="youth">Youth (12–18)</option>
+            <option value="adults">Adults (18–65)</option>
+            <option value="seniors">Seniors (65+)</option>
+            <option value="all">All Ages</option>
+          </select>
+        </div>
+
       </div>
 
       {/* Care / Indication */}
@@ -67,7 +118,7 @@ const GeneralInfoForm = ({ provider, updateProviderField, editingId }) => {
         </div>
       </div>
 
-      {/* Org / Religion */}
+      {/* Organization + Religion */}
       <div className="form-grid-2 gap-y-4">
         <div className="flex flex-col gap-1.5">
           <label className="label">Organization</label>
@@ -115,7 +166,7 @@ const GeneralInfoForm = ({ provider, updateProviderField, editingId }) => {
         <label className="label !mb-0">Has HKZ Certification</label>
       </div>
 
-      {/* Email / Phone */}
+      {/* Email + Phone */}
       <div className="form-grid-2 gap-y-4">
         <div className="flex flex-col gap-1.5">
           <label className="label">Email</label>
@@ -151,9 +202,7 @@ const GeneralInfoForm = ({ provider, updateProviderField, editingId }) => {
         <label className="label">Address</label>
         <textarea
           value={provider.address}
-          onChange={(e) =>
-            updateProviderField("address", e.target.value)
-          }
+          onChange={(e) => updateProviderField("address", e.target.value)}
           className="textarea h-24"
         />
       </div>
