@@ -169,7 +169,7 @@ class CompareController extends BaseController
 
             $final[] = [
                 'id'                => $pid,
-                'name'              => $p['name'],
+                'provider'          => $p['provider'],
                 'slug'              => $p['slug'],
                 'type_of_care'      => $p['type_of_care'],
                 'indication_type'   => $p['indication_type'],

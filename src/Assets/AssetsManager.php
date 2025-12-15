@@ -105,11 +105,25 @@ class AssetsManager
     $providers_file    = ZORGFINDER_PATH . 'blocks/build/providers-frontend.js';
     $comparison_file   = ZORGFINDER_PATH . 'blocks/build/comparison-frontend.js';
     $auth_forms_file   = ZORGFINDER_PATH . 'blocks/build/auth-forms.js';
+    $compare_page_id = (int) get_option('zorg_compare_page_id', 0);
+
+    $compare_page_id = (int) get_option('zorg_compare_page_id', 0);
 
     $localize = [
         'restUrl'    => rest_url('zorg/v1/'),
         'nonce'      => wp_create_nonce('wp_rest'),
         'isLoggedIn' => is_user_logged_in(),
+
+        // Page context
+        'postId'     => get_queried_object_id(),
+
+        // Plugin settings
+        'settings'   => [
+            'comparePageId' => $compare_page_id,
+            'compareUrl'    => $compare_page_id
+                ? get_permalink($compare_page_id)
+                : '',
+        ],
     ];
 
     /**

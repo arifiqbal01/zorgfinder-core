@@ -25292,6 +25292,44 @@ const RotateCcw = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__["default"
 
 /***/ }),
 
+/***/ "./node_modules/lucide-react/dist/esm/icons/settings.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/lucide-react/dist/esm/icons/settings.js ***!
+  \**************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Settings)
+/* harmony export */ });
+/* harmony import */ var _createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../createLucideIcon.js */ "./node_modules/lucide-react/dist/esm/createLucideIcon.js");
+/**
+ * @license lucide-react v0.320.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+
+
+
+const Settings = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__["default"])("Settings", [
+  [
+    "path",
+    {
+      d: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z",
+      key: "1qme2f"
+    }
+  ],
+  ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
+]);
+
+
+//# sourceMappingURL=settings.js.map
+
+
+/***/ }),
+
 /***/ "./node_modules/lucide-react/dist/esm/icons/star.js":
 /*!**********************************************************!*\
   !*** ./node_modules/lucide-react/dist/esm/icons/star.js ***!
@@ -51617,9 +51655,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/calendar-days.js");
 /* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/heart.js");
 /* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/layout-dashboard.js");
-/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/star.js");
-/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/users.js");
-/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/wallet.js");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/settings.js");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/star.js");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/users.js");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/wallet.js");
 
 
 
@@ -51634,13 +51673,13 @@ const Sidebar = () => {
   }, {
     to: "/providers",
     label: "Providers",
-    icon: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_6__["default"], {
+    icon: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_7__["default"], {
       size: 18
     })
   }, {
     to: "/reviews",
     label: "Reviews",
-    icon: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    icon: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_6__["default"], {
       size: 18
     })
   }, {
@@ -51658,13 +51697,19 @@ const Sidebar = () => {
   }, {
     to: "/reimbursements",
     label: "Reimbursements",
-    icon: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_7__["default"], {
+    icon: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_8__["default"], {
       size: 18
     })
   }, {
     to: "/clients",
     label: "Clients",
-    icon: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_6__["default"], {
+    icon: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_7__["default"], {
+      size: 18
+    })
+  }, {
+    to: "/settings",
+    label: "Settings",
+    icon: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_5__["default"], {
       size: 18
     })
   }];
@@ -53902,6 +53947,125 @@ const Reviews = () => {
 
 /***/ }),
 
+/***/ "./src/pages/Settings.jsx":
+/*!********************************!*\
+  !*** ./src/pages/Settings.jsx ***!
+  \********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Settings)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _components_Button__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/Button */ "./src/components/Button.jsx");
+/* harmony import */ var _hooks_useToast__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../hooks/useToast */ "./src/hooks/useToast.js");
+
+
+
+
+const getNonce = () => window?.zorgFinderApp?.nonce || "";
+function Settings() {
+  const [pages, setPages] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [settings, setSettings] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    compare_page_id: ""
+  });
+  const [saving, setSaving] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const toast = (0,_hooks_useToast__WEBPACK_IMPORTED_MODULE_2__.useToast)();
+
+  /* ---------------- Load data (NO global loading) ---------------- */
+
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    const load = async () => {
+      try {
+        // Pages
+        const pagesRes = await fetch("/wp-json/wp/v2/pages?per_page=100", {
+          headers: {
+            "X-WP-Nonce": getNonce()
+          }
+        });
+        const pagesJson = await pagesRes.json();
+        setPages(Array.isArray(pagesJson) ? pagesJson : []);
+
+        // Settings
+        const res = await fetch("/wp-json/zorg/v1/settings", {
+          headers: {
+            "X-WP-Nonce": getNonce()
+          }
+        });
+        const json = await res.json();
+        if (json?.data) {
+          setSettings(json.data);
+        }
+      } catch {
+        toast.error("Failed to load settings");
+      }
+    };
+    load();
+  }, []);
+
+  /* ---------------- Save (inline feedback only) ---------------- */
+
+  const save = async () => {
+    try {
+      setSaving(true);
+      const res = await fetch("/wp-json/zorg/v1/settings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-WP-Nonce": getNonce()
+        },
+        body: JSON.stringify(settings)
+      });
+      if (!res.ok) {
+        throw new Error();
+      }
+      toast.success("Settings saved");
+    } catch {
+      toast.error("Could not save settings");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /* ---------------- Render ---------------- */
+
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "p-6 space-y-8 max-w-2xl"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
+    className: "text-2xl font-semibold"
+  }, "Settings"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("section", {
+    className: "space-y-4 bg-white p-4 rounded-xl border"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "text-lg font-medium"
+  }, "Comparison"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "space-y-2"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "text-sm font-medium"
+  }, "Compare Page"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
+    className: "input w-full",
+    value: settings.compare_page_id || "",
+    onChange: e => setSettings(s => ({
+      ...s,
+      compare_page_id: e.target.value
+    }))
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: ""
+  }, "\u2014 Select page \u2014"), pages.map(p => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    key: p.id,
+    value: p.id
+  }, p.title.rendered))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "text-xs text-gray-500"
+  }, "This page will be used for provider comparison. Users can only access it via the Providers compare flow."))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_1__["default"], {
+    onClick: save,
+    disabled: saving
+  }, saving ? "Saving…" : "Save settings"));
+}
+
+/***/ }),
+
 /***/ "./src/pages/providers/GeneralInfoForm.jsx":
 /*!*************************************************!*\
   !*** ./src/pages/providers/GeneralInfoForm.jsx ***!
@@ -55033,10 +55197,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _pages_Favourites__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./pages/Favourites */ "./src/pages/Favourites.jsx");
 /* harmony import */ var _pages_Reimbursements__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./pages/Reimbursements */ "./src/pages/Reimbursements.jsx");
 /* harmony import */ var _pages_Clients__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./pages/Clients */ "./src/pages/Clients.jsx");
-/* harmony import */ var _hooks_useToast__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./hooks/useToast */ "./src/hooks/useToast.js");
-/* harmony import */ var _hooks_useLoading__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./hooks/useLoading */ "./src/hooks/useLoading.js");
-/* harmony import */ var _components_LoadingOverlay__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./components/LoadingOverlay */ "./src/components/LoadingOverlay.jsx");
-/* harmony import */ var _shared_styles_dist_global_css__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../../shared-styles/dist/global.css */ "../shared-styles/dist/global.css");
+/* harmony import */ var _pages_Settings__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./pages/Settings */ "./src/pages/Settings.jsx");
+/* harmony import */ var _hooks_useToast__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./hooks/useToast */ "./src/hooks/useToast.js");
+/* harmony import */ var _hooks_useLoading__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./hooks/useLoading */ "./src/hooks/useLoading.js");
+/* harmony import */ var _components_LoadingOverlay__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./components/LoadingOverlay */ "./src/components/LoadingOverlay.jsx");
+/* harmony import */ var _shared_styles_dist_global_css__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../../shared-styles/dist/global.css */ "../shared-styles/dist/global.css");
+
 
 
 
@@ -55086,10 +55252,13 @@ const AppShell = () => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div
 }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
   path: "/clients",
   element: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_pages_Clients__WEBPACK_IMPORTED_MODULE_12__["default"], null)
+}), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
+  path: "/settings",
+  element: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_pages_Settings__WEBPACK_IMPORTED_MODULE_13__["default"], null)
 }))))));
 const mount = document.getElementById('zorgfinder-admin-app');
 if (mount) {
-  (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(mount).render((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_3__.HashRouter, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_hooks_useToast__WEBPACK_IMPORTED_MODULE_13__.ToastProvider, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_hooks_useLoading__WEBPACK_IMPORTED_MODULE_14__.LoadingProvider, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(AppShell, null), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_LoadingOverlay__WEBPACK_IMPORTED_MODULE_15__["default"], null)))));
+  (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(mount).render((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_3__.HashRouter, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_hooks_useToast__WEBPACK_IMPORTED_MODULE_14__.ToastProvider, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_hooks_useLoading__WEBPACK_IMPORTED_MODULE_15__.LoadingProvider, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(AppShell, null), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_LoadingOverlay__WEBPACK_IMPORTED_MODULE_16__["default"], null)))));
 }
 })();
 

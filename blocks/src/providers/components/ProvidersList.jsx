@@ -1,17 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Filters from "./Filters";
 import ProviderCard from "./ProviderCard";
 import Pagination from "./Pagination";
+import CompareBar from "./CompareBar";
 import { useProviders } from "../hooks/useProviders";
 import { FavouritesProvider } from "../hooks/useFavouritesStore";
-import { Button, Icon } from "../../ui"; // adjust path if needed
+import { Button, Icon } from "../../ui";
+import { CompareProvider } from "../../context/CompareContext";
 
 const FILTER_ICON = "M3 5h18M6 12h12M10 19h4";
 
 export default function ProvidersList() {
   return (
     <FavouritesProvider>
-      <ProvidersListInner />
+      <CompareProvider>
+        <ProvidersListInner />
+      </CompareProvider>
     </FavouritesProvider>
   );
 }
@@ -49,6 +53,14 @@ function ProvidersListInner() {
     setPage(1);
   }, [perPage]);
 
+  /* ---------------- Compare map ---------------- */
+
+  const providersMap = useMemo(() => {
+    return Object.fromEntries(
+      safeProviders.map((p) => [p.id, p])
+    );
+  }, [safeProviders]);
+
   /* ---------------- Render ---------------- */
 
   return (
@@ -56,16 +68,15 @@ function ProvidersListInner() {
 
       {/* MOBILE FILTER BUTTON */}
       <div className="providers-mobile-toggle">
-       <Button
-    variant="outline"
-    full
-    onClick={() => setShowMobileFilters((v) => !v)}
-    className="providers-filter-button justify-between"
-  >
-    <span>{showMobileFilters ? "Hide filters" : "Show filters"}</span>
-    <Icon d={FILTER_ICON} />
-  </Button>
-
+        <Button
+          variant="outline"
+          full
+          onClick={() => setShowMobileFilters((v) => !v)}
+          className="providers-filter-button justify-between"
+        >
+          <span>{showMobileFilters ? "Hide filters" : "Show filters"}</span>
+          <Icon d={FILTER_ICON} />
+        </Button>
       </div>
 
       {/* MOBILE FILTERS */}
@@ -106,6 +117,9 @@ function ProvidersListInner() {
           />
         </div>
       </div>
+
+      {/* 🔥 STICKY COMPARE BAR */}
+      <CompareBar providersMap={providersMap} />
     </div>
   );
 }

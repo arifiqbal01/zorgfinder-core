@@ -44,4 +44,17 @@ abstract class BaseController extends WP_REST_Controller
     return true;
 }
 
+public function require_admin(): bool|WP_Error
+{
+    if (!current_user_can('manage_options')) {
+        return new WP_Error(
+            'rest_forbidden',
+            __('You do not have permission.', 'zorgfinder-core'),
+            ['status' => 403]
+        );
+    }
+    return true;
+}
+
+
 }

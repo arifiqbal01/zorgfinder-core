@@ -13,7 +13,7 @@ export default function TopSummaryCards({ providers }) {
                     </div>
 
                     <h2 className="text-xl font-semibold text-gray-900 mb-1">
-                        {p.name}
+                        {p.provider}
                     </h2>
 
                     <div className="text-5xl font-bold text-gray-900 my-4 tracking-tight">

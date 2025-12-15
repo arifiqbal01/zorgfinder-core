@@ -11,12 +11,14 @@ import Appointments from './pages/Appointments';
 import Favourites from './pages/Favourites';
 import Reimbursements from './pages/Reimbursements';
 import Clients from './pages/Clients';
+import Settings from './pages/Settings';
 
 import { ToastProvider } from './hooks/useToast';
 import { LoadingProvider } from './hooks/useLoading';
 import LoadingOverlay from './components/LoadingOverlay';
 
 import '../../shared-styles/dist/global.css'; // ensure this builds to this path
+import { Settings as SettingsIcon } from 'lucide-react';
 
 
 const AppShell = () => (
@@ -41,6 +43,7 @@ const AppShell = () => (
             <Route path="/favourites" element={<Favourites />} />
             <Route path="/reimbursements" element={<Reimbursements />} />
             <Route path="/clients" element={<Clients />} />
+            <Route path="/settings" element={<Settings />} />
           </Routes>
         </div>
       </main>

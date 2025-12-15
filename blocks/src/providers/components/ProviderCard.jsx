@@ -3,6 +3,8 @@ import FavouriteButton from "./FavouriteButton";
 import ProviderDetailsDrawer from "./ProviderDetailsDrawer";
 import AppointmentDrawer from "./AppointmentDrawer";
 import { Card, ProviderLogo, Button, Icon } from "../../ui";
+import { useCompareCart } from "../../context/CompareContext";
+
 
 const ICONS = {
   briefcase:
@@ -19,6 +21,9 @@ export default function ProviderCard({ provider }) {
 
   const [showDetails, setShowDetails] = useState(false);
   const [showAppointment, setShowAppointment] = useState(false);
+
+  const { ids, add, remove, isFull } = useCompareCart();
+  const isCompared = ids.includes(provider.id);
 
   const overall = Number(provider?.reviews?.overall ?? 0);
   const count = Number(provider?.reviews?.count ?? 0);
@@ -60,41 +65,17 @@ export default function ProviderCard({ provider }) {
 
         {/* Info grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-sm text-gray-700">
-          <InfoRow
-            icon={<Icon d={ICONS.briefcase} />}
-            label="Type of care"
-            value={provider.type_of_care}
-          />
-          <InfoRow
-            icon={<Icon d={ICONS.wallet} />}
-            label="Indication"
-            value={provider.indication_type}
-          />
-          <InfoRow
-            icon={<Icon d={ICONS.building} />}
-            label="Organization"
-            value={provider.organization_type}
-          />
-          <InfoRow
-            icon={<Icon d={ICONS.religion} />}
-            label="Religion"
-            value={provider.religion}
-          />
+          <InfoRow icon={<Icon d={ICONS.briefcase} />} label="Type of care" value={provider.type_of_care} />
+          <InfoRow icon={<Icon d={ICONS.wallet} />} label="Indication" value={provider.indication_type} />
+          <InfoRow icon={<Icon d={ICONS.building} />} label="Organization" value={provider.organization_type} />
+          <InfoRow icon={<Icon d={ICONS.religion} />} label="Religion" value={provider.religion} />
 
           {provider.has_hkz === 1 && (
-            <InfoRow
-              icon={<Icon d={ICONS.badge} />}
-              label="Certification"
-              value="HKZ Certified"
-            />
+            <InfoRow icon={<Icon d={ICONS.badge} />} label="Certification" value="HKZ Certified" />
           )}
 
           {reimbursementTypes && (
-            <InfoRow
-              icon={<Icon d={ICONS.receipt} />}
-              label="Reimbursement"
-              value={reimbursementTypes}
-            />
+            <InfoRow icon={<Icon d={ICONS.receipt} />} label="Reimbursement" value={reimbursementTypes} />
           )}
         </div>
 
@@ -104,7 +85,17 @@ export default function ProviderCard({ provider }) {
         {/* Actions */}
         <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <label className="flex items-center gap-2 text-sm text-gray-700">
-            <input type="checkbox" className="w-4 h-4" />
+            <input
+              type="checkbox"
+              className="w-4 h-4"
+              checked={isCompared}
+              disabled={!isCompared && isFull}
+              onChange={() =>
+                isCompared
+                  ? remove(provider.id)
+                  : add(provider.id)
+              }
+            />
             Compare
           </label>
 
