@@ -7,6 +7,13 @@ use WP_Error;
 
 class ProvidersController extends BaseController
 {
+    protected array $allowed_filters = [
+        "type_of_care",
+        "indication_type",
+        "organization_type",
+        "religion"
+    ];
+
     public function register_routes()
     {
         register_rest_route($this->namespace, '/providers', [
@@ -57,17 +64,16 @@ class ProvidersController extends BaseController
         global $wpdb;
         $table = $wpdb->prefix . "zf_providers";
 
-        $trashed = intval($request->get_param("trashed")) === 1 ? 1 : 0;
+        $trashed = (int)$request->get_param("trashed") === 1;
 
-        $where = $trashed
-            ? "WHERE deleted_at IS NOT NULL"
-            : "WHERE deleted_at IS NULL";
+        $where = $trashed ? "WHERE deleted_at IS NOT NULL" : "WHERE deleted_at IS NULL";
 
         /* ---------------------------
-           SEARCH (provider, email…)
+           SEARCH
         ---------------------------- */
         if ($search = $request->get_param("search")) {
             $like = "%" . $wpdb->esc_like($search) . "%";
+
             $where .= $wpdb->prepare("
                 AND (
                     provider LIKE %s
@@ -79,23 +85,16 @@ class ProvidersController extends BaseController
         }
 
         /* ---------------------------
-           SIMPLE ENUM FILTERS
+           SAFE ENUM FILTERS
         ---------------------------- */
-        $filters = [
-            "type_of_care",
-            "indication_type",
-            "organization_type",
-            "religion"
-        ];
-
-        foreach ($filters as $field) {
+        foreach ($this->allowed_filters as $field) {
             if ($value = $request->get_param($field)) {
-                $where .= $wpdb->prepare(" AND $field = %s", $value);
+                $where .= $wpdb->prepare(" AND $field = %s", sanitize_text_field($value));
             }
         }
 
         /* ---------------------------
-           JSON FILTERS
+           JSON CONTAINS FILTERS
         ---------------------------- */
         if ($gender = $request->get_param("gender")) {
             $where .= $wpdb->prepare(
@@ -118,12 +117,13 @@ class ProvidersController extends BaseController
         /* ---------------------------
            SORTING
         ---------------------------- */
-        switch ($request->get_param("sort")) {
-            case "oldest":      $order = "ORDER BY created_at ASC"; break;
-            case "name_asc":    $order = "ORDER BY provider ASC";   break;
-            case "name_desc":   $order = "ORDER BY provider DESC";  break;
-            default:            $order = "ORDER BY created_at DESC";
-        }
+        $sort = $request->get_param("sort");
+        $order = match ($sort) {
+            "oldest"    => "ORDER BY created_at ASC",
+            "name_asc"  => "ORDER BY provider ASC",
+            "name_desc" => "ORDER BY provider DESC",
+            default     => "ORDER BY created_at DESC",
+        };
 
         /* ---------------------------
            PAGINATION
@@ -189,6 +189,35 @@ class ProvidersController extends BaseController
     }
 
     /* ===============================================================
+       VALIDATION HELPERS
+    =============================================================== */
+    private function validate_provider(WP_REST_Request $request)
+    {
+        if (!$request->get_param("provider")) {
+            return $this->error("Provider name is required.", 422);
+        }
+
+        return true;
+    }
+
+    private function ensure_unique_slug($slug, $exclude_id = 0)
+    {
+        global $wpdb;
+        $table = $wpdb->prefix . "zf_providers";
+
+        $exists = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM $table WHERE slug=%s AND id!=%d",
+            $slug, $exclude_id
+        ));
+
+        if ($exists) {
+            return $this->error("Slug already exists. Choose a different one.", 409);
+        }
+
+        return true;
+    }
+
+    /* ===============================================================
        CREATE PROVIDER
     =============================================================== */
     public function create_provider(WP_REST_Request $request)
@@ -196,8 +225,16 @@ class ProvidersController extends BaseController
         global $wpdb;
         $table = $wpdb->prefix . "zf_providers";
 
+        if ($v = $this->validate_provider($request)) {
+            if ($v instanceof WP_Error) return $v;
+        }
+
         $slug = sanitize_title($request->get_param("slug"))
               ?: sanitize_title($request->get_param("provider"));
+
+        if ($e = $this->ensure_unique_slug($slug)) {
+            if ($e instanceof WP_Error) return $e;
+        }
 
         $data = [
             "provider"          => sanitize_text_field($request->get_param("provider")),
@@ -234,8 +271,16 @@ class ProvidersController extends BaseController
         $table = $wpdb->prefix . "zf_providers";
         $id = (int)$request->get_param("id");
 
+        if ($v = $this->validate_provider($request)) {
+            if ($v instanceof WP_Error) return $v;
+        }
+
         $slug = sanitize_title($request->get_param("slug"))
               ?: sanitize_title($request->get_param("provider"));
+
+        if ($e = $this->ensure_unique_slug($slug, $id)) {
+            if ($e instanceof WP_Error) return $e;
+        }
 
         $data = [
             "provider"          => sanitize_text_field($request->get_param("provider")),
@@ -261,18 +306,50 @@ class ProvidersController extends BaseController
     }
 
     /* ===============================================================
-       DELETE & RESTORE (unchanged)
+       SOFT DELETE
     =============================================================== */
     public function delete_provider(WP_REST_Request $request)
     {
-        // unchanged
+        global $wpdb;
+
+        $id = (int)$request->get_param("id");
+
+        $wpdb->update(
+            "{$wpdb->prefix}zf_providers",
+            ["deleted_at" => current_time("mysql")],
+            ["id" => $id]
+        );
+
+        return $this->respond([
+            "success" => true,
+            "message" => "Provider soft-deleted.",
+        ]);
     }
 
+    /* ===============================================================
+       RESTORE
+    =============================================================== */
     public function restore_provider(WP_REST_Request $request)
     {
-        // unchanged
+        global $wpdb;
+
+        $id = (int)$request->get_param("id");
+
+        $wpdb->update(
+            "{$wpdb->prefix}zf_providers",
+            ["deleted_at" => null],
+            ["id" => $id]
+        );
+
+        return $this->respond([
+            "success" => true,
+            "message" => "Provider restored.",
+        ]);
     }
 
+    /* ===============================================================
+       ADMIN CHECK
+    =============================================================== */
     public function require_admin(): bool|WP_Error
     {
         if (!current_user_can("manage_options")) {

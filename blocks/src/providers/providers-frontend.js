@@ -1,8 +1,6 @@
-import React from "react";
-import { createRoot } from "react-dom/client";
 import ProvidersList from "./components/ProvidersList";
+import { createRoot } from "react-dom/client";
 import "./style.scss";
-
 
 console.log("🔥 Providers frontend loaded");
 
@@ -12,7 +10,7 @@ function mountProviders() {
 
     try {
         const root = createRoot(wrapper);
-        root.render(<ProvidersList />);
+        root.render(<ProvidersList isEditor={false} />);
     } catch (err) {
         console.error("ZORG: Providers mount failed", err);
     }

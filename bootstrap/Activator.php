@@ -13,31 +13,31 @@ class Activator
      * Main activation routine.
      */
     public static function activate(): void
-    {
-        try {
-            $db = DBManager::get_instance();
+{
+    try {
+        $db = DBManager::get_instance();
 
-            // 1️⃣ Run migrations to ensure all tables exist
-            $db->run_migrations();
+        // Run migrations
+        $db->run_migrations();
 
-            // 2️⃣ Seed demo data if it's a fresh install
-            if (! get_option('zorgfinder_installed')) {
-                $db->run_seeders();
-            }
-
-        } catch (\Throwable $e) {
-            error_log('[ZorgFinder Activation Error] ' . $e->getMessage());
+        // Seed demo data on fresh install
+        if (! get_option('zorgfinder_installed')) {
+            $db->run_seeders();
         }
 
-        // 3️⃣ Register custom user roles + capabilities
-        self::register_roles();
+        // ⭐ NEW: Build provider snapshots on activation
+        \ZorgFinder\Snapshot\ProviderSnapshotGenerator::rebuild_all();
 
-        // 4️⃣ Register default plugin options
-        self::register_default_options();
-
-        // 5️⃣ Flush rewrite rules for REST routes
-        self::flush_rewrite_rules();
+    } catch (\Throwable $e) {
+        error_log('[ZorgFinder Activation Error] ' . $e->getMessage());
     }
+
+    // Register roles, options, flush rules...
+    self::register_roles();
+    self::register_default_options();
+    self::flush_rewrite_rules();
+}
+
 
     /**
      * Create or update custom roles.

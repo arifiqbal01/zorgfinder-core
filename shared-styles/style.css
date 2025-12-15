@@ -339,3 +339,25 @@ body.wp-admin.toplevel_page_zorgfinder-dashboard #wpbody-content {
 .animate-slideInFast {
   animation: slideInFast 0.15s ease-out;
 }
+
+@keyframes slide-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.animate-slide-in {
+  animation: slide-in .25s ease-out;
+}
+
+.hide-scrollbar {
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.zorgfinder-sticky-wrapper,
+.zorgfinder-sticky-wrapper * {
+  overflow: visible !important;
+}

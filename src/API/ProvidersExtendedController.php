@@ -138,6 +138,10 @@ class ProvidersExtendedController extends BaseController
 
             $wpdb->query("COMMIT");
 
+                        // Fire snapshot update event
+            do_action('zf_provider_reimbursements_updated', $pid);
+
+
             return $this->respond([
                 'success' => true,
                 'provider_id' => $pid,
@@ -227,6 +231,9 @@ class ProvidersExtendedController extends BaseController
             }
 
             $wpdb->query("COMMIT");
+            // Fire snapshot update event
+            do_action('zf_provider_reimbursements_updated', $pid);
+
 
             return $this->respond([
                 'success' => true,

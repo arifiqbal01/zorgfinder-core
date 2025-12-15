@@ -13,6 +13,7 @@ use ZorgFinder\API\{
     DashboardController,
     ProvidersExtendedController,
     AuthController,
+    FrontendProvidersController
 };
 use ZorgFinder\Blocks\BlockRegistrar;
 
@@ -50,6 +51,7 @@ final class Core {
             (new DashboardController())->register_routes();
             (new ProvidersExtendedController())->register_routes();
             (new AuthController())->register_routes();
+            (new FrontendProvidersController())->register_routes();
         });
     }
 

@@ -5,6 +5,7 @@ use ZorgFinder\Bootstrap\Activator;
 use ZorgFinder\Bootstrap\Deactivator;
 use ZorgFinder\Bootstrap\Updater;
 use ZorgFinder\Assets\AssetsManager;
+use ZorgFinder\Bootstrap\SnapshotHooks;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
@@ -29,6 +30,11 @@ register_deactivation_hook(
     ZORGFINDER_PATH . 'zorgfinder-core.php',
     [Deactivator::class, 'deactivate']
 );
+
+
+add_action('plugins_loaded', function () {
+    SnapshotHooks::register();
+});
 
 // 🔹 Bootstrap Main Core
 add_action( 'plugins_loaded', static function () {

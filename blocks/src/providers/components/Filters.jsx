@@ -1,119 +1,231 @@
-// src/providers/Filters.jsx
 import { useEffect, useState } from "react";
 
 export default function Filters({ onChange, initial = {} }) {
-  const [search, setSearch] = useState(initial.search || "");
-  const [typeOfCare, setTypeOfCare] = useState(initial.type_of_care || "");
-  const [hasHkz, setHasHkz] = useState(initial.has_hkz || 0);
-  const [religion, setReligion] = useState(initial.religion || "");
-  const [ageGroup, setAgeGroup] = useState(initial.age_group || "");
-  const [gender, setGender] = useState(initial.gender || "");
+  const [filters, setFilters] = useState({
+    search: initial.search || "",
+    type_of_care: initial.type_of_care || "",
+    indication_type: initial.indication_type || "",
+    organization_type: initial.organization_type || "",
+    religion: initial.religion || "",
+    has_hkz: initial.has_hkz ?? null,
+    target_age_groups: initial.target_age_groups || "",
+    target_genders: initial.target_genders || "",
+    reimbursement_type: initial.reimbursement_type || "",
+    min_rating: initial.min_rating || "",
+    has_reviews: initial.has_reviews ?? null,
+    sort: initial.sort || "",
+  });
 
-  // debounce search
+  const emit = (next) => {
+    const clean = Object.fromEntries(
+      Object.entries(next).filter(([_, v]) => v !== "" && v !== null)
+    );
+    onChange(clean);
+  };
+
   useEffect(() => {
-    const t = setTimeout(() => {
-      onChange(f => ({ ...f, search }));
-    }, 350);
+    const t = setTimeout(() => emit(filters), 300);
     return () => clearTimeout(t);
-  }, [search, onChange]);
-
-  // other filters update immediately
-  useEffect(() => {
-    onChange(f => ({ ...f, type_of_care: typeOfCare || undefined }));
-  }, [typeOfCare, onChange]);
+  }, [filters.search]);
 
   useEffect(() => {
-    onChange(f => ({ ...f, has_hkz: hasHkz ? 1 : undefined }));
-  }, [hasHkz, onChange]);
+    emit(filters);
+  }, [
+    filters.type_of_care,
+    filters.indication_type,
+    filters.organization_type,
+    filters.religion,
+    filters.target_age_groups,
+    filters.target_genders,
+    filters.has_hkz,
+    filters.reimbursement_type,
+    filters.min_rating,
+    filters.has_reviews,
+    filters.sort,
+  ]);
 
-  useEffect(() => {
-    onChange(f => ({ ...f, religion: religion || undefined }));
-  }, [religion, onChange]);
+  const update = (key, value) =>
+    setFilters((prev) => ({ ...prev, [key]: value }));
 
-  useEffect(() => {
-    onChange(f => ({ ...f, age_group: ageGroup || undefined }));
-  }, [ageGroup, onChange]);
+  const reset = () => {
+    setFilters({
+      search: "",
+      type_of_care: "",
+      indication_type: "",
+      organization_type: "",
+      religion: "",
+      has_hkz: null,
+      target_age_groups: "",
+      target_genders: "",
+      reimbursement_type: "",
+      min_rating: "",
+      has_reviews: null,
+      sort: "",
+    });
+    onChange({});
+  };
 
-  useEffect(() => {
-    onChange(f => ({ ...f, gender: gender || undefined }));
-  }, [gender, onChange]);
+  const field =
+    "w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm focus:ring-2 focus:ring-indigo-300";
 
   return (
-    <aside className="w-full max-w-xs">
-      <div className="bg-white p-4 rounded-2xl shadow-sm">
+    <aside className="w-full md:max-w-xs bg-white rounded-2xl shadow-md border border-gray-100 p-5 space-y-4">
+      <Section label="Search">
         <input
-          placeholder="Search providers…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-3 py-2 rounded-lg border text-sm mb-4 outline-none focus:ring-2 focus:ring-indigo-300"
+          value={filters.search}
+          placeholder="Search providers..."
+          onChange={(e) => update("search", e.target.value)}
+          className={field}
         />
+      </Section>
 
-        <div className="space-y-3 text-sm">
-          <label className="block">
-            <div className="text-xs text-gray-500 mb-1">Type of care</div>
-            <select value={typeOfCare} onChange={e => setTypeOfCare(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg">
-              <option value="">Any</option>
-              <option value="disability">Disability</option>
-              <option value="ggz">GGZ</option>
-              <option value="youth">Youth</option>
-              <option value="elderly">Elderly</option>
-            </select>
-          </label>
+      <Section label="Type of care">
+        <select
+          value={filters.type_of_care}
+          onChange={(e) => update("type_of_care", e.target.value)}
+          className={field}
+        >
+          <option value="">Any</option>
+          <option value="disability">Disability</option>
+          <option value="ggz">GGZ</option>
+          <option value="youth">Youth</option>
+          <option value="elderly">Elderly</option>
+        </select>
+      </Section>
 
-          <label className="flex items-center gap-2">
-            <input type="checkbox" checked={hasHkz === 1} onChange={e => setHasHkz(e.target.checked ? 1 : 0)} />
-            <span className="text-sm">HKZ Certified only</span>
-          </label>
+      <Section label="Indication type">
+        <select
+          value={filters.indication_type}
+          onChange={(e) => update("indication_type", e.target.value)}
+          className={field}
+        >
+          <option value="">Any</option>
+          <option value="PGB">PGB</option>
+          <option value="ZIN">ZIN</option>
+        </select>
+      </Section>
 
-          <label>
-            <div className="text-xs text-gray-500 mb-1">Religion</div>
-            <select value={religion} onChange={e => setReligion(e.target.value)} className="w-full px-3 py-2 border rounded-lg">
-              <option value="">Any</option>
-              <option value="Islamic">Islamic</option>
-              <option value="Christian">Christian</option>
-              <option value="Jewish">Jewish</option>
-              <option value="None">None</option>
-            </select>
-          </label>
+      <Section label="Organization type">
+        <select
+          value={filters.organization_type}
+          onChange={(e) => update("organization_type", e.target.value)}
+          className={field}
+        >
+          <option value="">Any</option>
+          <option value="BV">BV</option>
+          <option value="Stichting">Stichting</option>
+        </select>
+      </Section>
 
-          <label className="block">
-            <div className="text-xs text-gray-500 mb-1">Target age group</div>
-            <select value={ageGroup} onChange={e => setAgeGroup(e.target.value)} className="w-full px-3 py-2 border rounded-lg">
-              <option value="">Any</option>
-              <option value="child">Child</option>
-              <option value="adult">Adult</option>
-              <option value="elderly">Elderly</option>
-            </select>
-          </label>
+      <Section label="Religion">
+        <select
+          value={filters.religion}
+          onChange={(e) => update("religion", e.target.value)}
+          className={field}
+        >
+          <option value="">Any</option>
+          <option value="Islamic">Islamic</option>
+          <option value="Christian">Christian</option>
+          <option value="Jewish">Jewish</option>
+          <option value="None">None</option>
+        </select>
+      </Section>
 
-          <label className="block">
-            <div className="text-xs text-gray-500 mb-1">Gender focus</div>
-            <select value={gender} onChange={e => setGender(e.target.value)} className="w-full px-3 py-2 border rounded-lg">
-              <option value="">Any</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </select>
-          </label>
+      <Section label="Target age group">
+        <select
+          value={filters.target_age_groups}
+          onChange={(e) => update("target_age_groups", e.target.value)}
+          className={field}
+        >
+          <option value="">Any</option>
+          <option value="child">Child</option>
+          <option value="adult">Adult</option>
+          <option value="elderly">Elderly</option>
+        </select>
+      </Section>
 
-          <button
-            type="button"
-            onClick={() => {
-              // clear
-              setSearch("");
-              setTypeOfCare("");
-              setHasHkz(0);
-              setReligion("");
-              setAgeGroup("");
-              setGender("");
-              onChange(() => ({ search: "" }));
-            }}
-            className="w-full py-2 mt-2 rounded-lg border text-sm hover:bg-gray-50"
-          >
-            Reset filters
-          </button>
-        </div>
-      </div>
+      <Section label="Target gender">
+        <select
+          value={filters.target_genders}
+          onChange={(e) => update("target_genders", e.target.value)}
+          className={field}
+        >
+          <option value="">Any</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </Section>
+
+      <Section label="HKZ Certified">
+        <input
+          type="checkbox"
+          checked={filters.has_hkz === 1}
+          onChange={(e) => update("has_hkz", e.target.checked ? 1 : null)}
+        />
+      </Section>
+
+      <Section label="Reimbursement type">
+        <select
+          value={filters.reimbursement_type}
+          onChange={(e) => update("reimbursement_type", e.target.value)}
+          className={field}
+        >
+          <option value="">Any</option>
+          <option value="WLZ">WLZ</option>
+          <option value="WMO">WMO</option>
+          <option value="ZVW">ZVW</option>
+          <option value="Youth">Youth</option>
+        </select>
+      </Section>
+
+      <Section label="Minimum rating">
+        <select
+          value={filters.min_rating}
+          onChange={(e) => update("min_rating", e.target.value)}
+          className={field}
+        >
+          <option value="">Any</option>
+          <option value="1">1 ★</option>
+          <option value="2">2 ★</option>
+          <option value="3">3 ★</option>
+          <option value="4">4 ★</option>
+          <option value="5">5 ★</option>
+        </select>
+      </Section>
+
+      <Section label="Has reviews">
+        <input
+          type="checkbox"
+          checked={filters.has_reviews === 1}
+          onChange={(e) => update("has_reviews", e.target.checked ? 1 : null)}
+        />
+      </Section>
+
+      <Section label="Sort by">
+        <select
+          value={filters.sort}
+          onChange={(e) => update("sort", e.target.value)}
+          className={field}
+        >
+          <option value="">Newest</option>
+          <option value="name_asc">Name A → Z</option>
+          <option value="name_desc">Name Z → A</option>
+          <option value="oldest">Oldest</option>
+        </select>
+      </Section>
+
+      <button className="mt-4 text-indigo-600 text-sm" onClick={reset}>
+        Reset filters
+      </button>
     </aside>
+  );
+}
+
+function Section({ label, children }) {
+  return (
+    <div className="mb-2">
+      <div className="text-sm font-medium text-gray-600 mb-1">{label}</div>
+      {children}
+    </div>
   );
 }
