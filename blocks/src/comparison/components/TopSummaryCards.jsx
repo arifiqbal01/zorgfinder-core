@@ -1,36 +1,37 @@
 import React from "react";
 
+import { Card, Button, ProviderLogo, Stars } from "../../ui";
+
 export default function TopSummaryCards({ providers }) {
-    return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-10">
-            {providers.map(p => (
-                <div
-                    key={p.id}
-                    className="bg-white rounded-2xl shadow-md border border-gray-100 p-8 text-center transition-transform hover:-translate-y-1 hover:shadow-lg"
-                >
-                    <div className="inline-block px-4 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-semibold mb-3">
-                        {getBadge(p)}
-                    </div>
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-10">
+      {providers.map((p) => (
+        <Card key={p.id} className="text-center">
+          <div className="flex justify-center mb-4">
+            <ProviderLogo name={p.provider} logo={p.logo} size={56} />
+          </div>
 
-                    <h2 className="text-xl font-semibold text-gray-900 mb-1">
-                        {p.provider}
-                    </h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            {p.provider}
+          </h2>
 
-                    <div className="text-5xl font-bold text-gray-900 my-4 tracking-tight">
-                        {p.reviews?.avg_rating || 0}
-                    </div>
+          <div className="flex justify-center mt-2">
+            <Stars value={p.reviews?.overall || 0} size={16} />
+          </div>
 
-                    <button className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium py-3 shadow hover:opacity-90 transition">
-                        Book Appointment
-                    </button>
+          <div className="text-sm text-gray-500 mt-1">
+            {p.reviews?.overall || 0} / 5 · {p.reviews?.count || 0} reviews
+          </div>
 
-                    <p className="text-xs text-gray-400 mt-3">
-                        We arrange your appointment for free
-                    </p>
-                </div>
-            ))}
-        </div>
-    );
+          <div className="mt-5">
+            <Button full>
+              Book appointment
+            </Button>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
 }
 
 function getBadge(p) {

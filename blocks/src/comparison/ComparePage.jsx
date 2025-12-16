@@ -5,7 +5,6 @@ import DifferencesToggle from "./components/DifferencesToggle";
 import SectionFeatures from "./sections/SectionFeatures";
 import SectionReimbursements from "./sections/SectionReimbursements";
 import SectionReviews from "./sections/SectionReviews";
-import SectionAppointments from "./sections/SectionAppointments";
 import SectionDetails from "./sections/SectionDetails";
 import useCompare from "./hooks/useCompare";
 
@@ -69,7 +68,6 @@ export default function ComparePage() {
           <SectionFeatures providers={data} differencesOnly={differencesOnly} />
           <SectionReimbursements providers={data} differencesOnly={differencesOnly} />
           <SectionReviews providers={data} differencesOnly={differencesOnly} />
-          <SectionAppointments providers={data} differencesOnly={differencesOnly} />
           <SectionDetails providers={data} differencesOnly={differencesOnly} />
         </>
       )}
