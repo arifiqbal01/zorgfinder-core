@@ -4,16 +4,11 @@
   "title": "Comparison Table",
   "category": "widgets",
   "icon": "table-col-after",
-
   "editorScript": "file:./index.js",
   "editorStyle": "file:./editor.css",
   "style": "file:./style.css",
-
   "viewScript": "file:./comparison-frontend.js",
-  "viewStyle": "file:./style.css",
-
   "render": "file:./render.php",
-
   "supports": {
     "html": false
   }

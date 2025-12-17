@@ -1,12 +1,10 @@
-import edit from './edit';
-import './style.scss';
-import './editor.scss';
+import { registerBlockType } from '@wordpress/blocks';
+import metadata from './block.json';
+import Edit from './edit';
 
-wp.blocks.registerBlockType('zorg/comparison', {
-  apiVersion: 2,
-  title: 'Zorg — Comparison Table',
-  icon: 'table-col-after',
-  category: 'widgets',
-  edit,
-  save: () => null // server-rendered or frontend-only UI
+import './editor.scss';
+import './style.scss';
+
+registerBlockType(metadata.name, {
+  edit: Edit
 });

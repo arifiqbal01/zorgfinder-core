@@ -1,25 +1,35 @@
 import { createRoot } from "react-dom/client";
-import React from "react";
-import ComparePage from "./ComparePage";
+import { CompareProvider } from "../context/CompareContext";
+import CompareContainer from "./CompareContainer";
+import "./style.scss";
 
-console.log("🔥 Comparison frontend loaded");
+console.log("🔥 Compare frontend loaded");
 
 function mountCompare() {
-    const wrapper = document.querySelector(".zf-compare-wrapper");
-    if (!wrapper) return;
+  const wrapper = document.querySelector(".zf-compare-wrapper");
+  if (!wrapper) return;
 
-    try {
-        const root = createRoot(wrapper);
-        root.render(<ComparePage />);
-    } catch (err) {
-        console.error("ZORG: Comparison mount failed", err);
-    }
+  // 🔒 Prevent double-mount
+  if (wrapper.dataset.mounted === "true") return;
+  wrapper.dataset.mounted = "true";
+
+  try {
+    const root = createRoot(wrapper);
+    root.render(
+      <CompareProvider>
+        <CompareContainer />
+      </CompareProvider>
+    );
+  } catch (err) {
+    console.error("ZORG: Compare mount failed", err);
+  }
 }
 
+// Match Providers behavior exactly
 if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-        setTimeout(mountCompare, 30);
-    });
+  document.addEventListener("DOMContentLoaded", () =>
+    setTimeout(mountCompare, 50)
+  );
 } else {
-    setTimeout(mountCompare, 30);
+  setTimeout(mountCompare, 50);
 }

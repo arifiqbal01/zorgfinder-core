@@ -1,40 +1,17 @@
-.zorg-compare-table {
+.compare-mobile {
   display: block;
-  border: 1px solid #e6e6e6;
-  background: #fff;
-  padding: 0;
-  .zorg-compare-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px;
-    border-bottom: 1px solid #eee;
-    background: #fafafa;
+}
+
+.compare-desktop {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .compare-mobile {
+    display: none;
   }
 
-  .zorg-compare-table__body {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 12px;
-    padding: 12px;
+  .compare-desktop {
+    display: block;
   }
-
-  .zorg-compare-column {
-    border: 1px solid #f1f1f1;
-    padding: 12px;
-    border-radius: 6px;
-    .zorg-compare-column__header {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:8px;
-      h4 { margin:0; font-size:16px; }
-    }
-    .zorg-compare-section { margin-top:10px; }
-    .reimb { margin:6px 0; font-size:13px; .reimb-type{ font-weight:600; } }
-    .zorg-compare-footer { margin-top:12px; .fav { font-size:14px; } }
-  }
-
-  .zorg-compare-cell { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed #f4f4f4; .muted { color:#999; } }
-  .button { display:inline-block; padding:6px 10px; background:#0073aa; color:white; border-radius:4px; text-decoration:none; font-size:13px; }
 }

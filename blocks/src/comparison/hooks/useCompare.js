@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 const API_ROOT = window.zorgApiRoot || '/wp-json/zorg/v1';
 
@@ -7,31 +7,35 @@ export default function useCompare() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const lastKeyRef = useRef(null);
+
   const fetchCompare = useCallback(async (ids = []) => {
+    if (!ids.length) return;
+
+    const key = ids.join(',');
+    if (lastKeyRef.current === key) return; // 🔒 prevent refetch loop
+    lastKeyRef.current = key;
+
     setLoading(true);
     setError(null);
+
     try {
-      const qs = new URLSearchParams({ ids: ids.join(',') }).toString();
+      const qs = new URLSearchParams({ ids: key }).toString();
       const res = await fetch(`${API_ROOT}/compare?${qs}`, {
         credentials: 'same-origin',
-        headers: {
-          'Accept': 'application/json'
-        }
+        headers: { Accept: 'application/json' }
       });
+
       if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(txt || 'Fetch failed');
+        throw new Error(await res.text());
       }
+
       const json = await res.json();
-      // Assume wrapper { success: true, data: [...] } from BaseController.respond
-      const payload = json.data ?? json;
-      setData(payload);
-      setLoading(false);
-      return payload;
+      setData(json.data ?? json);
     } catch (err) {
       setError(err);
+    } finally {
       setLoading(false);
-      throw err;
     }
   }, []);
 
