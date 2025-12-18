@@ -1,21 +1,10 @@
-import React from "react";
-import { createRoot } from "react-dom/client";
-import AuthForms from "./components/AuthForms";
-import "./style.scss";
+import { registerBlockType } from '@wordpress/blocks';
+import metadata from './block.json';
+import Edit from './edit';
 
-function mount() {
-  const el = document.querySelector(".zf-auth-forms-wrapper");
-  if (!el) return;
-  try {
-    const root = createRoot(el);
-    root.render(<AuthForms />);
-  } catch (e) {
-    console.error("AuthForms mount failed", e);
-  }
-}
+import './editor.scss';
+import './style.scss';
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", mount);
-} else {
-  setTimeout(mount, 50);
-}
+registerBlockType(metadata.name, {
+  edit: Edit,
+});

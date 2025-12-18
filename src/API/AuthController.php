@@ -36,6 +36,20 @@ class AuthController extends BaseController
             'callback' => [$this, 'get_current_user'],
             'permission_callback' => '__return_true', // we return null if not logged in
         ]);
+        
+        register_rest_route($this->namespace, '/auth/profile', [
+            'methods'  => 'POST',
+            'callback' => [$this, 'update_profile'],
+            'permission_callback' => [$this, 'require_auth'],
+        ]);
+
+        register_rest_route($this->namespace, '/auth/forgot-password', [
+            'methods'  => 'POST',
+            'callback' => [$this, 'forgot_password'],
+            'permission_callback' => '__return_true',
+        ]);
+
+
     }
 
     /* ===============================================================
@@ -142,6 +156,63 @@ class AuthController extends BaseController
         ]);
     }
 
+    public function update_profile(WP_REST_Request $request)
+{
+    $user_id = get_current_user_id();
+    $params = $request->get_json_params();
+
+    $first = trim($params['first_name'] ?? '');
+    $last  = trim($params['last_name'] ?? '');
+    $phone = trim($params['phone'] ?? '');
+
+    // ---- NAME VALIDATION ----
+    if ($first !== '') {
+        if (mb_strlen($first) > 50) {
+            return $this->error('First name is too long.', 400);
+        }
+        if (!preg_match("/^[a-zA-Z\s'-]+$/", $first)) {
+            return $this->error('First name contains invalid characters.', 400);
+        }
+    }
+
+    if ($last !== '') {
+        if (mb_strlen($last) > 50) {
+            return $this->error('Last name is too long.', 400);
+        }
+        if (!preg_match("/^[a-zA-Z\s'-]+$/", $last)) {
+            return $this->error('Last name contains invalid characters.', 400);
+        }
+    }
+
+    // ---- PHONE VALIDATION ----
+    if ($phone !== '') {
+        // allow + at start, digits only otherwise
+        if (!preg_match('/^\+?[0-9]{7,15}$/', $phone)) {
+            return $this->error('Invalid phone number format.', 400);
+        }
+        update_user_meta($user_id, 'phone', $phone);
+    } else {
+        delete_user_meta($user_id, 'phone');
+    }
+
+    // ---- UPDATE USER ----
+    if ($first || $last) {
+        wp_update_user([
+            'ID' => $user_id,
+            'first_name'   => sanitize_text_field($first),
+            'last_name'    => sanitize_text_field($last),
+            'display_name' => trim("$first $last"),
+        ]);
+    }
+
+    return $this->respond([
+        'success' => true,
+        'user'    => $this->format_user_response($user_id),
+    ]);
+}
+
+
+
     /* ===============================================================
        LOGOUT USER
     =============================================================== */
@@ -155,6 +226,28 @@ class AuthController extends BaseController
             'message' => 'Logged out successfully.',
         ]);
     }
+
+    public function forgot_password(WP_REST_Request $request)
+{
+    $email = sanitize_email($request->get_param('email'));
+
+    if (!$email) {
+        return $this->error('Email is required.', 400);
+    }
+
+    $user = get_user_by('email', $email);
+    if (!$user || !in_array('zf_client', (array) $user->roles, true)) {
+        return $this->error('No client account found.', 404);
+    }
+
+    retrieve_password($user->user_login);
+
+    return $this->respond([
+        'success' => true,
+        'message' => 'Password reset email sent.',
+    ]);
+}
+
 
     /* ===============================================================
        GET CURRENT USER (frontend-friendly)

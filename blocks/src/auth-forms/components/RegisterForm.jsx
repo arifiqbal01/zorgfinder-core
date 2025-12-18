@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { Card, Button, Input } from "../../ui";
 
 export default function RegisterForm({ onRegister }) {
   const [form, setForm] = useState({
@@ -8,14 +9,20 @@ export default function RegisterForm({ onRegister }) {
     phone: "",
     first_name: "",
     last_name: "",
-    language: "en",
-    consent: true,
   });
 
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
 
+  const set = (k) => (e) =>
+    setForm({ ...form, [k]: e.target.value });
+
   const submit = async () => {
+    if (!form.username || !form.email || !form.password) {
+      setErr("Username, email and password are required");
+      return;
+    }
+
     setLoading(true);
     setErr("");
 
@@ -41,44 +48,37 @@ export default function RegisterForm({ onRegister }) {
       window.zorgFinderApp = window.zorgFinderApp || {};
       window.zorgFinderApp.nonce = json.nonce || window.zorgFinderApp.nonce;
       onRegister(json.user);
-    } catch (e) {
-      console.error(e);
+    } catch {
       setErr("Network error");
     }
 
     setLoading(false);
   };
 
-  const Input = ({ name, placeholder, type = "text" }) => (
-    <input
-      type={type}
-      value={form[name]}
-      onChange={(e) => setForm({ ...form, [name]: e.target.value })}
-      placeholder={placeholder}
-      className="w-full border rounded px-3 py-2"
-    />
-  );
-
   return (
-    <div className="bg-white shadow rounded-2xl p-6 border border-gray-100 space-y-3">
-      <h2 className="text-xl font-semibold">Create an account</h2>
+    <Card className="space-y-4">
+      <h2 className="text-lg font-semibold">Create account</h2>
 
-      {err && <div className="text-sm text-red-700 bg-red-50 p-2 rounded">{err}</div>}
+      {err && (
+        <div className="text-sm text-red-700 bg-red-50 p-2 rounded">
+          {err}
+        </div>
+      )}
 
-      {Input({ name: "username", placeholder: "Username" })}
-      {Input({ name: "email", placeholder: "Email" })}
-      {Input({ name: "password", placeholder: "Password", type: "password" })}
-      {Input({ name: "phone", placeholder: "Phone" })}
-      {Input({ name: "first_name", placeholder: "First name" })}
-      {Input({ name: "last_name", placeholder: "Last name" })}
+      <Input label="Username" value={form.username} onChange={set("username")} />
+      <Input label="Email" type="email" value={form.email} onChange={set("email")} />
+      <Input label="Password" type="password" value={form.password} onChange={set("password")} />
 
-      <button
-        onClick={submit}
-        disabled={loading}
-        className="w-full bg-black text-white py-2 rounded"
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Input label="First name" value={form.first_name} onChange={set("first_name")} />
+        <Input label="Last name" value={form.last_name} onChange={set("last_name")} />
+      </div>
+
+      <Input label="Phone" value={form.phone} onChange={set("phone")} />
+
+      <Button full disabled={loading} onClick={submit}>
         {loading ? "Creating…" : "Register"}
-      </button>
-    </div>
+      </Button>
+    </Card>
   );
 }

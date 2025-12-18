@@ -6,5 +6,5 @@ import './editor.scss';
 import './style.scss';
 
 registerBlockType(metadata.name, {
-  edit: Edit
+  edit: Edit,
 });

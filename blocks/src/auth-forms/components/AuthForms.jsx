@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
-import UserPanel from "./UserPanel";
+import Dashboard from "./dashboard/Dashboard";
+
 
 export default function AuthForms() {
   // If server already told us user is logged in, start in "loading" mode.
@@ -49,22 +50,24 @@ export default function AuthForms() {
   }
 
   // Once loading finished: if user exists show panel, otherwise show auth forms
-  if (user) return <UserPanel user={user} />;
+if (user) return <Dashboard user={user} />;
 
   return (
-    <div className="max-w-lg mx-auto p-6 space-y-6">
+  <div className="max-w-5xl mx-auto p-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <LoginForm onLogin={(payload) => {
-        // backend returns nonce + user object
         window.zorgFinderApp = window.zorgFinderApp || {};
         window.zorgFinderApp.nonce = payload.nonce || window.zorgFinderApp.nonce;
-        setUser(payload.user || payload); // support both shapes
+        setUser(payload.user || payload);
       }} />
-      <div className="text-center text-sm text-gray-500">OR</div>
+
       <RegisterForm onRegister={(payload) => {
         window.zorgFinderApp = window.zorgFinderApp || {};
         window.zorgFinderApp.nonce = payload.nonce || window.zorgFinderApp.nonce;
         setUser(payload.user || payload);
       }} />
     </div>
-  );
+  </div>
+);
+
 }

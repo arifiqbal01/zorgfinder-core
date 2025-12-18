@@ -6,3 +6,5 @@ export { Stars } from "./Stars";
 export { default as Toggle } from "./Toggle";
 export { default as Section } from "./Section";
 export { default as Icon } from "./Icon";
+export { default as Input } from "./Input";
+
