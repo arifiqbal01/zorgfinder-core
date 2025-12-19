@@ -6,7 +6,7 @@ import MobileReimbursementsCompare from './MobileReimbursements';
 import MobileReviewsCompare from './MobileReviews';
 
 export default function MobileCompare({
-  providers,
+  providers = [],
   schema,
   onlyDiff,
   setOnlyDiff,

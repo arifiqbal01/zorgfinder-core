@@ -11,7 +11,7 @@ const ROWS = [
   { id: "count", label: __("Number of reviews", "zorg") },
 ];
 
-export default function ReviewsSection({ providers, isMobile = false }) {
+export default function ReviewsSection({ providers = [], isMobile = false }) {
   if (!providers.some(p => p.reviews?.count > 0)) return null;
 
   return (

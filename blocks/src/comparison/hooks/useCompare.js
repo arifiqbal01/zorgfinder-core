@@ -13,7 +13,7 @@ export default function useCompare() {
     if (!ids.length) return;
 
     const key = ids.join(',');
-    if (lastKeyRef.current === key) return; // 🔒 prevent refetch loop
+    if (lastKeyRef.current === key) return;
     lastKeyRef.current = key;
 
     setLoading(true);
@@ -31,7 +31,12 @@ export default function useCompare() {
       }
 
       const json = await res.json();
-      setData(json.data ?? json);
+
+      setData({
+        providers: json.providers ?? [],
+        isSavedCompare: Boolean(json.is_saved_compare),
+      });
+
     } catch (err) {
       setError(err);
     } finally {

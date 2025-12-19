@@ -40,6 +40,7 @@ export default function LoginForm({ onLogin }) {
 
       window.zorgFinderApp = window.zorgFinderApp || {};
       window.zorgFinderApp.nonce = json.nonce || window.zorgFinderApp.nonce;
+      window.zorgFinderApp.isLoggedIn = true;
       onLogin(json.user);
     } catch {
       setErr("Network error");

@@ -14,7 +14,8 @@ use ZorgFinder\API\{
     ProvidersExtendedController,
     AuthController,
     FrontendProvidersController,
-    SettingsController
+    SettingsController,
+    SavedCompareController
 };
 use ZorgFinder\Blocks\BlockRegistrar;
 
@@ -54,6 +55,7 @@ final class Core {
             (new AuthController())->register_routes();
             (new FrontendProvidersController())->register_routes();
             (new SettingsController())->register_routes();
+            (new SavedCompareController())->register_routes();
         });
     }
 

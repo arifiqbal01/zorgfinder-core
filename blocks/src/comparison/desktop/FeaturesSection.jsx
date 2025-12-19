@@ -10,7 +10,7 @@ function isEmpty(v) {
 }
 
 export default function ComparisonRows({
-  providers,
+  providers = [],
   schema,
   onlyDifferences,
   isMobile = false,

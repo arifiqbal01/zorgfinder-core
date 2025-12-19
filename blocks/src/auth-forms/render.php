@@ -1,3 +1,4 @@
 <?php
+// render.php of auth block
 ?>
-<div class="zf-auth-wrapper"></div>
+<div class="zf-auth-block-root"></div>

@@ -142,6 +142,36 @@ class CompareController extends BaseController
         }
 
         /* -----------------------------
+        * 5.5 Saved compare status
+        * ----------------------------- */
+        $is_saved_compare = false;
+
+        if (is_user_logged_in()) {
+            $compare_table = $wpdb->prefix . 'zf_saved_compares';
+            $uid = get_current_user_id();
+
+            $sorted_ids = $ids;
+            sort($sorted_ids);
+            $compare_key = implode(',', $sorted_ids);
+
+            $exists = $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT id
+                    FROM $compare_table
+                    WHERE user_id = %d
+                    AND compare_key = %s
+                    AND deleted_at IS NULL
+                    LIMIT 1",
+                    $uid,
+                    $compare_key
+                )
+            );
+
+            $is_saved_compare = (bool) $exists;
+        }
+
+
+        /* -----------------------------
          * 6. Assemble final payload
          * ----------------------------- */
         $final = [];
@@ -183,6 +213,13 @@ class CompareController extends BaseController
             ];
         }
 
-        return $this->respond($final);
+        /* -----------------------------
+         * 7. Final response
+         * ----------------------------- */
+        return $this->respond([
+            'success'          => true,
+            'is_saved_compare' => $is_saved_compare,
+            'providers'        => $final,
+        ]);
     }
 }

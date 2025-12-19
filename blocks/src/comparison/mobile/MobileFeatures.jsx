@@ -8,7 +8,7 @@ function isEmpty(v) {
 const EXCLUDED = ['age_groups', 'genders', 'reimbursements', 'rating'];
 
 export default function MobileFeatures({
-  providers,
+  providers = [],
   schema,
   onlyDifferences,
 }) {

@@ -9,7 +9,7 @@ function mountCompare() {
   const wrapper = document.querySelector(".zf-compare-wrapper");
   if (!wrapper) return;
 
-  // 🔒 Prevent double-mount
+  // 🔒 prevent double mount
   if (wrapper.dataset.mounted === "true") return;
   wrapper.dataset.mounted = "true";
 
@@ -25,7 +25,6 @@ function mountCompare() {
   }
 }
 
-// Match Providers behavior exactly
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", () =>
     setTimeout(mountCompare, 50)

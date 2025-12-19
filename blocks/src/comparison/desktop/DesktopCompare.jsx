@@ -11,6 +11,8 @@ export default function DesktopCompare({
 }) {
   return (
     <>
+
+
       <ProviderHeader
         providers={providers}
         showOnlyDifferences={onlyDiff}

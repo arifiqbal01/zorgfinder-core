@@ -8,7 +8,7 @@ const BADGES = [
 ];
 
 export default function ProviderHeader({
-  providers,
+  providers = [],
   showOnlyDifferences,
   onToggleDifferences,
 }) {

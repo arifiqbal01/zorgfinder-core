@@ -1,28 +1,64 @@
 import { createRoot } from "react-dom/client";
 import AuthForms from "./components/AuthForms";
+import AuthDrawer from "./components/AuthDrawer";
 import "./style.scss";
 
-function mountAuthForms() {
-  const el = document.querySelector(".zf-auth-wrapper");
+/* ===============================
+ * Mount AUTH BLOCK (AuthForms)
+ * =============================== */
+function mountAuthBlock() {
+  const el = document.querySelector(".zf-auth-block-root");
   if (!el) return;
 
-  // 🔒 Prevent double mount (Gutenberg preview, re-render, reusable blocks)
   if (el.dataset.mounted === "true") return;
   el.dataset.mounted = "true";
 
   try {
-    const root = createRoot(el);
-    root.render(<AuthForms />);
+    createRoot(el).render(<AuthForms />);
   } catch (err) {
     console.error("ZORG AuthForms mount failed", err);
   }
 }
 
-// Match Compare block behavior exactly
+/* ===============================
+ * Mount GLOBAL AUTH DRAWER
+ * =============================== */
+function mountAuthDrawer() {
+  let el = document.querySelector(".zf-auth-drawer-root");
+
+  if (!el) {
+    el = document.createElement("div");
+    el.className = "zf-auth-drawer-root";
+    document.body.appendChild(el);
+  }
+
+  if (el.dataset.mounted === "true") return;
+  el.dataset.mounted = "true";
+
+  try {
+    createRoot(el).render(<AuthDrawer />);
+
+    // 🌍 Global opener
+    window.zfOpenAuth = ({ mode = "login" } = {}) => {
+      window.dispatchEvent(
+        new CustomEvent("zf:open-auth", { detail: { mode } })
+      );
+    };
+  } catch (err) {
+    console.error("ZORG AuthDrawer mount failed", err);
+  }
+}
+
+/* ===============================
+ * Boot
+ * =============================== */
+function boot() {
+  mountAuthBlock();
+  mountAuthDrawer();
+}
+
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () =>
-    setTimeout(mountAuthForms, 50)
-  );
+  document.addEventListener("DOMContentLoaded", () => setTimeout(boot, 50));
 } else {
-  setTimeout(mountAuthForms, 50);
+  setTimeout(boot, 50);
 }

@@ -47,6 +47,7 @@ export default function RegisterForm({ onRegister }) {
 
       window.zorgFinderApp = window.zorgFinderApp || {};
       window.zorgFinderApp.nonce = json.nonce || window.zorgFinderApp.nonce;
+      window.zorgFinderApp.isLoggedIn = true;
       onRegister(json.user);
     } catch {
       setErr("Network error");

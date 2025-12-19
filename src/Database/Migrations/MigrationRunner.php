@@ -8,6 +8,7 @@ use ZorgFinder\Database\Migrations\CreateReimbursementsTable;
 use ZorgFinder\Database\Migrations\CreateReviewsTable;
 use ZorgFinder\Database\Migrations\CreateAppointmentsTable;
 use ZorgFinder\Database\Migrations\CreateProviderSnapshotTable;
+use ZorgFinder\Database\Migrations\CreateSavedComparesTable;
 
 /**
  * Handles running all ZorgFinder database migrations.
@@ -27,6 +28,7 @@ class MigrationRunner {
             new CreateReviewsTable(),
             new CreateAppointmentsTable(),
             new CreateProviderSnapshotTable(),
+            new CreateSavedComparesTable(),
         ];
 
         foreach ($migrations as $migration) {

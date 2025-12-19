@@ -58,3 +58,7 @@ add_action( 'plugins_loaded', static function () {
     // Load general assets manager (handles both frontend & admin)
     new AssetsManager();
 });
+
+add_action('wp_footer', function () {
+    echo '<div class="zf-auth-drawer-root"></div>';
+});

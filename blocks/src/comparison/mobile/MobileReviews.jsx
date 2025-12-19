@@ -1,6 +1,6 @@
 import { Stars } from '../../ui';
 
-export default function MobileReviews({ providers }) {
+export default function MobileReviews({ providers = [] }) {
   const hasAny = providers.some(p => p.reviews?.count > 0);
   if (!hasAny) return null;
 

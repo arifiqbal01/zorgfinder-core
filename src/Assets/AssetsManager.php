@@ -15,6 +15,8 @@ class AssetsManager
 
         // Shared global styles
         add_action('enqueue_block_assets', [$this, 'enqueue_shared_global_styles']);
+
+        add_action('wp_footer', [$this, 'render_auth_mount']);
     }
 
     /**
@@ -196,6 +198,20 @@ class AssetsManager
         wp_localize_script('zorgfinder-auth-forms-frontend', 'zorgFinderApp', $localize);
     }
 }
+
+/**
+ * Global Auth Drawer Mount Point
+ * This must exist on all frontend pages
+ */
+public function render_auth_mount()
+{
+    if (is_admin()) {
+        return;
+    }
+
+    echo '<div class="zf-auth-drawer-root"></div>';
+}
+
 
 
 

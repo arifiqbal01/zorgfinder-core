@@ -6,7 +6,16 @@ export default function FavouriteButton({ providerId }) {
   const isFav = favourites.includes(id);
 
   return (
-    <button disabled={loading} onClick={() => toggle(id)} className={`text-2xl transition-all ${isFav ? "text-red-500" : "text-gray-400 hover:text-gray-600"}`}>
+    <button
+      disabled={loading}
+      onClick={() => toggle(id)}
+      className={`text-2xl transition-all ${
+        isFav
+          ? "text-red-500"
+          : "text-gray-400 hover:text-gray-600"
+      }`}
+      aria-pressed={isFav}
+    >
       {isFav ? "♥" : "♡"}
     </button>
   );

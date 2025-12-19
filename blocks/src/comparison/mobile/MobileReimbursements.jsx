@@ -1,4 +1,4 @@
-export default function MobileReimbursements({ providers }) {
+export default function MobileReimbursements({ providers = [] }) {
   const hasAny = providers.some(p => p.reimbursements?.length);
   if (!hasAny) return null;
 

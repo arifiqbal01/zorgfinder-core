@@ -9,30 +9,40 @@ module.exports = {
 
     // Appointment frontend
     entries["appointment-form-frontend"] = path.resolve(
-        __dirname,
-        "src/appointment-form/appointment-form.js"
+      __dirname,
+      "src/appointment-form/appointment-form.js"
     );
 
     // Providers frontend
     entries["providers-frontend"] = path.resolve(
-        __dirname,
-        "src/providers/providers-frontend.js"
+      __dirname,
+      "src/providers/providers-frontend.js"
     );
 
-    // 🔥 NEW: Comparison frontend
+    // 🔥 Comparison frontend
     entries["comparison-frontend"] = path.resolve(
-        __dirname,
-        "src/comparison/comparison-frontend.js"
+      __dirname,
+      "src/comparison/comparison-frontend.js"
     );
-    // 🔥 NEW: Auth Forms
+
+    // 🔥 Auth Forms
     entries["auth-forms"] = path.resolve(
-        __dirname,
-        "src/auth-forms/auth-forms.js"
+      __dirname,
+      "src/auth-forms/auth-forms.js"
     );
 
     return entries;
-},
+  },
 
+  // ✅ SAFE ADDITION (no side effects)
+  resolve: {
+    ...defaultConfig.resolve,
+    alias: {
+      ...(defaultConfig.resolve?.alias || {}),
+      "@comparison": path.resolve(__dirname, "src/comparison"),
+      "@auth": path.resolve(__dirname, "src/auth-forms"),
+    },
+  },
 
   module: {
     ...defaultConfig.module,

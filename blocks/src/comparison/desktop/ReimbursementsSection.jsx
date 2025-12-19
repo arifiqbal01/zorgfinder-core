@@ -3,7 +3,7 @@ import { __ } from "../utils/i18n";
 
 const TYPES = ["WLZ", "ZVW", "WMO", "Youth"];
 
-export default function ReimbursementsSection({ providers, isMobile = false }) {
+export default function ReimbursementsSection({ providers = [], isMobile = false }) {
   const hasAny = providers.some(p => p.reimbursements?.length);
   if (!hasAny) return null;
 
