@@ -42,54 +42,42 @@ export const useProvidersList = () => {
     const params = buildParams();
     const url = `/wp-json/zorg/v1/providers?${params}`;
 
-    console.log("[Providers] Fetch URL:", url);
-
     try {
       const headers = {};
-      if (activeTab === "trash") headers["X-WP-Nonce"] = getNonce();
+      if (activeTab === "trash") {
+        headers["X-WP-Nonce"] = getNonce();
+      }
 
       const res = await fetch(url, { headers });
       const raw = await res.text();
 
-      console.log("[Providers] Raw:", raw);
-
       let json = {};
       try {
         json = JSON.parse(raw);
-      } catch (err) {
-        console.error("[Providers] JSON error:", err);
+      } catch {
         setProviders([]);
+        setTotal(0);
         return;
       }
 
-        const list = Array.isArray(json?.data) ? json.data : [];
+      const list = Array.isArray(json?.data) ? json.data : [];
 
-        const normalized = list.map((p) => ({
-          ...p,
-          provider: p.provider,
-          target_genders: Array.isArray(p.target_genders)
-            ? p.target_genders
-            : p.target_genders
-            ? JSON.parse(p.target_genders)
-            : [],
-          target_age_groups: Array.isArray(p.target_age_groups)
-            ? p.target_age_groups
-            : p.target_age_groups
-            ? JSON.parse(p.target_age_groups)
-            : [],
-          has_hkz: Number(p.has_hkz) === 1 ? 1 : 0,
-        }));
+      const normalized = list.map((p) => ({
+        ...p,
+        provider: p.provider,
+        target_genders: Array.isArray(p.target_genders)
+          ? p.target_genders
+          : [],
+        target_age_groups: Array.isArray(p.target_age_groups)
+          ? p.target_age_groups
+          : [],
+        has_hkz: Number(p.has_hkz) === 1 ? 1 : 0,
+      }));
 
-        setProviders(normalized);
+      setProviders(normalized);
+      setTotal(json?.total || 0);
 
-        // TOTAL now comes from root-level json
-        setTotal(json?.total || 0);
-
-
-      console.log("[Providers] Final count:", normalized.length);
-
-    } catch (err) {
-      console.error("[Providers] Fetch error:", err);
+    } catch {
       setProviders([]);
       setTotal(0);
     }

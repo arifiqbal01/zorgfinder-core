@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import Table from "../../components/Table";
 import Modal from "../../components/Modal";
 import Pagination from "../../components/Pagination";
@@ -44,6 +44,7 @@ const Providers = () => {
     provider,
     reimbursements,
     editingId,
+    isLoaded,
     updateProviderField,
     updateReimbursementField,
     loadProvider,
@@ -53,15 +54,14 @@ const Providers = () => {
 
   const [selected, setSelected] = useState([]);
 
-  /* -----------------------
-     BULK DELETE
-  ------------------------*/
+  /* =======================
+     BULK ACTIONS
+  ======================== */
   const handleBulkDelete = async () => {
     if (!confirm(`Delete ${selected.length} selected providers?`)) return;
 
     try {
       loadingOverlay.show("Deleting…");
-
       await Promise.all(
         selected.map((id) =>
           fetch(`/wp-json/zorg/v1/providers/${id}`, {
@@ -70,7 +70,6 @@ const Providers = () => {
           })
         )
       );
-
       toast.success("Selected providers deleted");
       setSelected([]);
       fetchProviders();
@@ -81,15 +80,11 @@ const Providers = () => {
     }
   };
 
-  /* -----------------------
-     BULK RESTORE
-  ------------------------*/
   const handleBulkRestore = async () => {
     if (!confirm(`Restore ${selected.length} providers?`)) return;
 
     try {
       loadingOverlay.show("Restoring…");
-
       await Promise.all(
         selected.map((id) =>
           fetch(`/wp-json/zorg/v1/providers/${id}/restore`, {
@@ -98,7 +93,6 @@ const Providers = () => {
           })
         )
       );
-
       toast.success("Providers restored");
       setSelected([]);
       fetchProviders();
@@ -109,13 +103,12 @@ const Providers = () => {
     }
   };
 
-  /* -----------------------
-     FILTERS SCHEMA
-  ------------------------*/
+  /* =======================
+     FILTERS
+  ======================== */
   const filterSchema = useMemo(
     () => [
       { type: "search", key: "search", placeholder: "Search providers…" },
-
       {
         type: "select",
         key: "type_of_care",
@@ -127,7 +120,6 @@ const Providers = () => {
           { value: "elderly", label: "Elderly" },
         ],
       },
-
       {
         type: "select",
         key: "indication_type",
@@ -137,7 +129,6 @@ const Providers = () => {
           { value: "ZIN", label: "ZIN" },
         ],
       },
-
       {
         type: "select",
         key: "organization_type",
@@ -147,7 +138,6 @@ const Providers = () => {
           { value: "Stichting", label: "Stichting" },
         ],
       },
-
       {
         type: "select",
         key: "religion",
@@ -159,7 +149,6 @@ const Providers = () => {
           { value: "None", label: "None" },
         ],
       },
-
       {
         type: "select",
         key: "gender",
@@ -172,7 +161,6 @@ const Providers = () => {
           { value: "other", label: "Other" },
         ],
       },
-
       {
         type: "select",
         key: "age_group",
@@ -185,215 +173,126 @@ const Providers = () => {
           { value: "all", label: "All Ages" },
         ],
       },
-
       { type: "checkbox", key: "has_hkz", label: "HKZ Only" },
     ],
     []
   );
 
-  /* -----------------------
-     OPEN MODAL FOR EDIT
-  ------------------------*/
+  /* =======================
+     MODAL OPEN
+  ======================== */
   const openModalForProvider = useCallback(
-    async (index) => {
-      const row = providers[index];
-      if (!row) return;
-
-      setShowModal(true);
+    async (providerId) => {
+      if (!providerId) return;
 
       try {
         loadingOverlay.show("Loading provider…");
-        await loadProvider(row.id);
+        await loadProvider(providerId);
+        setShowModal(true);
       } catch (err) {
         toast.error(err.message || "Failed to load provider");
       } finally {
         loadingOverlay.hide();
       }
     },
-    [providers, loadProvider]
+    [loadProvider]
   );
 
-  /* -----------------------
-     ADD NEW PROVIDER
-  ------------------------*/
   const handleAddNew = () => {
     resetProviderForm();
     setShowModal(true);
   };
 
-  /* -----------------------
-     SAVE PROVIDER
-  ------------------------*/
+  /* =======================
+     SAVE
+  ======================== */
   const handleSave = useCallback(async () => {
+    if (editingId && !isLoaded) {
+      toast.error("Please wait, provider is still loading.");
+      return;
+    }
+
     try {
       loadingOverlay.show("Saving provider…");
 
-      const payloadReimbursements = Object.entries(reimbursements).map(
-        ([type, data]) => ({
+      const payloadReimbursements = Object.entries(reimbursements)
+        .map(([type, data]) => ({
           type,
-          description: data.description || "",
-          coverage_details: data.coverage_details || "",
-        })
-      );
+          description: data.description?.trim() || "",
+          coverage_details: data.coverage_details?.trim() || "",
+        }))
+        .filter(
+          (r) => r.description.length || r.coverage_details.length
+        );
+
+      if (payloadReimbursements.length === 0) {
+        toast.error("At least one reimbursement type is required.");
+        return;
+      }
 
       await saveProvider(payloadReimbursements);
-      toast.success("Provider saved successfully");
+
+      toast.success(
+        editingId
+          ? "Provider updated successfully"
+          : "Provider created successfully"
+      );
     } catch (err) {
       toast.error(err.message || "Save failed");
     } finally {
       loadingOverlay.hide();
     }
-  }, [reimbursements, saveProvider]);
+  }, [editingId, isLoaded, reimbursements, saveProvider]);
 
-  /* -----------------------
-     BADGE HELPERS
-  ------------------------*/
-  const badge = (label, className = "") => (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${className}`}>
-      {label}
-    </span>
-  );
-
-  const badgeColors = {
-    disability: "bg-blue-100 text-blue-700",
-    GGZ: "bg-purple-100 text-purple-700",
-    youth: "bg-pink-100 text-pink-700",
-    elderly: "bg-orange-100 text-orange-700",
-    PGB: "bg-green-100 text-green-700",
-    ZIN: "bg-teal-100 text-teal-700",
-    BV: "bg-yellow-100 text-yellow-700",
-    Stichting: "bg-indigo-100 text-indigo-700",
-    Islamic: "bg-emerald-100 text-emerald-700",
-    Jewish: "bg-amber-100 text-amber-700",
-    Christian: "bg-sky-100 text-sky-700",
-    None: "bg-gray-100 text-gray-700",
-  };
-
-  /* -----------------------
-     TABLE COLUMNS
-  ------------------------*/
+  /* =======================
+     TABLE
+  ======================== */
   const columns = [
     "Provider",
-    "Target Genders",
     "Type of Care",
     "Indication",
     "Organization",
     "Religion",
     "HKZ",
+    "Target Age Groups",
   ];
 
-  /* -----------------------
-     TABLE ROW RENDER
-  ------------------------*/
   const rows = providers.map((p) => [
     p.provider,
-
-    <div className="flex flex-wrap gap-1">
-      {(p.target_genders || []).length
-        ? p.target_genders.map((g) => (
-            <span
-              key={g}
-              className="px-2 py-1 rounded bg-gray-100 text-gray-700 text-xs"
-            >
-              {g}
-            </span>
-          ))
-        : "—"}
-    </div>,
-
-    <div className="flex flex-wrap gap-1">
-      {(p.target_age_groups || []).map((g) => (
-        <span
-          key={g}
-          className="px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs"
-        >
-          {g}
-        </span>
-      ))}
-    </div>,
-
-    badge(p.type_of_care, badgeColors[p.type_of_care] || "bg-gray-100"),
-    badge(p.indication_type, badgeColors[p.indication_type] || "bg-gray-100"),
-    badge(
-      p.organization_type,
-      badgeColors[p.organization_type] || "bg-gray-100"
-    ),
-    badge(p.religion, badgeColors[p.religion] || "bg-gray-100"),
-
-    Number(p.has_hkz) === 1
-      ? badge("HKZ", "bg-green-100 text-green-700")
-      : badge("No", "bg-gray-200 text-gray-600"),
+    p.type_of_care,
+    p.indication_type,
+    p.organization_type,
+    p.religion,
+    Number(p.has_hkz) === 1 ? "Yes" : "No",
+    p.target_genders?.length ? p.target_genders.join(", ") : "—",
   ]);
 
-  /* -----------------------
-     ACTION BUTTON
-  ------------------------*/
-  const actionsRenderer = (i) => (
-    <button className="text-blue-600" onClick={() => openModalForProvider(i)}>
-      <Eye size={16} />
-    </button>
-  );
+  const actionsRenderer = (index) => {
+    const provider = providers[index];
+    if (!provider?.id) return null;
 
-  /* -----------------------
-     RENDER
-  ------------------------*/
+    return (
+      <button
+        type="button"
+        className="text-blue-600"
+        onClick={() => openModalForProvider(provider.id)}
+      >
+        <Eye size={16} />
+      </button>
+    );
+  };
+
   return (
     <div className="p-2 space-y-6">
-      {/* HEADER */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-semibold">Providers</h1>
-
-          <Button variant="primary" size="md" onClick={handleAddNew}>
-            <Plus size={16} className="mr-1" />
-            Add Provider
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="flex bg-white shadow-sm rounded-lg overflow-hidden">
-            <button
-              onClick={() => setActiveTab("active")}
-              className={`px-4 py-2 text-sm font-medium ${
-                activeTab === "active"
-                  ? "bg-black text-white"
-                  : "bg-gray-100 text-gray-700"
-              }`}
-            >
-              Active
-            </button>
-            <button
-              onClick={() => setActiveTab("trash")}
-              className={`px-4 py-2 text-sm font-medium border-l ${
-                activeTab === "trash"
-                  ? "bg-black text-white"
-                  : "bg-gray-100 text-gray-700"
-              }`}
-            >
-              Trash
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <label className="text-sm">Sort:</label>
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-              className="input min-w-[140px]"
-            >
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-              <option value="name_asc">Provider A–Z</option>
-              <option value="name_desc">Provider Z–A</option>
-            </select>
-          </div>
-        </div>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-semibold">Providers</h1>
+        <Button onClick={handleAddNew}>
+          <Plus size={16} className="mr-1" /> Add Provider
+        </Button>
       </div>
 
-      {/* FILTERS */}
       <Filters schema={filterSchema} filters={filters} setFilters={setFilters} />
 
-      {/* BULK ACTIONS */}
       <BulkActionsBar
         count={selected.length}
         onDelete={activeTab === "active" ? handleBulkDelete : undefined}
@@ -403,7 +302,6 @@ const Providers = () => {
         showRestore={activeTab === "trash"}
       />
 
-      {/* TABLE */}
       <Table
         columns={columns}
         data={rows}
@@ -425,41 +323,28 @@ const Providers = () => {
         }
       />
 
-      {/* MODAL */}
       {showModal && (
         <Modal
           title={editingId ? `Edit Provider #${editingId}` : "Add Provider"}
           onClose={closeModal}
         >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-14">
-            <div>
-              <h2 className="text-xl font-semibold mb-4">
-                Provider Information
-              </h2>
-
-              <GeneralInfoForm
-                provider={provider}
-                updateProviderField={updateProviderField}
-                editingId={editingId}
-              />
-            </div>
-
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Reimbursements</h2>
-
-              <ReimbursementAccordion
-                list={reimbursements}
-                updateType={updateReimbursementField}
-              />
-            </div>
+            <GeneralInfoForm
+              provider={provider}
+              updateProviderField={updateProviderField}
+              editingId={editingId}
+            />
+            <ReimbursementAccordion
+              list={reimbursements}
+              updateType={updateReimbursementField}
+            />
           </div>
 
-          <div className="mt-10">
+          <div className="mt-8">
             <Button
-              variant="primary"
-              size="lg"
               className="w-full"
               onClick={handleSave}
+              disabled={editingId && !isLoaded}
             >
               {editingId ? "Update Provider" : "Save Provider"}
             </Button>

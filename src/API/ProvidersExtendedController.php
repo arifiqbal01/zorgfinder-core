@@ -2,7 +2,6 @@
 namespace ZorgFinder\API;
 
 use WP_REST_Request;
-use WP_REST_Response;
 use WP_Error;
 
 class ProvidersExtendedController extends BaseController
@@ -24,50 +23,82 @@ class ProvidersExtendedController extends BaseController
                 'permission_callback' => '__return_true',
             ],
             [
-                'methods'  => ['PUT','PATCH'],
+                'methods'  => ['PUT', 'PATCH'],
                 'callback' => [$this, 'update_provider_with_reimbursements'],
                 'permission_callback' => [$this, 'require_admin'],
             ],
         ]);
     }
 
-    /* Helper: JSON array safe encode */
+    /* ===============================================================
+       HELPERS
+    =============================================================== */
+
     private function encode_json($val)
     {
-        if (!$val) return null;
-        return wp_json_encode(is_array($val) ? array_values($val) : [$val]);
+        return wp_json_encode(
+            is_array($val) ? array_values($val) : []
+        );
+    }
+
+    private function decode_json($val): array
+    {
+        $decoded = json_decode($val ?? '[]', true);
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * Normalize reimbursements payload.
+     */
+    private function normalize_reimbursements($raw): array
+    {
+        if (!is_array($raw)) return [];
+
+        // associative → indexed
+        if (array_keys($raw) !== range(0, count($raw) - 1)) {
+            $out = [];
+            foreach ($raw as $type => $data) {
+                if (!is_array($data)) continue;
+                $out[] = array_merge(['type' => $type], $data);
+            }
+            return $out;
+        }
+
+        return $raw;
     }
 
     /* ===============================================================
        GET PROVIDER + REIMBURSEMENTS
     =============================================================== */
+
     public function get_provider_with_reimbursements(WP_REST_Request $request)
     {
         global $wpdb;
 
+        $id = (int) $request->get_param('id');
+
         $provider = $wpdb->get_row(
             $wpdb->prepare(
-                "SELECT * FROM {$wpdb->prefix}zf_providers 
-                 WHERE id=%d AND deleted_at IS NULL",
-                (int)$request->get_param('id')
+                "SELECT * FROM {$wpdb->prefix}zf_providers
+                 WHERE id = %d AND deleted_at IS NULL",
+                $id
             ),
             ARRAY_A
         );
 
         if (!$provider) {
-            return $this->error("Provider not found", 404);
+            return $this->error('Provider not found', 404);
         }
 
-        // Decode JSON
-        $provider['target_genders']     = json_decode($provider['target_genders'] ?? "[]", true);
-        $provider['target_age_groups']  = json_decode($provider['target_age_groups'] ?? "[]", true);
+        $provider['target_genders']    = $this->decode_json($provider['target_genders']);
+        $provider['target_age_groups'] = $this->decode_json($provider['target_age_groups']);
 
-        // Load reimbursements
         $rows = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT * FROM {$wpdb->prefix}zf_reimbursements 
-                 WHERE provider_id=%d AND deleted_at IS NULL",
-                $provider['id']
+                "SELECT type, description, coverage_details
+                 FROM {$wpdb->prefix}zf_reimbursements
+                 WHERE provider_id = %d AND deleted_at IS NULL",
+                $id
             ),
             ARRAY_A
         );
@@ -76,8 +107,8 @@ class ProvidersExtendedController extends BaseController
         foreach ($rows as $r) {
             $reimbursements[$r['type']] = [
                 'type'             => $r['type'],
-                'description'      => $r['description'],
-                'coverage_details' => $r['coverage_details'],
+                'description'      => $r['description'] ?? '',
+                'coverage_details' => $r['coverage_details'] ?? '',
             ];
         }
 
@@ -88,171 +119,219 @@ class ProvidersExtendedController extends BaseController
     }
 
     /* ===============================================================
-       CREATE PROVIDER + REIMBURSEMENTS
+       CREATE (STRICT TRANSACTION)
     =============================================================== */
+
     public function create_provider_with_reimbursements(WP_REST_Request $req)
-    {
-        global $wpdb;
+{
+    global $wpdb;
 
-        $wpdb->query("START TRANSACTION");
+    $wpdb->query('START TRANSACTION');
 
-        try {
-            $slug = sanitize_title($req->get_param('slug'))
-                  ?: sanitize_title($req->get_param('provider'));
-
-            $provData = [
-                'provider'          => sanitize_text_field($req->get_param('provider')),
-                'slug'              => $slug,
-                'target_genders'    => $this->encode_json($req->get_param('target_genders')),
-                'target_age_groups' => $this->encode_json($req->get_param('target_age_groups')),
-                'type_of_care'      => sanitize_text_field($req->get_param('type_of_care')),
-                'indication_type'   => sanitize_text_field($req->get_param('indication_type')),
-                'organization_type' => sanitize_text_field($req->get_param('organization_type')),
-                'religion'          => sanitize_text_field($req->get_param('religion')),
-                'has_hkz'           => (int)$req->get_param('has_hkz'),
-                'address'           => sanitize_textarea_field($req->get_param('address')),
-                'email'             => sanitize_email($req->get_param('email')),
-                'phone'             => sanitize_text_field($req->get_param('phone')),
-                'website'           => esc_url_raw($req->get_param('website')),
-                'created_at'        => current_time('mysql'),
-                'updated_at'        => current_time('mysql'),
-                'deleted_at'        => null,
-            ];
-
-            $wpdb->insert("{$wpdb->prefix}zf_providers", $provData);
-            $pid = $wpdb->insert_id;
-
-            // Insert reimbursements
-            $reims = $req->get_param('reimbursements') ?: [];
-            foreach ($reims as $r) {
-                $wpdb->insert("{$wpdb->prefix}zf_reimbursements", [
-                    'provider_id' => $pid,
-                    'type'        => sanitize_text_field($r['type']),
-                    'description' => sanitize_textarea_field($r['description'] ?? ''),
-                    'coverage_details' => sanitize_textarea_field($r['coverage_details'] ?? ''),
-                    'created_at' => current_time('mysql'),
-                    'updated_at' => current_time('mysql'),
-                    'deleted_at' => null,
-                ]);
-            }
-
-            $wpdb->query("COMMIT");
-
-                        // Fire snapshot update event
-            do_action('zf_provider_reimbursements_updated', $pid);
-
-
-            return $this->respond([
-                'success' => true,
-                'provider_id' => $pid,
-            ]);
-
-        } catch (\Throwable $e) {
-            $wpdb->query("ROLLBACK");
-            return $this->error($e->getMessage(), 400);
+    try {
+        $providerName = sanitize_text_field($req->get_param('provider'));
+        if (!$providerName) {
+            throw new \Exception('Provider name is required.');
         }
-    }
 
-    /* ===============================================================
-       UPDATE PROVIDER + REIMBURSEMENTS
-    =============================================================== */
-    public function update_provider_with_reimbursements(WP_REST_Request $req)
-    {
-        global $wpdb;
+        // ✅ SLUG RULE:
+        // use admin slug if provided, otherwise generate from provider name
+        $rawSlug = $req->get_param('slug');
+        $slug = ($rawSlug !== null && trim($rawSlug) !== '')
+            ? sanitize_title($rawSlug)
+            : sanitize_title($providerName);
 
-        $pid = (int)$req->get_param('id');
+        $inserted = $wpdb->insert("{$wpdb->prefix}zf_providers", [
+            'provider'          => $providerName,
+            'slug'              => $slug,
+            'target_genders'    => $this->encode_json($req->get_param('target_genders')),
+            'target_age_groups' => $this->encode_json($req->get_param('target_age_groups')),
+            'type_of_care'      => sanitize_text_field($req->get_param('type_of_care')),
+            'indication_type'   => sanitize_text_field($req->get_param('indication_type')),
+            'organization_type' => sanitize_text_field($req->get_param('organization_type')),
+            'religion'          => sanitize_text_field($req->get_param('religion')),
+            'has_hkz'           => (int) $req->get_param('has_hkz'),
+            'address'           => sanitize_textarea_field($req->get_param('address')),
+            'email'             => sanitize_email($req->get_param('email')),
+            'phone'             => sanitize_text_field($req->get_param('phone')),
+            'website'           => esc_url_raw($req->get_param('website')),
+            'created_at'        => current_time('mysql'),
+            'updated_at'        => current_time('mysql'),
+            'deleted_at'        => null,
+        ]);
 
-        $exists = $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT id FROM {$wpdb->prefix}zf_providers WHERE id=%d AND deleted_at IS NULL",
-                $pid
-            )
+        $pid = (int) $wpdb->insert_id;
+
+        // 🔒 HARD STOP — provider MUST exist
+        if (!$inserted || $pid <= 0) {
+            throw new \Exception('Provider could not be created.');
+        }
+
+        $reimbursements = $this->normalize_reimbursements(
+            $req->get_param('reimbursements')
         );
 
-        if (!$exists) {
-            return $this->error("Provider not found", 404);
+        // 🔒 Require at least one reimbursement on create
+        if (empty($reimbursements)) {
+            throw new \Exception('At least one reimbursement is required.');
         }
 
-        $wpdb->query("START TRANSACTION");
+        foreach ($reimbursements as $r) {
+            if (empty($r['type'])) continue;
 
-        try {
-            $slug = sanitize_title($req->get_param('slug'))
-                  ?: sanitize_title($req->get_param('provider'));
+            $wpdb->insert("{$wpdb->prefix}zf_reimbursements", [
+                'provider_id'      => $pid,
+                'type'             => sanitize_text_field($r['type']),
+                'description'      => sanitize_textarea_field($r['description'] ?? ''),
+                'coverage_details' => sanitize_textarea_field($r['coverage_details'] ?? ''),
+                'created_at'       => current_time('mysql'),
+                'updated_at'       => current_time('mysql'),
+                'deleted_at'       => null,
+            ]);
+        }
 
-            $update = [
-                'provider'          => sanitize_text_field($req->get_param('provider')),
-                'slug'              => $slug,
-                'target_genders'    => $this->encode_json($req->get_param('target_genders')),
-                'target_age_groups' => $this->encode_json($req->get_param('target_age_groups')),
-                'type_of_care'      => sanitize_text_field($req->get_param('type_of_care')),
-                'indication_type'   => sanitize_text_field($req->get_param('indication_type')),
-                'organization_type' => sanitize_text_field($req->get_param('organization_type')),
-                'religion'          => sanitize_text_field($req->get_param('religion')),
-                'has_hkz'           => (int)$req->get_param('has_hkz'),
-                'address'           => sanitize_textarea_field($req->get_param('address')),
-                'email'             => sanitize_email($req->get_param('email')),
-                'phone'             => sanitize_text_field($req->get_param('phone')),
-                'website'           => esc_url_raw($req->get_param('website')),
-                'updated_at'        => current_time('mysql'),
+        $wpdb->query('COMMIT');
+
+        // ✅ IMPORTANT: inject route param manually
+        $get = new WP_REST_Request(
+            'GET',
+            "/{$this->namespace}/providers-with-reimbursements/{$pid}"
+        );
+        $get->set_param('id', $pid);
+
+        return $this->get_provider_with_reimbursements($get);
+
+    } catch (\Throwable $e) {
+        $wpdb->query('ROLLBACK');
+        return $this->error($e->getMessage(), 400);
+    }
+}
+
+
+    /* ===============================================================
+       UPDATE (SAFE)
+    =============================================================== */
+
+    public function update_provider_with_reimbursements(WP_REST_Request $req)
+{
+    global $wpdb;
+
+    $pid = (int) $req->get_param('id');
+
+    if (!$wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT id FROM {$wpdb->prefix}zf_providers
+             WHERE id=%d AND deleted_at IS NULL",
+            $pid
+        )
+    )) {
+        return $this->error('Provider not found', 404);
+    }
+
+    $wpdb->query('START TRANSACTION');
+
+    try {
+        // ✅ SLUG RULE (same as create)
+        $rawSlug = $req->get_param('slug');
+        $rawName = $req->get_param('provider');
+
+        $slug = ($rawSlug !== null && trim($rawSlug) !== '')
+            ? sanitize_title($rawSlug)
+            : sanitize_title($rawName);
+
+        $wpdb->update("{$wpdb->prefix}zf_providers", [
+            'provider'          => sanitize_text_field($rawName),
+            'slug'              => $slug,
+            'target_genders'    => $this->encode_json($req->get_param('target_genders')),
+            'target_age_groups' => $this->encode_json($req->get_param('target_age_groups')),
+            'type_of_care'      => sanitize_text_field($req->get_param('type_of_care')),
+            'indication_type'   => sanitize_text_field($req->get_param('indication_type')),
+            'organization_type' => sanitize_text_field($req->get_param('organization_type')),
+            'religion'          => sanitize_text_field($req->get_param('religion')),
+            'has_hkz'           => (int) $req->get_param('has_hkz'),
+            'address'           => sanitize_textarea_field($req->get_param('address')),
+            'email'             => sanitize_email($req->get_param('email')),
+            'phone'             => sanitize_text_field($req->get_param('phone')),
+            'website'           => esc_url_raw($req->get_param('website')),
+            'updated_at'        => current_time('mysql'),
+        ], ['id' => $pid]);
+
+        $reimbursements = $this->normalize_reimbursements(
+            $req->get_param('reimbursements')
+        );
+
+        foreach ($reimbursements as $r) {
+            if (empty($r['type'])) continue;
+
+            $type = sanitize_text_field($r['type']);
+
+            $existing = $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT id FROM {$wpdb->prefix}zf_reimbursements
+                     WHERE provider_id=%d AND type=%s AND deleted_at IS NULL",
+                    $pid,
+                    $type
+                )
+            );
+
+            $payload = [
+                'description'      => sanitize_textarea_field($r['description'] ?? ''),
+                'coverage_details' => sanitize_textarea_field($r['coverage_details'] ?? ''),
+                'updated_at'       => current_time('mysql'),
             ];
 
-            $wpdb->update("{$wpdb->prefix}zf_providers", $update, ['id' => $pid]);
-
-            // Upsert reimbursements
-            $reims = $req->get_param('reimbursements') ?: [];
-
-            foreach ($reims as $r) {
-                $type = sanitize_text_field($r['type']);
-
-                $existing = $wpdb->get_var(
-                    $wpdb->prepare(
-                        "SELECT id FROM {$wpdb->prefix}zf_reimbursements 
-                         WHERE provider_id=%d AND type=%s AND deleted_at IS NULL",
-                        $pid, $type
+            if ($existing) {
+                $wpdb->update(
+                    "{$wpdb->prefix}zf_reimbursements",
+                    $payload,
+                    ['id' => $existing]
+                );
+            } else {
+                $wpdb->insert(
+                    "{$wpdb->prefix}zf_reimbursements",
+                    array_merge(
+                        [
+                            'provider_id' => $pid,
+                            'type'        => $type,
+                            'created_at'  => current_time('mysql'),
+                            'deleted_at'  => null,
+                        ],
+                        $payload
                     )
                 );
-
-                $payload = [
-                    'description' => sanitize_textarea_field($r['description'] ?? ''),
-                    'coverage_details' => sanitize_textarea_field($r['coverage_details'] ?? ''),
-                    'updated_at' => current_time('mysql'),
-                ];
-
-                if ($existing) {
-                    $wpdb->update("{$wpdb->prefix}zf_reimbursements", $payload, ['id' => $existing]);
-                } else {
-                    $wpdb->insert("{$wpdb->prefix}zf_reimbursements", array_merge([
-                        'provider_id' => $pid,
-                        'type'        => $type,
-                        'created_at'  => current_time('mysql'),
-                        'deleted_at'  => null,
-                    ], $payload));
-                }
             }
-
-            $wpdb->query("COMMIT");
-            // Fire snapshot update event
-            do_action('zf_provider_reimbursements_updated', $pid);
-
-
-            return $this->respond([
-                'success' => true,
-                'provider_id' => $pid,
-            ]);
-
-        } catch (\Throwable $e) {
-            $wpdb->query("ROLLBACK");
-            return $this->error($e->getMessage(), 400);
         }
+
+        $wpdb->query('COMMIT');
+
+        // ✅ IMPORTANT: inject route param manually
+        $get = new WP_REST_Request(
+            'GET',
+            "/{$this->namespace}/providers-with-reimbursements/{$pid}"
+        );
+        $get->set_param('id', $pid);
+
+        return $this->get_provider_with_reimbursements($get);
+
+    } catch (\Throwable $e) {
+        $wpdb->query('ROLLBACK');
+        return $this->error($e->getMessage(), 400);
     }
+}
+
 
     /* ===============================================================
        PERMISSIONS
     =============================================================== */
+
     public function require_admin(): bool|WP_Error
     {
         if (!current_user_can('manage_options')) {
-            return new WP_Error('rest_forbidden', 'You do not have permission.', ['status' => 403]);
+            return new WP_Error(
+                'rest_forbidden',
+                'You do not have permission.',
+                ['status' => 403]
+            );
         }
         return true;
     }

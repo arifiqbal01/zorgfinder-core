@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Table from "../components/Table";
 import { useLoading } from "../hooks/useLoading";
 
@@ -89,6 +89,8 @@ export default function Dashboard() {
   const [topProviders, setTopProviders] = useState([]);
   const [dist, setDist] = useState({});
   const [rangeDays, setRangeDays] = useState(30);
+  const loaderTimer = useRef(null);
+
 
   /* -----------------------------------------
      LocalStorage Caching
@@ -121,7 +123,9 @@ export default function Dashboard() {
     let mounted = true;
 
     const load = async () => {
-      show("Loading dashboard…");
+      loaderTimer.current = setTimeout(() => {
+  show("Loading dashboard…");
+}, 400); // show only if slow
 
       /* ---------------------------
          SUMMARY
@@ -238,11 +242,15 @@ export default function Dashboard() {
         setDist({});
       }
 
-      hide();
-    };
+      clearTimeout(loaderTimer.current);
+hide();    };
 
     load();
-    return () => (mounted = false);
+    return () => {
+  mounted = false;
+  clearTimeout(loaderTimer.current);
+  hide();
+};;
   }, [rangeDays]);
 
   /* -----------------------------------------

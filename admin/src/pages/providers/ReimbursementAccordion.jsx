@@ -9,21 +9,21 @@ const ReimbursementAccordion = ({ list, updateType }) => {
   };
 
   const items = Object.keys(TYPES).map((type) => {
-    const item = list[type];
+    const item = list[type] || {};
 
     return {
       id: type,
       title: TYPES[type],
-      checked: !!item && (!!item.description || !!item.coverage_details),
+      checked: !!item.description || !!item.coverage_details,
       content: (
         <div className="space-y-4">
           <div>
             <label className="label">Description</label>
             <textarea
               className="textarea h-24"
-              value={item?.description || ""}
+              value={item.description || ""}
               onChange={(e) =>
-                updateType(type, { description: e.target.value })
+                updateType(type, "description", e.target.value)
               }
             />
           </div>
@@ -32,9 +32,9 @@ const ReimbursementAccordion = ({ list, updateType }) => {
             <label className="label">Coverage Details</label>
             <textarea
               className="textarea h-24"
-              value={item?.coverage_details || ""}
+              value={item.coverage_details || ""}
               onChange={(e) =>
-                updateType(type, { coverage_details: e.target.value })
+                updateType(type, "coverage_details", e.target.value)
               }
             />
           </div>
@@ -43,7 +43,13 @@ const ReimbursementAccordion = ({ list, updateType }) => {
     };
   });
 
-  return <Accordion items={items} showCheckbox={true} defaultOpen={["WLZ"]} />;
+  return (
+    <Accordion
+      items={items}
+      showCheckbox={true}
+      defaultOpen={["WLZ"]}
+    />
+  );
 };
 
 export default ReimbursementAccordion;
