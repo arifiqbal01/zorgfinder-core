@@ -8,6 +8,8 @@ const ICONS = {
      C13.09 3.81 14.76 3 16.5 3 \
      19.58 3 22 5.42 22 8.5 \
      c0 3.78-3.4 6.86-8.55 11.18L12 21z",
+  compares:
+    "M3 5h6v14H3z M15 5h6v14h-6z M9 9h6v2H9z M9 13h6v2H9z",
   profile:
     "M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5 \
      -5 2.24-5 5 2.24 5 5 5z \
@@ -59,6 +61,14 @@ function SidebarNav({ active, onSelect }) {
         icon={ICONS.favourites}
       >
         Favourites
+      </NavItem>
+
+      <NavItem
+        active={active === "compares"}
+        onClick={() => onSelect("compares")}
+        icon={ICONS.compares}
+      >
+        Saved Compares
       </NavItem>
 
       <NavItem

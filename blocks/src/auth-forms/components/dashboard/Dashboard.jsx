@@ -4,6 +4,8 @@ import DashboardSidebar from "./DashboardSidebar";
 import Overview from "./views/Overview";
 import Favourites from "./views/Favourites";
 import Profile from "./views/Profile";
+import Compares from "./views/Compares";
+
 
 const ICONS = {
   menu: "M4 6h16M4 12h16M4 18h16",
@@ -80,10 +82,18 @@ export default function Dashboard({ user }) {
 
           {/* CONTENT */}
           <main className="zf-dashboard-content p-4 bg-gray-50">
-            {active === "overview" && <Overview user={user} />}
+            {active === "overview" && (
+              <Overview
+                user={user}
+                onNavigate={setActive}
+              />
+            )}
+
             {active === "favourites" && <Favourites />}
+            {active === "compares" && <Compares />}
             {active === "profile" && <Profile user={user} />}
           </main>
+
         </div>
       </div>
     </div>

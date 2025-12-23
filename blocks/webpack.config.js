@@ -36,13 +36,14 @@ module.exports = {
 
   // ✅ SAFE ADDITION (no side effects)
   resolve: {
-    ...defaultConfig.resolve,
-    alias: {
-      ...(defaultConfig.resolve?.alias || {}),
-      "@comparison": path.resolve(__dirname, "src/comparison"),
-      "@auth": path.resolve(__dirname, "src/auth-forms"),
-    },
+  ...(defaultConfig.resolve || {}),
+  alias: {
+    "@comparison": path.resolve(__dirname, "src/comparison"),
+    "@auth": path.resolve(__dirname, "src/auth-forms"),
+    "@utils": path.resolve(__dirname, "src/utils"),
   },
+},
+
 
   module: {
     ...defaultConfig.module,
