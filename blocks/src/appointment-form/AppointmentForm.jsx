@@ -1,95 +1,46 @@
 /** @jsxRuntime classic */
 import React, { useEffect, useState } from "react";
+import { Button, Input, Section } from "../ui";
 
-const DEFAULT_SLOTS = [
-  "09:00-10:00",
-  "10:00-11:00",
-  "11:00-12:00",
-  "13:00-14:00",
-  "14:00-15:00",
-  "15:00-16:00",
-];
-
-export default function AppointmentForm({ providerId = 0, title = "Book Appointment" }) {
+export default function AppointmentForm({
+  providerId = 0,
+  requireProvider = false,
+  title = "Request appointment",
+  onSuccess,
+}) {
   const [providers, setProviders] = useState([]);
   const [selectedProvider, setSelectedProvider] = useState(providerId || "");
-  const [date, setDate] = useState("");
-  const [timeSlot, setTimeSlot] = useState("");
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
+
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // NEW → taken slots from availability API
-  const [takenSlots, setTakenSlots] = useState([]);
+  const nonce = window?.zorgFinderApp?.nonce || "";
 
-  // Global object (nonce + URL)
-  const ZF = (typeof window !== "undefined" && window.zorgFinderApp) ? window.zorgFinderApp : {};
-  const nonce = ZF.nonce || "";
-
-  /**
-   * LOAD PROVIDERS (only if default provider not set)
-   */
+  /* Load providers only when needed */
   useEffect(() => {
-    if (providerId) {
-      setSelectedProvider(providerId);
-      return;
-    }
-
-    let mounted = true;
+    if (providerId) return;
 
     fetch("/wp-json/zorg/v1/providers?per_page=999")
-      .then((res) => res.json())
-      .then((json) => {
-        if (!mounted) return;
-        if (json?.success) setProviders(json.data);
-      })
-      .catch(() => {
-        if (!mounted) return;
-        setProviders([]);
-      });
-
-    return () => (mounted = false);
+      .then((r) => r.json())
+      .then((j) => j?.success && setProviders(j.data))
+      .catch(() => setProviders([]));
   }, [providerId]);
 
-  /**
-   * LOAD AVAILABILITY WHEN provider OR date CHANGES
-   */
-  useEffect(() => {
-    if (!selectedProvider || !date) {
-      setTakenSlots([]);
-      return;
-    }
-
-    const url = `/wp-json/zorg/v1/appointments/availability?provider_id=${selectedProvider}&date=${date}`;
-
-    fetch(url)
-      .then((res) => res.json())
-      .then((json) => {
-        if (json?.success) {
-          setTakenSlots(json.data.taken_slots || []);
-        } else {
-          setTakenSlots([]);
-        }
-      })
-      .catch(() => setTakenSlots([]));
-  }, [selectedProvider, date]);
-
-  /**
-   * Prevent booking past dates
-   */
-  const minDate = new Date().toISOString().split("T")[0];
-
   const validate = () => {
-    if (!selectedProvider) return "Please select a provider.";
-    if (!date) return "Please select a date.";
-    if (!timeSlot) return "Please select a time slot.";
-    if (takenSlots.includes(timeSlot)) return "This time slot is already booked.";
+    if (requireProvider && !selectedProvider) {
+      return "Please select a provider.";
+    }
+    if (!name.trim()) return "Name is required.";
+    if (!email.trim()) return "Email is required.";
+    if (!phone.trim()) return "Phone number is required.";
     return null;
   };
 
-  /**
-   * HANDLE SUBMIT
-   */
   const submit = async (e) => {
     e.preventDefault();
     setMessage(null);
@@ -107,12 +58,13 @@ export default function AppointmentForm({ providerId = 0, title = "Book Appointm
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-WP-Nonce": nonce,
+          ...(nonce ? { "X-WP-Nonce": nonce } : {}),
         },
         body: JSON.stringify({
           provider_id: selectedProvider,
-          preferred_date: date,
-          time_slot: timeSlot,
+          name,
+          email,
+          phone,
           notes,
         }),
       });
@@ -120,107 +72,136 @@ export default function AppointmentForm({ providerId = 0, title = "Book Appointm
       const json = await res.json();
 
       if (json?.success) {
-        setMessage({ type: "success", text: "Appointment requested — provider will confirm." });
-        setDate("");
-        setTimeSlot("");
-        setNotes("");
-        setTakenSlots([]);
+        setMessage({
+          type: "success",
+          text:
+            "Your request has been sent. The provider will contact you.",
+        });
 
-        // fire event (optional)
-        window.dispatchEvent(new CustomEvent("zorg:appointment:created", { detail: json.data }));
+        setName("");
+        setEmail("");
+        setPhone("");
+        setNotes("");
+
+        window.dispatchEvent(
+          new CustomEvent("zorg:appointment:created", {
+            detail: json.data,
+          })
+        );
+
+        onSuccess?.();
       } else {
-        const msg = json?.message || json?.data?.message || "Could not create appointment.";
-        setMessage({ type: "error", text: msg });
+        setMessage({
+          type: "error",
+          text: json?.message || "Could not submit request.",
+        });
       }
-    } catch (err) {
-      setMessage({ type: "error", text: "Network error — try again." });
+    } catch {
+      setMessage({
+        type: "error",
+        text: "Network error. Please try again.",
+      });
     }
 
     setLoading(false);
   };
 
   return (
-    <form className="zf-appointment-form" onSubmit={submit} aria-label="Appointment booking form">
-      <h3>{title}</h3>
+    <form
+      className="space-y-6"
+      onSubmit={submit}
+    >
+      {title && (
+        <h3 className="text-lg font-semibold text-gray-900">
+          {title}
+        </h3>
+      )}
 
       {message && (
-        <div role="status" aria-live="polite" className={`zf-msg zf-msg-${message.type}`}>
+        <div
+          className={`
+            text-sm rounded-lg px-4 py-3
+            ${
+              message.type === "success"
+                ? "bg-emerald-50 text-emerald-700"
+                : "bg-rose-50 text-rose-700"
+            }
+          `}
+        >
           {message.text}
         </div>
       )}
 
-      {/* Provider Select */}
-      {!providerId && (
-        <div>
-          <label htmlFor="zf-provider">Provider</label>
+      {/* Provider (contextual) */}
+      {(!providerId || !requireProvider) && (
+        <Section label="Provider">
           <select
-            id="zf-provider"
-            className="input"
+            className="
+              w-full h-10 px-3
+              rounded-lg border border-gray-300
+              text-sm
+              focus:outline-none focus:ring-2 focus:ring-indigo-300
+            "
             value={selectedProvider}
-            onChange={(e) => setSelectedProvider(Number(e.target.value))}
-            required
+            onChange={(e) =>
+              setSelectedProvider(Number(e.target.value))
+            }
+            required={requireProvider}
           >
             <option value="">Choose provider…</option>
             {providers.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name}
+                {p.provider}
               </option>
             ))}
           </select>
-        </div>
+        </Section>
       )}
 
-      {/* Date */}
-      <div>
-        <label htmlFor="zf-date">Preferred date</label>
-        <input
-          id="zf-date"
-          type="date"
-          className="input"
-          value={date}
-          min={minDate}
-          onChange={(e) => setDate(e.target.value)}
-          required
-        />
-      </div>
+      <Input
+        label="Full name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Your name"
+      />
 
-      {/* Time slot */}
-      <div>
-        <label htmlFor="zf-time">Time slot</label>
-        <select
-          id="zf-time"
-          className="input"
-          value={timeSlot}
-          onChange={(e) => setTimeSlot(e.target.value)}
-          required
-        >
-          <option value="">Select time…</option>
-          {DEFAULT_SLOTS.map((slot) => (
-            <option key={slot} value={slot} disabled={takenSlots.includes(slot)}>
-              {slot} {takenSlots.includes(slot) ? "— Booked" : ""}
-            </option>
-          ))}
-        </select>
-      </div>
+      <Input
+        label="Email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="you@example.com"
+      />
 
-      {/* Notes */}
-      <div>
-        <label htmlFor="zf-notes">Notes (optional)</label>
+      <Input
+        label="Phone"
+        type="tel"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+        placeholder="06 1234 5678"
+      />
+
+      <Section label="Message (optional)">
         <textarea
-          id="zf-notes"
-          className="input"
-          rows="4"
+          rows={4}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-        ></textarea>
-      </div>
+          className="
+            w-full px-3 py-2
+            rounded-lg border border-gray-300
+            text-sm
+            focus:outline-none focus:ring-2 focus:ring-indigo-300
+          "
+          placeholder="Briefly describe your situation…"
+        />
+      </Section>
 
-      {/* Submit */}
-      <div className="zf-actions">
-        <button type="submit" className="btn" disabled={loading}>
-          {loading ? "Sending…" : "Request appointment"}
-        </button>
-      </div>
+      <Button
+        full
+        disabled={loading}
+      >
+        {loading ? "Sending…" : "Send request"}
+      </Button>
     </form>
   );
 }

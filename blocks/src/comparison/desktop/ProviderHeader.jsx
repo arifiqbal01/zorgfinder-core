@@ -14,6 +14,18 @@ export default function ProviderHeader({
 }) {
   if (!providers?.length) return null;
 
+  const openAppointment = (provider) => {
+    if (!window?.zfOpenAppointment) {
+      console.warn("Appointment drawer not available");
+      return;
+    }
+
+    window.zfOpenAppointment({
+      providerId: provider.id,
+      title: `Request from ${provider.provider}`,
+    });
+  };
+
   return (
     <div
       className="grid gap-6 mb-10"
@@ -78,7 +90,12 @@ export default function ProviderHeader({
 
           <div className="flex-grow" />
 
-          <Button full className="bg-yellow-400 hover:bg-yellow-500 text-gray-900">
+          {/* 🔔 OPEN APPOINTMENT DRAWER */}
+          <Button
+            full
+            className="bg-yellow-400 hover:bg-yellow-500 text-gray-900"
+            onClick={() => openAppointment(p)}
+          >
             Request
           </Button>
 

@@ -62,3 +62,7 @@ add_action( 'plugins_loaded', static function () {
 add_action('wp_footer', function () {
     echo '<div class="zf-auth-drawer-root"></div>';
 });
+
+add_action('wp_footer', function () {
+    echo '<div class="zf-appointment-drawer-root"></div>';
+});

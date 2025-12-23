@@ -17,6 +17,7 @@ class AssetsManager
         add_action('enqueue_block_assets', [$this, 'enqueue_shared_global_styles']);
 
         add_action('wp_footer', [$this, 'render_auth_mount']);
+        add_action('wp_footer', [$this, 'render_appointment_drawer_mount']);
     }
 
     /**
@@ -210,6 +211,11 @@ public function render_auth_mount()
     }
 
     echo '<div class="zf-auth-drawer-root"></div>';
+}
+
+public function render_appointment_drawer_mount() {
+  if (is_admin()) return;
+  echo '<div class="zf-appointment-drawer-root"></div>';
 }
 
 
