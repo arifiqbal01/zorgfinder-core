@@ -6,6 +6,8 @@ use ZorgFinder\Bootstrap\Deactivator;
 use ZorgFinder\Bootstrap\Updater;
 use ZorgFinder\Assets\AssetsManager;
 use ZorgFinder\Bootstrap\SnapshotHooks;
+use ZorgFinder\Bootstrap\VirtualPages;
+
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
@@ -34,6 +36,8 @@ register_deactivation_hook(
 
 add_action('plugins_loaded', function () {
     SnapshotHooks::register();
+    VirtualPages::register();
+    error_log('[ZorgFinder] plugins_loaded fired');
 });
 
 // 🔹 Bootstrap Main Core

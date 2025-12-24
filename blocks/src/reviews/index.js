@@ -1,10 +1,10 @@
-import { registerBlockType } from "@wordpress/blocks";
-import Edit from "./edit";
-import save from "./save";
-import "./editor.scss";
-import "./style.scss";
+import { registerBlockType } from '@wordpress/blocks';
+import Edit from './edit';
+import save from './save';
+import './style.scss';
+import './editor.scss';
 
-registerBlockType("zorgfinder/reviews", {
+registerBlockType('zorgfinder/reviews', {
   edit: Edit,
   save,
 });

@@ -31,6 +31,12 @@ module.exports = {
       "src/auth-forms/auth-forms.js"
     );
 
+    // ✅ Reviews frontend (CORRECT)
+    entries["reviews-frontend"] = path.resolve(
+      __dirname,
+      "src/reviews/reviews.js"
+    );
+    
     return entries;
   },
 

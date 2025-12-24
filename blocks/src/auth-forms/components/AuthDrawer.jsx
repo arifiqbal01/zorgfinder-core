@@ -15,12 +15,20 @@ export default function AuthDrawer({ onSuccess }) {
 
     window.addEventListener("zf:open-auth", handler);
     return () => window.removeEventListener("zf:open-auth", handler);
-
   }, []);
 
-  const handleSuccess = (user) => {
+  const handleSuccess = (payload) => {
+    // 🔑 sync global auth state
+    window.zorgFinderApp = window.zorgFinderApp || {};
+    window.zorgFinderApp.isLoggedIn = true;
+    window.zorgFinderApp.nonce =
+      payload?.nonce || window.zorgFinderApp.nonce;
+
+    // 🔁 notify app
+    window.dispatchEvent(new Event("zf:auth-updated"));
+
     setOpen(false);
-    onSuccess?.(user);
+    onSuccess?.(payload?.user || payload);
   };
 
   return (

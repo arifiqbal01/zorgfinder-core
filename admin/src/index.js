@@ -12,6 +12,7 @@ import Favourites from './pages/Favourites';
 import Reimbursements from './pages/Reimbursements';
 import Clients from './pages/Clients';
 import Settings from './pages/Settings';
+import InviteReview from './pages/InviteReview';
 
 import { ToastProvider } from './hooks/useToast';
 import { LoadingProvider } from './hooks/useLoading';
@@ -44,6 +45,7 @@ const AppShell = () => (
             <Route path="/reimbursements" element={<Reimbursements />} />
             <Route path="/clients" element={<Clients />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/invite-review" element={<InviteReview />} />
           </Routes>
         </div>
       </main>

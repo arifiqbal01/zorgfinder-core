@@ -103,102 +103,57 @@ class AssetsManager
 
    public function enqueue_frontend_assets()
 {
-    $review_file       = ZORGFINDER_PATH . 'assets/js/review-form-frontend.js';
-    $appointment_file  = ZORGFINDER_PATH . 'blocks/build/appointment-form-frontend.js';
-    $providers_file    = ZORGFINDER_PATH . 'blocks/build/providers-frontend.js';
-    $comparison_file   = ZORGFINDER_PATH . 'blocks/build/comparison-frontend.js';
-    $auth_forms_file   = ZORGFINDER_PATH . 'blocks/build/auth-forms.js';
-    $compare_page_id = (int) get_option('zorg_compare_page_id', 0);
-
     $compare_page_id = (int) get_option('zorg_compare_page_id', 0);
 
     $localize = [
-        'restUrl'    => rest_url('zorg/v1/'),
-        'nonce'      => wp_create_nonce('wp_rest'),
-        'isLoggedIn' => is_user_logged_in(),
+    'restUrl'    => rest_url('zorg/v1/'),
+    'nonce'      => wp_create_nonce('wp_rest'),
+    'isLoggedIn' => is_user_logged_in(),
+    'roles'      => wp_get_current_user()->roles ?? [],
+    'postId'     => get_queried_object_id(),
+    'settings'   => [
+        'comparePageId' => $compare_page_id,
+        'compareUrl'    => $compare_page_id
+            ? get_permalink($compare_page_id)
+            : '',
+    ],
+];
 
-        // Page context
-        'postId'     => get_queried_object_id(),
 
-        // Plugin settings
-        'settings'   => [
-            'comparePageId' => $compare_page_id,
-            'compareUrl'    => $compare_page_id
-                ? get_permalink($compare_page_id)
-                : '',
-        ],
+    $scripts = [
+        'reviews' => 'reviews-frontend',
+        'appointment-form' => 'appointment-form-frontend',
+        'providers' => 'providers-frontend',
+        'comparison' => 'comparison-frontend',
+        'auth-forms' => 'auth-forms',
     ];
 
-    /**
-     * REVIEW FORM
-     */
-    if (file_exists($review_file)) {
-        wp_enqueue_script(
-            'zorgfinder-review-form',
-            ZORGFINDER_URL . 'assets/js/review-form-frontend.js',
-            ['wp-element'],
-            filemtime($review_file),
-            true
-        );
-        wp_localize_script('zorgfinder-review-form', 'zorgFinderApp', $localize);
-    }
+    foreach ($scripts as $key => $file) {
+        $path = ZORGFINDER_PATH . "blocks/build/{$file}.js";
+        $url  = ZORGFINDER_URL  . "blocks/build/{$file}.js";
 
-    /**
-     * APPOINTMENT FORM
-     */
-    if (file_exists($appointment_file)) {
-        wp_enqueue_script(
-            'zorgfinder-appointment-form',
-            ZORGFINDER_URL . 'blocks/build/appointment-form-frontend.js',
-            ['wp-element'],
-            filemtime($appointment_file),
-            true
-        );
-        wp_localize_script('zorgfinder-appointment-form', 'zorgFinderApp', $localize);
-    }
+        if (!file_exists($path)) {
+            continue;
+        }
 
-    /**
-     * PROVIDERS FRONTEND
-     */
-    if (file_exists($providers_file)) {
-        wp_enqueue_script(
-            'zorgfinder-providers-frontend',
-            ZORGFINDER_URL . 'blocks/build/providers-frontend.js',
-            ['wp-element'],
-            filemtime($providers_file),
-            true
-        );
-        wp_localize_script('zorgfinder-providers-frontend', 'zorgFinderApp', $localize);
-    }
+        $asset = require ZORGFINDER_PATH . "blocks/build/{$file}.asset.php";
 
-    /**
-     * COMPARISON FRONTEND (NEW)
-     */
-    if (file_exists($comparison_file)) {
         wp_enqueue_script(
-            'zorgfinder-comparison-frontend',
-            ZORGFINDER_URL . 'blocks/build/comparison-frontend.js',
-            ['wp-element'],
-            filemtime($comparison_file),
+            "zorgfinder-{$key}-frontend",
+            $url,
+            $asset['dependencies'],
+            $asset['version'],
             true
         );
-        wp_localize_script('zorgfinder-comparison-frontend', 'zorgFinderApp', $localize);
-    }
 
-    /**
-     * Auth Forms FRONTEND (NEW)
-     */
-    if (file_exists($auth_forms_file)) {
-        wp_enqueue_script(
-            'zorgfinder-auth-forms-frontend',
-            ZORGFINDER_URL . 'blocks/build/auth-forms.js',
-            ['wp-element'],
-            filemtime($auth_forms_file),
-            true
+        wp_localize_script(
+            "zorgfinder-{$key}-frontend",
+            'zorgFinderApp',
+            $localize
         );
-        wp_localize_script('zorgfinder-auth-forms-frontend', 'zorgFinderApp', $localize);
     }
 }
+
 
 /**
  * Global Auth Drawer Mount Point

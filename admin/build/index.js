@@ -25125,6 +25125,38 @@ const ChevronRight = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__["defau
 
 /***/ }),
 
+/***/ "./node_modules/lucide-react/dist/esm/icons/copy.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/lucide-react/dist/esm/icons/copy.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Copy)
+/* harmony export */ });
+/* harmony import */ var _createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../createLucideIcon.js */ "./node_modules/lucide-react/dist/esm/createLucideIcon.js");
+/**
+ * @license lucide-react v0.320.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+
+
+
+const Copy = (0,_createLucideIcon_js__WEBPACK_IMPORTED_MODULE_0__["default"])("Copy", [
+  ["rect", { width: "14", height: "14", x: "8", y: "8", rx: "2", ry: "2", key: "17jyea" }],
+  ["path", { d: "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2", key: "zix9uf" }]
+]);
+
+
+//# sourceMappingURL=copy.js.map
+
+
+/***/ }),
+
 /***/ "./node_modules/lucide-react/dist/esm/icons/eye.js":
 /*!*********************************************************!*\
   !*** ./node_modules/lucide-react/dist/esm/icons/eye.js ***!
@@ -51683,6 +51715,12 @@ const Sidebar = () => {
       size: 18
     })
   }, {
+    to: "/invite-review",
+    label: "Invite Review",
+    icon: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_6__["default"], {
+      size: 18
+    })
+  }, {
     to: "/appointments",
     label: "Appointments",
     icon: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_2__["default"], {
@@ -53290,6 +53328,333 @@ const Favourites = () => {
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Provider:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, providerMap[editing.provider_id] || editing.provider_name)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "User:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, usersMap[editing.user_id] || editing.user_name)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("strong", null, "Added:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, editing.created_at)))));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Favourites);
+
+/***/ }),
+
+/***/ "./src/pages/InviteReview.jsx":
+/*!************************************!*\
+  !*** ./src/pages/InviteReview.jsx ***!
+  \************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ InviteReview)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _components_Table__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/Table */ "./src/components/Table.jsx");
+/* harmony import */ var _components_Modal__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/Modal */ "./src/components/Modal.jsx");
+/* harmony import */ var _components_Button__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../components/Button */ "./src/components/Button.jsx");
+/* harmony import */ var _components_Filters__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../components/Filters */ "./src/components/Filters.jsx");
+/* harmony import */ var _components_ToastContainer__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../components/ToastContainer */ "./src/components/ToastContainer.jsx");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/copy.js");
+
+
+
+
+
+
+
+
+const getNonce = () => window?.zorgFinderApp?.nonce || "";
+function InviteReview() {
+  const [items, setItems] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [providers, setProviders] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
+  const [showModal, setShowModal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+
+  // Invite form
+  const [providerIds, setProviderIds] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [emails, setEmails] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)("");
+
+  // Generated links (modal only)
+  const [generatedLinks, setGeneratedLinks] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+
+  // Filters
+  const [filters, setFilters] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    search: "",
+    provider_id: "",
+    status: ""
+  });
+
+  // Bulk selection
+  const [selected, setSelected] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+
+  // Toasts
+  const [toasts, setToasts] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const pushToast = (type, message) => {
+    const id = Date.now();
+    setToasts(t => [...t, {
+      id,
+      type,
+      message
+    }]);
+    setTimeout(() => {
+      setToasts(t => t.filter(x => x.id !== id));
+    }, 3500);
+  };
+
+  /* ===============================
+   * CLIPBOARD
+   * =============================== */
+  const copyToClipboard = async text => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      pushToast("success", "Invite link copied");
+    } catch {
+      pushToast("error", "Failed to copy invite link");
+    }
+  };
+
+  /* ===============================
+   * LOAD INVITES
+   * =============================== */
+  const load = async () => {
+    try {
+      const qs = new URLSearchParams(filters).toString();
+      const res = await fetch(`/wp-json/zorg/v1/review-invites?${qs}`, {
+        headers: {
+          "X-WP-Nonce": getNonce()
+        }
+      });
+      const json = await res.json();
+      if (json?.success) {
+        setItems(json.data || []);
+        setSelected([]);
+      } else {
+        pushToast("error", "Failed to load review invites");
+      }
+    } catch {
+      pushToast("error", "Network error while loading invites");
+    }
+  };
+
+  /* ===============================
+   * INITIAL LOAD
+   * =============================== */
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    load();
+    fetch("/wp-json/zorg/v1/providers?per_page=999", {
+      headers: {
+        "X-WP-Nonce": getNonce()
+      }
+    }).then(r => r.json()).then(j => {
+      const map = {};
+      (j?.data || []).forEach(p => {
+        map[p.id] = p.provider;
+      });
+      setProviders(map);
+    }).catch(() => {
+      pushToast("error", "Failed to load providers");
+    });
+  }, []);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    load();
+  }, [filters]);
+
+  /* ===============================
+   * SEND INVITES
+   * =============================== */
+  const sendInvite = async () => {
+    const emailList = emails.split(/[\n,]+/).map(e => e.trim()).filter(Boolean);
+    if (!emailList.length || !providerIds.length) {
+      pushToast("error", "Select provider and at least one email");
+      return;
+    }
+    try {
+      const res = await fetch("/wp-json/zorg/v1/review-invites/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-WP-Nonce": getNonce()
+        },
+        body: JSON.stringify({
+          provider_ids: providerIds,
+          emails: emailList
+        })
+      });
+      const json = await res.json();
+      if (json?.success) {
+        setGeneratedLinks(json.links || []);
+        setEmails("");
+        setProviderIds([]);
+        load();
+        pushToast("success", "Review invites sent");
+      } else {
+        pushToast("error", json?.message || "Failed to send invites");
+      }
+    } catch {
+      pushToast("error", "Network error while sending invites");
+    }
+  };
+
+  /* ===============================
+   * BULK DELETE
+   * =============================== */
+  const bulkDelete = async () => {
+    if (!selected.length) return;
+    if (!window.confirm(`Delete ${selected.length} invite(s)?`)) return;
+    try {
+      await fetch("/wp-json/zorg/v1/review-invites/bulk-delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-WP-Nonce": getNonce()
+        },
+        body: JSON.stringify({
+          ids: selected
+        })
+      });
+      setSelected([]);
+      load();
+      pushToast("success", "Invites deleted");
+    } catch {
+      pushToast("error", "Failed to delete invites");
+    }
+  };
+
+  /* ===============================
+   * TABLE
+   * =============================== */
+  const columns = ["Provider", "Email", "Status", "Created", "Expires"];
+  const rows = items.map(i => [providers[i.provider_id] || `#${i.provider_id}`, i.email, i.used_at ? "Used" : i.expires_at && new Date(i.expires_at) < new Date() ? "Expired" : "Pending", i.created_at, i.expires_at ? new Date(i.expires_at).toLocaleString() : "—"]);
+  const actions = index => {
+    const invite = items[index];
+    if (!invite?.token) return null;
+    const isUsed = Boolean(invite.used_at);
+    const isExpired = invite.expires_at && new Date(invite.expires_at) < new Date();
+    if (isUsed || isExpired) return null;
+    const url = `${window.location.origin}/submit-review?token=${invite.token}`;
+    return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+      className: "flex justify-end"
+    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+      title: "Copy invite link",
+      onClick: () => copyToClipboard(url),
+      className: "text-gray-700 hover:text-black"
+    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_6__["default"], {
+      size: 16
+    })));
+  };
+
+  /* ===============================
+   * RENDER
+   * =============================== */
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "p-4 space-y-6"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex justify-between"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
+    className: "text-2xl font-semibold"
+  }, "Review Invites"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_3__["default"], {
+    onClick: () => setShowModal(true)
+  }, "Invite reviewers")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Filters__WEBPACK_IMPORTED_MODULE_4__["default"], {
+    schema: [{
+      type: "search",
+      key: "search",
+      placeholder: "Search email…"
+    }, {
+      type: "select",
+      key: "provider_id",
+      placeholder: "Provider",
+      options: Object.entries(providers).map(([id, name]) => ({
+        value: id,
+        label: name
+      }))
+    }, {
+      type: "select",
+      key: "status",
+      placeholder: "Status",
+      options: [{
+        value: "pending",
+        label: "Pending"
+      }, {
+        value: "used",
+        label: "Used"
+      }, {
+        value: "expired",
+        label: "Expired"
+      }]
+    }],
+    filters: filters,
+    setFilters: setFilters
+  }), selected.length > 0 && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex gap-4 bg-white border p-3 rounded-xl"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "text-sm"
+  }, selected.length, " selected"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_3__["default"], {
+    size: "sm",
+    variant: "danger",
+    onClick: bulkDelete
+  }, "Delete selected"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_3__["default"], {
+    size: "sm",
+    variant: "secondary",
+    onClick: () => setSelected([])
+  }, "Clear")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Table__WEBPACK_IMPORTED_MODULE_1__["default"], {
+    columns: columns,
+    data: rows,
+    providers: items,
+    selected: selected,
+    setSelected: setSelected,
+    actions: actions
+  }), showModal && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Modal__WEBPACK_IMPORTED_MODULE_2__["default"], {
+    title: "Invite Reviewers",
+    onClose: () => {
+      setShowModal(false);
+      setGeneratedLinks([]);
+    }
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "space-y-4"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
+    multiple: true,
+    className: "input w-full min-h-[140px]",
+    value: providerIds,
+    onChange: e => setProviderIds(Array.from(e.target.selectedOptions).map(o => o.value))
+  }, Object.entries(providers).map(([id, name]) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    key: id,
+    value: id
+  }, name))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("textarea", {
+    className: "input w-full min-h-[120px]",
+    placeholder: "Emails (comma or new line)",
+    value: emails,
+    onChange: e => setEmails(e.target.value)
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_3__["default"], {
+    onClick: sendInvite,
+    disabled: !emails.trim() || !providerIds.length
+  }, "Send Invites"), generatedLinks.length > 0 && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "mt-6 space-y-3"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h4", {
+    className: "text-sm font-medium"
+  }, "Invite links (copy & share)"), generatedLinks.map((l, i) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    key: i,
+    className: "flex gap-3 bg-gray-50 border rounded-lg p-3 text-sm"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex-1"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "font-medium"
+  }, providers[l.provider_id]), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "truncate text-gray-500"
+  }, l.url), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "text-xs text-gray-400"
+  }, "Expires on", " ", new Date(l.expires_at).toLocaleString())), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_3__["default"], {
+    size: "sm",
+    variant: "secondary",
+    onClick: () => copyToClipboard(l.url)
+  }, "Copy")))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_ToastContainer__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    toasts: toasts
+  }));
+}
 
 /***/ }),
 
@@ -55176,10 +55541,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _pages_Reimbursements__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./pages/Reimbursements */ "./src/pages/Reimbursements.jsx");
 /* harmony import */ var _pages_Clients__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./pages/Clients */ "./src/pages/Clients.jsx");
 /* harmony import */ var _pages_Settings__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./pages/Settings */ "./src/pages/Settings.jsx");
-/* harmony import */ var _hooks_useToast__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./hooks/useToast */ "./src/hooks/useToast.js");
-/* harmony import */ var _hooks_useLoading__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./hooks/useLoading */ "./src/hooks/useLoading.js");
-/* harmony import */ var _components_LoadingOverlay__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./components/LoadingOverlay */ "./src/components/LoadingOverlay.jsx");
-/* harmony import */ var _shared_styles_dist_global_css__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../../shared-styles/dist/global.css */ "../shared-styles/dist/global.css");
+/* harmony import */ var _pages_InviteReview__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./pages/InviteReview */ "./src/pages/InviteReview.jsx");
+/* harmony import */ var _hooks_useToast__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./hooks/useToast */ "./src/hooks/useToast.js");
+/* harmony import */ var _hooks_useLoading__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./hooks/useLoading */ "./src/hooks/useLoading.js");
+/* harmony import */ var _components_LoadingOverlay__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./components/LoadingOverlay */ "./src/components/LoadingOverlay.jsx");
+/* harmony import */ var _shared_styles_dist_global_css__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../../shared-styles/dist/global.css */ "../shared-styles/dist/global.css");
+
 
 
 
@@ -55233,10 +55600,13 @@ const AppShell = () => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div
 }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
   path: "/settings",
   element: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_pages_Settings__WEBPACK_IMPORTED_MODULE_13__["default"], null)
+}), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
+  path: "/invite-review",
+  element: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_pages_InviteReview__WEBPACK_IMPORTED_MODULE_14__["default"], null)
 }))))));
 const mount = document.getElementById('zorgfinder-admin-app');
 if (mount) {
-  (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(mount).render((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_3__.HashRouter, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_hooks_useToast__WEBPACK_IMPORTED_MODULE_14__.ToastProvider, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_hooks_useLoading__WEBPACK_IMPORTED_MODULE_15__.LoadingProvider, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(AppShell, null), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_LoadingOverlay__WEBPACK_IMPORTED_MODULE_16__["default"], null)))));
+  (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(mount).render((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_3__.HashRouter, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_hooks_useToast__WEBPACK_IMPORTED_MODULE_15__.ToastProvider, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_hooks_useLoading__WEBPACK_IMPORTED_MODULE_16__.LoadingProvider, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(AppShell, null), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_LoadingOverlay__WEBPACK_IMPORTED_MODULE_17__["default"], null)))));
 }
 })();
 
