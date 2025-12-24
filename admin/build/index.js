@@ -54659,15 +54659,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_Pagination__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../components/Pagination */ "./src/components/Pagination.jsx");
 /* harmony import */ var _components_Filters__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../components/Filters */ "./src/components/Filters.jsx");
 /* harmony import */ var _components_BulkActionsBar__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../components/BulkActionsBar */ "./src/components/BulkActionsBar.jsx");
-/* harmony import */ var _components_Button__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../components/Button */ "./src/components/Button.jsx");
-/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/eye.js");
-/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/plus.js");
-/* harmony import */ var _GeneralInfoForm__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./GeneralInfoForm */ "./src/pages/providers/GeneralInfoForm.jsx");
-/* harmony import */ var _ReimbursementAccordion__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./ReimbursementAccordion */ "./src/pages/providers/ReimbursementAccordion.jsx");
-/* harmony import */ var _useProvidersList__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./useProvidersList */ "./src/pages/providers/useProvidersList.js");
-/* harmony import */ var _useProviderForm__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./useProviderForm */ "./src/pages/providers/useProviderForm.js");
-/* harmony import */ var _hooks_useToast__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../hooks/useToast */ "./src/hooks/useToast.js");
-/* harmony import */ var _hooks_useLoading__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../hooks/useLoading */ "./src/hooks/useLoading.js");
+/* harmony import */ var _components_ManagementControls__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../components/ManagementControls */ "./src/components/ManagementControls.jsx");
+/* harmony import */ var _components_Button__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../components/Button */ "./src/components/Button.jsx");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/eye.js");
+/* harmony import */ var lucide_react__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! lucide-react */ "./node_modules/lucide-react/dist/esm/icons/plus.js");
+/* harmony import */ var _GeneralInfoForm__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./GeneralInfoForm */ "./src/pages/providers/GeneralInfoForm.jsx");
+/* harmony import */ var _ReimbursementAccordion__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./ReimbursementAccordion */ "./src/pages/providers/ReimbursementAccordion.jsx");
+/* harmony import */ var _useProvidersList__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./useProvidersList */ "./src/pages/providers/useProvidersList.js");
+/* harmony import */ var _useProviderForm__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./useProviderForm */ "./src/pages/providers/useProviderForm.js");
+/* harmony import */ var _hooks_useToast__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../hooks/useToast */ "./src/hooks/useToast.js");
+/* harmony import */ var _hooks_useLoading__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../hooks/useLoading */ "./src/hooks/useLoading.js");
+
 
 
 
@@ -54684,8 +54686,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const Providers = () => {
-  const toast = (0,_hooks_useToast__WEBPACK_IMPORTED_MODULE_13__.useToast)();
-  const loadingOverlay = (0,_hooks_useLoading__WEBPACK_IMPORTED_MODULE_14__.useLoading)();
+  const toast = (0,_hooks_useToast__WEBPACK_IMPORTED_MODULE_14__.useToast)();
+  const loadingOverlay = (0,_hooks_useLoading__WEBPACK_IMPORTED_MODULE_15__.useLoading)();
   const {
     providers,
     total,
@@ -54700,7 +54702,7 @@ const Providers = () => {
     perPage,
     setPerPage,
     fetchProviders
-  } = (0,_useProvidersList__WEBPACK_IMPORTED_MODULE_11__.useProvidersList)();
+  } = (0,_useProvidersList__WEBPACK_IMPORTED_MODULE_12__.useProvidersList)();
   const [showModal, setShowModal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
   const closeModal = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => setShowModal(false), []);
   const {
@@ -54713,7 +54715,7 @@ const Providers = () => {
     loadProvider,
     saveProvider,
     reset: resetProviderForm
-  } = (0,_useProviderForm__WEBPACK_IMPORTED_MODULE_12__.useProviderForm)(fetchProviders, closeModal);
+  } = (0,_useProviderForm__WEBPACK_IMPORTED_MODULE_13__.useProviderForm)(fetchProviders, closeModal);
   const [selected, setSelected] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
 
   /* =======================
@@ -54822,62 +54824,21 @@ const Providers = () => {
       label: "None"
     }]
   }, {
-    type: "select",
-    key: "gender",
-    placeholder: "Target Gender",
-    options: [{
-      value: "male",
-      label: "Male"
-    }, {
-      value: "female",
-      label: "Female"
-    }, {
-      value: "non_binary",
-      label: "Non-binary"
-    }, {
-      value: "transgender",
-      label: "Transgender"
-    }, {
-      value: "other",
-      label: "Other"
-    }]
-  }, {
-    type: "select",
-    key: "age_group",
-    placeholder: "Age Group",
-    options: [{
-      value: "children",
-      label: "Children (0–12)"
-    }, {
-      value: "youth",
-      label: "Youth (12–18)"
-    }, {
-      value: "adults",
-      label: "Adults (18–65)"
-    }, {
-      value: "seniors",
-      label: "Seniors (65+)"
-    }, {
-      value: "all",
-      label: "All Ages"
-    }]
-  }, {
     type: "checkbox",
     key: "has_hkz",
     label: "HKZ Only"
   }], []);
 
   /* =======================
-     MODAL OPEN
+     MODAL
   ======================== */
   const openModalForProvider = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(async providerId => {
-    if (!providerId) return;
     try {
       loadingOverlay.show("Loading provider…");
       await loadProvider(providerId);
       setShowModal(true);
-    } catch (err) {
-      toast.error(err.message || "Failed to load provider");
+    } catch {
+      toast.error("Failed to load provider");
     } finally {
       loadingOverlay.hide();
     }
@@ -54901,15 +54862,15 @@ const Providers = () => {
         type,
         description: data.description?.trim() || "",
         coverage_details: data.coverage_details?.trim() || ""
-      })).filter(r => r.description.length || r.coverage_details.length);
-      if (payloadReimbursements.length === 0) {
+      })).filter(r => r.description || r.coverage_details);
+      if (!payloadReimbursements.length) {
         toast.error("At least one reimbursement type is required.");
         return;
       }
       await saveProvider(payloadReimbursements);
-      toast.success(editingId ? "Provider updated successfully" : "Provider created successfully");
-    } catch (err) {
-      toast.error(err.message || "Save failed");
+      toast.success(editingId ? "Provider updated" : "Provider created");
+    } catch {
+      toast.error("Save failed");
     } finally {
       loadingOverlay.hide();
     }
@@ -54918,31 +54879,32 @@ const Providers = () => {
   /* =======================
      TABLE
   ======================== */
-  const columns = ["Provider", "Type of Care", "Indication", "Organization", "Religion", "HKZ", "Target Age Groups"];
-  const rows = providers.map(p => [p.provider, p.type_of_care, p.indication_type, p.organization_type, p.religion, Number(p.has_hkz) === 1 ? "Yes" : "No", p.target_genders?.length ? p.target_genders.join(", ") : "—"]);
+  const columns = ["Provider", "Type of Care", "Indication", "Organization", "Religion", "HKZ"];
+  const rows = providers.map(p => [p.provider, p.type_of_care, p.indication_type, p.organization_type, p.religion, p.has_hkz ? "Yes" : "No"]);
   const actionsRenderer = index => {
-    const provider = providers[index];
-    if (!provider?.id) return null;
+    const p = providers[index];
     return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-      type: "button",
       className: "text-blue-600",
-      onClick: () => openModalForProvider(provider.id)
-    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_7__["default"], {
+      onClick: () => openModalForProvider(p.id)
+    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_8__["default"], {
       size: 16
     }));
   };
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "p-2 space-y-6"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "flex justify-between items-center"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
-    className: "text-2xl font-semibold"
-  }, "Providers"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_6__["default"], {
-    onClick: handleAddNew
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_8__["default"], {
-    size: 16,
-    className: "mr-1"
-  }), " Add Provider")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Filters__WEBPACK_IMPORTED_MODULE_4__["default"], {
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_ManagementControls__WEBPACK_IMPORTED_MODULE_6__["default"], {
+    title: "Providers",
+    sort: sort,
+    setSort: setSort,
+    activeTab: activeTab,
+    setActiveTab: setActiveTab,
+    extraRight: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_7__["default"], {
+      onClick: handleAddNew
+    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(lucide_react__WEBPACK_IMPORTED_MODULE_9__["default"], {
+      size: 16,
+      className: "mr-1"
+    }), " Add Provider")
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Filters__WEBPACK_IMPORTED_MODULE_4__["default"], {
     schema: filterSchema,
     filters: filters,
     setFilters: setFilters
@@ -54975,16 +54937,16 @@ const Providers = () => {
     onClose: closeModal
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "grid grid-cols-1 lg:grid-cols-2 gap-14"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_GeneralInfoForm__WEBPACK_IMPORTED_MODULE_9__["default"], {
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_GeneralInfoForm__WEBPACK_IMPORTED_MODULE_10__["default"], {
     provider: provider,
     updateProviderField: updateProviderField,
     editingId: editingId
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_ReimbursementAccordion__WEBPACK_IMPORTED_MODULE_10__["default"], {
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_ReimbursementAccordion__WEBPACK_IMPORTED_MODULE_11__["default"], {
     list: reimbursements,
     updateType: updateReimbursementField
   })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "mt-8"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_6__["default"], {
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_7__["default"], {
     className: "w-full",
     onClick: handleSave,
     disabled: editingId && !isLoaded

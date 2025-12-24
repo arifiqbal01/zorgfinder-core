@@ -4,6 +4,7 @@ import Modal from "../../components/Modal";
 import Pagination from "../../components/Pagination";
 import Filters from "../../components/Filters";
 import BulkActionsBar from "../../components/BulkActionsBar";
+import ManagementControls from "../../components/ManagementControls";
 
 import Button from "../../components/Button";
 import { Eye, Plus } from "lucide-react";
@@ -149,48 +150,22 @@ const Providers = () => {
           { value: "None", label: "None" },
         ],
       },
-      {
-        type: "select",
-        key: "gender",
-        placeholder: "Target Gender",
-        options: [
-          { value: "male", label: "Male" },
-          { value: "female", label: "Female" },
-          { value: "non_binary", label: "Non-binary" },
-          { value: "transgender", label: "Transgender" },
-          { value: "other", label: "Other" },
-        ],
-      },
-      {
-        type: "select",
-        key: "age_group",
-        placeholder: "Age Group",
-        options: [
-          { value: "children", label: "Children (0–12)" },
-          { value: "youth", label: "Youth (12–18)" },
-          { value: "adults", label: "Adults (18–65)" },
-          { value: "seniors", label: "Seniors (65+)" },
-          { value: "all", label: "All Ages" },
-        ],
-      },
       { type: "checkbox", key: "has_hkz", label: "HKZ Only" },
     ],
     []
   );
 
   /* =======================
-     MODAL OPEN
+     MODAL
   ======================== */
   const openModalForProvider = useCallback(
     async (providerId) => {
-      if (!providerId) return;
-
       try {
         loadingOverlay.show("Loading provider…");
         await loadProvider(providerId);
         setShowModal(true);
-      } catch (err) {
-        toast.error(err.message || "Failed to load provider");
+      } catch {
+        toast.error("Failed to load provider");
       } finally {
         loadingOverlay.hide();
       }
@@ -221,24 +196,17 @@ const Providers = () => {
           description: data.description?.trim() || "",
           coverage_details: data.coverage_details?.trim() || "",
         }))
-        .filter(
-          (r) => r.description.length || r.coverage_details.length
-        );
+        .filter((r) => r.description || r.coverage_details);
 
-      if (payloadReimbursements.length === 0) {
+      if (!payloadReimbursements.length) {
         toast.error("At least one reimbursement type is required.");
         return;
       }
 
       await saveProvider(payloadReimbursements);
-
-      toast.success(
-        editingId
-          ? "Provider updated successfully"
-          : "Provider created successfully"
-      );
-    } catch (err) {
-      toast.error(err.message || "Save failed");
+      toast.success(editingId ? "Provider updated" : "Provider created");
+    } catch {
+      toast.error("Save failed");
     } finally {
       loadingOverlay.hide();
     }
@@ -254,7 +222,6 @@ const Providers = () => {
     "Organization",
     "Religion",
     "HKZ",
-    "Target Age Groups",
   ];
 
   const rows = providers.map((p) => [
@@ -263,19 +230,15 @@ const Providers = () => {
     p.indication_type,
     p.organization_type,
     p.religion,
-    Number(p.has_hkz) === 1 ? "Yes" : "No",
-    p.target_genders?.length ? p.target_genders.join(", ") : "—",
+    p.has_hkz ? "Yes" : "No",
   ]);
 
   const actionsRenderer = (index) => {
-    const provider = providers[index];
-    if (!provider?.id) return null;
-
+    const p = providers[index];
     return (
       <button
-        type="button"
         className="text-blue-600"
-        onClick={() => openModalForProvider(provider.id)}
+        onClick={() => openModalForProvider(p.id)}
       >
         <Eye size={16} />
       </button>
@@ -284,12 +247,19 @@ const Providers = () => {
 
   return (
     <div className="p-2 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Providers</h1>
-        <Button onClick={handleAddNew}>
-          <Plus size={16} className="mr-1" /> Add Provider
-        </Button>
-      </div>
+
+      <ManagementControls
+        title="Providers"
+        sort={sort}
+        setSort={setSort}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        extraRight={
+          <Button onClick={handleAddNew}>
+            <Plus size={16} className="mr-1" /> Add Provider
+          </Button>
+        }
+      />
 
       <Filters schema={filterSchema} filters={filters} setFilters={setFilters} />
 
