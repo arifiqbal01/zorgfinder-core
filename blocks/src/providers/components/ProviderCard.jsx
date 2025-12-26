@@ -1,6 +1,4 @@
-import { useState } from "react";
 import FavouriteButton from "./FavouriteButton";
-import ProviderDetailsDrawer from "./ProviderDetailsDrawer";
 import { Card, ProviderLogo, Button, Icon } from "../../ui";
 import { useCompareCart } from "../../context/CompareContext";
 
@@ -14,10 +12,8 @@ const ICONS = {
   receipt: "M4 2h16v20l-4-2-4 2-4-2-4 2z",
 };
 
-export default function ProviderCard({ provider }) {
-  if (!provider || typeof provider !== "object") return null;
-
-  const [showDetails, setShowDetails] = useState(false);
+export default function ProviderCard({ provider, onOpen }) {
+  if (!provider) return null;
 
   const { ids, add, remove, isFull } = useCompareCart();
   const isCompared = ids.includes(provider.id);
@@ -44,110 +40,72 @@ export default function ProviderCard({ provider }) {
   };
 
   return (
-    <>
-      <Card className="w-full p-6 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-5">
-          <div className="flex items-center gap-4">
-            <ProviderLogo
-              name={provider.provider}
-              logo={provider.logo}
-              size={56}
-            />
-            <div className="leading-tight">
-              <h3 className="text-xl font-semibold text-gray-900">
-                {provider.provider}
-              </h3>
-              <div className="flex items-center gap-1 text-sm mt-0.5">
-                <span className="text-indigo-600 font-semibold">
-                  {overall}
-                </span>
-                <span className="text-gray-500">({count})</span>
-              </div>
+    <Card className="w-full p-6 rounded-2xl border bg-white shadow-sm hover:shadow-md transition">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-5">
+        <div className="flex items-center gap-4">
+          <ProviderLogo name={provider.provider} size={56} />
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900">
+              {provider.provider}
+            </h3>
+            <div className="text-sm text-gray-500">
+              {overall} ({count})
             </div>
           </div>
-
-          <FavouriteButton providerId={provider.id} />
         </div>
 
-        {/* Info grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-sm text-gray-700">
-          <InfoRow
-            icon={<Icon d={ICONS.briefcase} />}
-            label="Type of care"
-            value={provider.type_of_care}
-          />
-          <InfoRow
-            icon={<Icon d={ICONS.wallet} />}
-            label="Indication"
-            value={provider.indication_type}
-          />
-          <InfoRow
-            icon={<Icon d={ICONS.building} />}
-            label="Organization"
-            value={provider.organization_type}
-          />
-          <InfoRow
-            icon={<Icon d={ICONS.religion} />}
-            label="Religion"
-            value={provider.religion}
-          />
+        <FavouriteButton providerId={provider.id} />
+      </div>
 
-          {provider.has_hkz === 1 && (
-            <InfoRow
-              icon={<Icon d={ICONS.badge} />}
-              label="Certification"
-              value="HKZ Certified"
-            />
-          )}
+      {/* Info */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+        <InfoRow icon={<Icon d={ICONS.briefcase} />} label="Care" value={provider.type_of_care} />
+        <InfoRow icon={<Icon d={ICONS.wallet} />} label="Indication" value={provider.indication_type} />
+        <InfoRow icon={<Icon d={ICONS.building} />} label="Organization" value={provider.organization_type} />
+        <InfoRow icon={<Icon d={ICONS.religion} />} label="Religion" value={provider.religion} />
 
-          {reimbursementTypes && (
-            <InfoRow
-              icon={<Icon d={ICONS.receipt} />}
-              label="Reimbursement"
-              value={reimbursementTypes}
-            />
-          )}
+        {provider.has_hkz === 1 && (
+          <InfoRow icon={<Icon d={ICONS.badge} />} label="Certification" value="HKZ Certified" />
+        )}
+
+        {reimbursementTypes && (
+          <InfoRow
+            icon={<Icon d={ICONS.receipt} />}
+            label="Reimbursement"
+            value={reimbursementTypes}
+          />
+        )}
+      </div>
+
+      <hr className="my-4 border-gray-100" />
+
+      {/* Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <label className="flex items-center gap-2 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            className="w-4 h-4"
+            checked={isCompared}
+            disabled={!isCompared && isFull}
+            onChange={() =>
+              isCompared ? remove(provider.id) : add(provider.id)
+            }
+          />
+          Compare
+        </label>
+
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={() => onOpen(provider)}>
+            More info
+          </Button>
+
+          <Button variant="primary" onClick={openAppointment}>
+            Request
+          </Button>
         </div>
-
-        {/* Divider */}
-        <hr className="mt-6 border-gray-100" />
-
-        {/* Actions */}
-        <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <label className="flex items-center gap-2 text-sm text-gray-700">
-            <input
-              type="checkbox"
-              className="w-4 h-4"
-              checked={isCompared}
-              disabled={!isCompared && isFull}
-              onChange={() =>
-                isCompared ? remove(provider.id) : add(provider.id)
-              }
-            />
-            Compare
-          </label>
-
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setShowDetails(true)}
-            >
-              More info
-            </Button>
-            <Button variant="primary" onClick={openAppointment}>
-              Request
-            </Button>
-          </div>
-        </div>
-      </Card>
-
-      <ProviderDetailsDrawer
-        provider={provider}
-        open={showDetails}
-        onClose={() => setShowDetails(false)}
-      />
-    </>
+      </div>
+    </Card>
   );
 }
 
@@ -156,7 +114,7 @@ function InfoRow({ icon, label, value }) {
 
   return (
     <div className="flex items-start gap-2">
-      <span className="mt-0.5 text-gray-500">{icon}</span>
+      <span className="mt-0.5 text-gray-400">{icon}</span>
       <div>
         <span className="font-medium text-gray-900">
           {label}:

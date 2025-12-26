@@ -45,9 +45,20 @@ export default function ProviderDetailsDrawer({ provider, open, onClose }) {
     });
   };
 
+  const shareProvider = async () => {
+  const base = window?.zorgFinderApp?.providersPageUrl;
+  if (!base) return;
+
+  await navigator.clipboard.writeText(
+    `${base}?open_provider=${provider.id}`
+  );
+};
+
+
   return (
     <Drawer open={open} onClose={onClose} title={provider.provider}>
       <div className="space-y-5">
+
         {/* ===== HEADER ===== */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -65,7 +76,17 @@ export default function ProviderDetailsDrawer({ provider, open, onClose }) {
             )}
           </div>
 
-          <FavouriteButton providerId={provider.id} />
+          <div className="flex items-center gap-2">
+            <FavouriteButton providerId={provider.id} />
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={shareProvider}
+            >
+              Share
+            </Button>
+          </div>
         </div>
 
         {/* ===== ABOUT ===== */}
@@ -110,9 +131,7 @@ export default function ProviderDetailsDrawer({ provider, open, onClose }) {
                     </div>
                   )}
 
-                  {r.description && (
-                    <div>{r.description}</div>
-                  )}
+                  {r.description && <div>{r.description}</div>}
 
                   {r.coverage_details && (
                     <div className="text-xs text-gray-500">
@@ -210,9 +229,7 @@ function RatingRow({ label, value }) {
       <span className="text-gray-700">{label}</span>
       <div className="flex items-center gap-2">
         <Stars value={Number(value)} size={14} />
-        <span className="text-gray-600">
-          {value}
-        </span>
+        <span className="text-gray-600">{value}</span>
       </div>
     </div>
   );

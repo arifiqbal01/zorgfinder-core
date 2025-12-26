@@ -3,45 +3,53 @@ import { Card, Button } from "../../../../ui";
 import ProviderLogo from "../../../../ui/ProviderLogo";
 import Icon from "../../../../ui/Icon";
 import { Table, Thead, Tbody, Tr, Th, Td } from "../../../../ui/Table";
-import { getCache, setCache, clearCache } from "@utils/cache";
+import { getCache, setCache } from "@utils/cache";
+import copyToClipboard from "../utils/copyToClipboard";
 
+const ICON_OPEN = "M12 5v14M5 12h14";
+const ICON_SHARE =
+  "M18 8a3 3 0 10-2.83-4H15a3 3 0 100 6h.17A3 3 0 1018 8z";
 
-
-const ICON_VIEW = "M12 5v14M5 12h14";
-
+const getProvidersPageUrl = () =>
+  window?.zorgFinderApp?.providersPageUrl || "";
 
 export default function Favourites() {
   const [rows, setRows] = useState([]);
 
   useEffect(() => {
+    const cached = getCache("dashboard_favourites");
+    if (cached) {
+      setRows(cached);
+      return;
+    }
+
     fetch("/wp-json/zorg/v1/favourites?per_page=100&page=1", {
       credentials: "include",
-      headers: {
-        "X-WP-Nonce": window?.zorgFinderApp?.nonce || "",
-      },
+      headers: { "X-WP-Nonce": window?.zorgFinderApp?.nonce || "" },
     })
       .then((r) => r.json())
-      .then((json) => setRows(json?.data || []));
+      .then((json) => {
+        const data = json?.data || [];
+        setRows(data);
+        setCache("dashboard_favourites", data);
+      });
   }, []);
 
-  useEffect(() => {
-  const cached = getCache("dashboard_favourites");
-  if (cached) {
-    setRows(cached);
-    return;
-  }
+  const openProvider = (providerName) => {
+    const base = getProvidersPageUrl();
+    if (!base) return;
 
-  fetch("/wp-json/zorg/v1/favourites?per_page=100&page=1", {
-    credentials: "include",
-    headers: { "X-WP-Nonce": window?.zorgFinderApp?.nonce || "" },
-  })
-    .then(r => r.json())
-    .then(json => {
-      const rows = json?.data || [];
-      setRows(rows);
-      setCache("dashboard_favourites", rows);
-    });
-}, []);
+    const url = `${base}?search=${encodeURIComponent(providerName)}`;
+    window.open(url, "_blank", "noopener");
+  };
+
+  const shareProvider = async (providerName) => {
+    const base = getProvidersPageUrl();
+    if (!base) return;
+
+    const url = `${base}?search=${encodeURIComponent(providerName)}`;
+    await copyToClipboard(url);
+  };
 
   return (
     <Card className="p-0 max-w-6xl">
@@ -54,7 +62,7 @@ export default function Favourites() {
           <tr>
             <Th>Provider</Th>
             <Th>Saved</Th>
-            <Th align="right">Action</Th>
+            <Th align="right">Actions</Th>
           </tr>
         </Thead>
 
@@ -63,10 +71,7 @@ export default function Favourites() {
             <Tr key={row.favourite_id}>
               <Td>
                 <div className="flex items-center gap-3">
-                  <ProviderLogo
-                    name={row.provider_name}
-                    size={28}
-                  />
+                  <ProviderLogo name={row.provider_name} size={28} />
                   <span className="font-medium truncate">
                     {row.provider_name}
                   </span>
@@ -78,15 +83,21 @@ export default function Favourites() {
               </Td>
 
               <Td align="right">
-                <Button
-                  as="a"
-                  href={`/provider/${row.provider_id}`}
-                  variant="ghost"
-                  className="inline-flex items-center gap-1"
-                >
-                  <Icon d={ICON_VIEW} size={16} />
-                  View
-                </Button>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="ghost"
+                    onClick={() => openProvider(row.provider_name)}
+                  >
+                    <Icon d={ICON_OPEN} size={16} /> Open
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    onClick={() => shareProvider(row.provider_name)}
+                  >
+                    <Icon d={ICON_SHARE} size={16} /> Share
+                  </Button>
+                </div>
               </Td>
             </Tr>
           ))}

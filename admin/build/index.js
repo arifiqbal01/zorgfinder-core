@@ -54433,7 +54433,29 @@ function Settings() {
     value: p.id
   }, p.title.rendered))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
     className: "text-xs text-gray-500"
-  }, "This page will be used for provider comparison. Users can only access it via the Providers compare flow."))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_1__["default"], {
+  }, "This page will be used for provider comparison. Users can only access it via the Providers compare flow."))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("section", {
+    className: "space-y-4 bg-white p-4 rounded-xl border"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "text-lg font-medium"
+  }, "Providers"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "space-y-2"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "text-sm font-medium"
+  }, "Providers Page"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
+    className: "input w-full",
+    value: settings.providers_page_id || "",
+    onChange: e => setSettings(s => ({
+      ...s,
+      providers_page_id: e.target.value
+    }))
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: ""
+  }, "\u2014 Select page \u2014"), pages.map(p => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    key: p.id,
+    value: p.id
+  }, p.title.rendered))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "text-xs text-gray-500"
+  }, "This page must contain the Providers block. It will be used for opening and sharing providers."))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Button__WEBPACK_IMPORTED_MODULE_1__["default"], {
     onClick: save,
     disabled: saving
   }, saving ? "Saving…" : "Save settings"));

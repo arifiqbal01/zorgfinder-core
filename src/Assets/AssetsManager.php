@@ -10,7 +10,7 @@ class AssetsManager
         // Admin SPA
         add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
 
-        // Frontend blocks + review form JS
+        // Frontend blocks
         add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_assets']);
 
         // Shared global styles
@@ -21,7 +21,9 @@ class AssetsManager
     }
 
     /**
-     * Admin Dashboard (React App)
+     * ==========================
+     * Admin Dashboard (React SPA)
+     * ==========================
      */
     public function enqueue_admin_assets($hook)
     {
@@ -29,32 +31,18 @@ class AssetsManager
             return;
         }
 
-        // Load WordPress REST API JS bootstrap
         wp_enqueue_script('wp-api');
 
-        // Make sure WP exposes the global REST nonce
         wp_localize_script('wp-api', 'wpApiSettings', [
             'root'  => esc_url_raw(rest_url()),
             'nonce' => wp_create_nonce('wp_rest'),
         ]);
 
         $asset_file = ZORGFINDER_PATH . 'admin/build/index.asset.php';
-        $js_file    = ZORGFINDER_URL . 'admin/build/index.js';
-        $css_file   = ZORGFINDER_URL . 'admin/build/style-index.css';
-        $global_css = ZORGFINDER_URL . 'shared-styles/dist/global.css';
+        $js_file    = ZORGFINDER_URL  . 'admin/build/index.js';
+        $css_file   = ZORGFINDER_URL  . 'admin/build/style-index.css';
 
-        // Global Tailwind
-        if (file_exists(ZORGFINDER_PATH . 'shared-styles/dist/global.css')) {
-            wp_enqueue_style(
-                'zorgfinder-global-styles',
-                $global_css,
-                [],
-                ZORGFINDER_VERSION
-            );
-        }
-
-        if (! file_exists($asset_file)) {
-            error_log('⚠️ ZorgFinder: missing admin asset file: ' . $asset_file);
+        if (!file_exists($asset_file)) {
             return;
         }
 
@@ -85,7 +73,9 @@ class AssetsManager
     }
 
     /**
-     * Shared Global Styles (Frontend + Editor)
+     * ==========================
+     * Shared Global Styles
+     * ==========================
      */
     public function enqueue_shared_global_styles()
     {
@@ -101,79 +91,89 @@ class AssetsManager
         }
     }
 
-   public function enqueue_frontend_assets()
-{
-    $compare_page_id = (int) get_option('zorg_compare_page_id', 0);
+    /**
+     * ==========================
+     * Frontend Assets + Globals
+     * ==========================
+     */
+    public function enqueue_frontend_assets()
+    {
+        $providers_page_id = (int) get_option('zorg_providers_page_id', 0);
+        $compare_page_id   = (int) get_option('zorg_compare_page_id', 0);
 
-    $localize = [
-    'restUrl'    => rest_url('zorg/v1/'),
-    'nonce'      => wp_create_nonce('wp_rest'),
-    'isLoggedIn' => is_user_logged_in(),
-    'roles'      => wp_get_current_user()->roles ?? [],
-    'postId'     => get_queried_object_id(),
-    'settings'   => [
-        'comparePageId' => $compare_page_id,
-        'compareUrl'    => $compare_page_id
-            ? get_permalink($compare_page_id)
-            : '',
-    ],
-];
+        $localize = [
+            'restUrl'           => rest_url('zorg/v1/'),
+            'nonce'             => wp_create_nonce('wp_rest'),
+            'isLoggedIn'        => is_user_logged_in(),
+            'roles'             => wp_get_current_user()->roles ?? [],
+            'postId'            => get_queried_object_id(),
 
+            // ✅ PRIMARY GLOBALS (used everywhere)
+            'providersPageUrl'  => $providers_page_id
+                ? get_permalink($providers_page_id)
+                : '',
 
-    $scripts = [
-        'reviews' => 'reviews-frontend',
-        'appointment-form' => 'appointment-form-frontend',
-        'providers' => 'providers-frontend',
-        'comparison' => 'comparison-frontend',
-        'auth-forms' => 'auth-forms',
-    ];
+            'comparePageUrl'    => $compare_page_id
+                ? get_permalink($compare_page_id)
+                : '',
 
-    foreach ($scripts as $key => $file) {
-        $path = ZORGFINDER_PATH . "blocks/build/{$file}.js";
-        $url  = ZORGFINDER_URL  . "blocks/build/{$file}.js";
+            // 🔒 Legacy-safe (do NOT remove yet)
+            'settings' => [
+                'comparePageId' => $compare_page_id,
+                'compareUrl'    => $compare_page_id
+                    ? get_permalink($compare_page_id)
+                    : '',
+            ],
+        ];
 
-        if (!file_exists($path)) {
-            continue;
+        $scripts = [
+            'reviews'          => 'reviews-frontend',
+            'appointment-form'=> 'appointment-form-frontend',
+            'providers'        => 'providers-frontend',
+            'comparison'       => 'comparison-frontend',
+            'auth-forms'       => 'auth-forms',
+        ];
+
+        foreach ($scripts as $key => $file) {
+            $path = ZORGFINDER_PATH . "blocks/build/{$file}.js";
+            $url  = ZORGFINDER_URL  . "blocks/build/{$file}.js";
+
+            if (!file_exists($path)) {
+                continue;
+            }
+
+            $asset = require ZORGFINDER_PATH . "blocks/build/{$file}.asset.php";
+
+            wp_enqueue_script(
+                "zorgfinder-{$key}-frontend",
+                $url,
+                $asset['dependencies'],
+                $asset['version'],
+                true
+            );
+
+            wp_localize_script(
+                "zorgfinder-{$key}-frontend",
+                'zorgFinderApp',
+                $localize
+            );
         }
-
-        $asset = require ZORGFINDER_PATH . "blocks/build/{$file}.asset.php";
-
-        wp_enqueue_script(
-            "zorgfinder-{$key}-frontend",
-            $url,
-            $asset['dependencies'],
-            $asset['version'],
-            true
-        );
-
-        wp_localize_script(
-            "zorgfinder-{$key}-frontend",
-            'zorgFinderApp',
-            $localize
-        );
-    }
-}
-
-
-/**
- * Global Auth Drawer Mount Point
- * This must exist on all frontend pages
- */
-public function render_auth_mount()
-{
-    if (is_admin()) {
-        return;
     }
 
-    echo '<div class="zf-auth-drawer-root"></div>';
-}
+    /**
+     * ==========================
+     * Global Mount Points
+     * ==========================
+     */
+    public function render_auth_mount()
+    {
+        if (is_admin()) return;
+        echo '<div class="zf-auth-drawer-root"></div>';
+    }
 
-public function render_appointment_drawer_mount() {
-  if (is_admin()) return;
-  echo '<div class="zf-appointment-drawer-root"></div>';
-}
-
-
-
-
+    public function render_appointment_drawer_mount()
+    {
+        if (is_admin()) return;
+        echo '<div class="zf-appointment-drawer-root"></div>';
+    }
 }

@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Filters({ onChange, initial = {} }) {
+  const hydrating = useRef(true);
+  const didInitFromUrl = useRef(false);
+
   const [filters, setFilters] = useState({
     search: initial.search || "",
     type_of_care: initial.type_of_care || "",
@@ -16,19 +19,59 @@ export default function Filters({ onChange, initial = {} }) {
     sort: initial.sort || "",
   });
 
+  /* -------------------------------------------------
+     🔑 READ SEARCH FROM URL (ONCE)
+  ------------------------------------------------- */
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const search = params.get("search");
+
+    if (!search) {
+      hydrating.current = false;
+      return;
+    }
+
+    didInitFromUrl.current = true;
+    setFilters((prev) => ({ ...prev, search }));
+    onChange({ search });
+
+    requestAnimationFrame(() => {
+      hydrating.current = false;
+    });
+  }, []);
+
+  /* -------------------------------------------------
+     CLEAN + EMIT
+  ------------------------------------------------- */
   const emit = (next) => {
     const clean = Object.fromEntries(
-      Object.entries(next).filter(([_, v]) => v !== "" && v !== null)
+      Object.entries(next).filter(
+        ([_, v]) => v !== "" && v !== null
+      )
     );
     onChange(clean);
   };
 
+  /* -------------------------------------------------
+     🔄 SEARCH (DEBOUNCED)
+  ------------------------------------------------- */
   useEffect(() => {
+    if (hydrating.current) return;
+
+    if (didInitFromUrl.current) {
+      didInitFromUrl.current = false;
+      return;
+    }
+
     const t = setTimeout(() => emit(filters), 300);
     return () => clearTimeout(t);
   }, [filters.search]);
 
+  /* -------------------------------------------------
+     ⚡ OTHER FILTERS
+  ------------------------------------------------- */
   useEffect(() => {
+    if (hydrating.current) return;
     emit(filters);
   }, [
     filters.type_of_care,
@@ -44,6 +87,30 @@ export default function Filters({ onChange, initial = {} }) {
     filters.sort,
   ]);
 
+  /* -------------------------------------------------
+     🔁 SYNC SEARCH → URL
+  ------------------------------------------------- */
+  useEffect(() => {
+    if (hydrating.current) return;
+
+    const params = new URLSearchParams(window.location.search);
+
+    if (filters.search) {
+      params.set("search", filters.search);
+    } else {
+      params.delete("search");
+    }
+
+    const newUrl =
+      window.location.pathname +
+      (params.toString() ? `?${params}` : "");
+
+    window.history.replaceState({}, "", newUrl);
+  }, [filters.search]);
+
+  /* -------------------------------------------------
+     HELPERS
+  ------------------------------------------------- */
   const update = (key, value) =>
     setFilters((prev) => ({ ...prev, [key]: value }));
 
@@ -108,7 +175,9 @@ export default function Filters({ onChange, initial = {} }) {
       <Section label="Organization type">
         <select
           value={filters.organization_type}
-          onChange={(e) => update("organization_type", e.target.value)}
+          onChange={(e) =>
+            update("organization_type", e.target.value)
+          }
           className={field}
         >
           <option value="">Any</option>
@@ -134,7 +203,9 @@ export default function Filters({ onChange, initial = {} }) {
       <Section label="Target age group">
         <select
           value={filters.target_age_groups}
-          onChange={(e) => update("target_age_groups", e.target.value)}
+          onChange={(e) =>
+            update("target_age_groups", e.target.value)
+          }
           className={field}
         >
           <option value="">Any</option>
@@ -147,7 +218,9 @@ export default function Filters({ onChange, initial = {} }) {
       <Section label="Target gender">
         <select
           value={filters.target_genders}
-          onChange={(e) => update("target_genders", e.target.value)}
+          onChange={(e) =>
+            update("target_genders", e.target.value)
+          }
           className={field}
         >
           <option value="">Any</option>
@@ -160,14 +233,18 @@ export default function Filters({ onChange, initial = {} }) {
         <input
           type="checkbox"
           checked={filters.has_hkz === 1}
-          onChange={(e) => update("has_hkz", e.target.checked ? 1 : null)}
+          onChange={(e) =>
+            update("has_hkz", e.target.checked ? 1 : null)
+          }
         />
       </Section>
 
       <Section label="Reimbursement type">
         <select
           value={filters.reimbursement_type}
-          onChange={(e) => update("reimbursement_type", e.target.value)}
+          onChange={(e) =>
+            update("reimbursement_type", e.target.value)
+          }
           className={field}
         >
           <option value="">Any</option>
@@ -197,7 +274,9 @@ export default function Filters({ onChange, initial = {} }) {
         <input
           type="checkbox"
           checked={filters.has_reviews === 1}
-          onChange={(e) => update("has_reviews", e.target.checked ? 1 : null)}
+          onChange={(e) =>
+            update("has_reviews", e.target.checked ? 1 : null)
+          }
         />
       </Section>
 
@@ -214,7 +293,11 @@ export default function Filters({ onChange, initial = {} }) {
         </select>
       </Section>
 
-      <button className="mt-4 text-indigo-600 text-sm" onClick={reset}>
+      <button
+        type="button"
+        className="mt-4 text-indigo-600 text-sm"
+        onClick={reset}
+      >
         Reset filters
       </button>
     </aside>
@@ -224,7 +307,9 @@ export default function Filters({ onChange, initial = {} }) {
 function Section({ label, children }) {
   return (
     <div className="mb-2">
-      <div className="text-sm font-medium text-gray-600 mb-1">{label}</div>
+      <div className="text-sm font-medium text-gray-600 mb-1">
+        {label}
+      </div>
       {children}
     </div>
   );

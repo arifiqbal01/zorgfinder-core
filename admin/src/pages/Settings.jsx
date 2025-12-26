@@ -109,6 +109,40 @@ export default function Settings() {
         </div>
       </section>
 
+      <section className="space-y-4 bg-white p-4 rounded-xl border">
+  <h2 className="text-lg font-medium">Providers</h2>
+
+  <div className="space-y-2">
+    <label className="text-sm font-medium">
+      Providers Page
+    </label>
+
+    <select
+      className="input w-full"
+      value={settings.providers_page_id || ""}
+      onChange={(e) =>
+        setSettings((s) => ({
+          ...s,
+          providers_page_id: e.target.value,
+        }))
+      }
+    >
+      <option value="">— Select page —</option>
+      {pages.map((p) => (
+        <option key={p.id} value={p.id}>
+          {p.title.rendered}
+        </option>
+      ))}
+    </select>
+
+    <p className="text-xs text-gray-500">
+      This page must contain the Providers block.
+      It will be used for opening and sharing providers.
+    </p>
+  </div>
+</section>
+
+
       <Button onClick={save} disabled={saving}>
         {saving ? "Saving…" : "Save settings"}
       </Button>

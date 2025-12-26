@@ -1,8 +1,10 @@
-import { useEffect, useState, useMemo } from "react";
+// ProvidersList.jsx
+import { useState, useEffect } from "react";
 import Filters from "./Filters";
 import ProviderCard from "./ProviderCard";
 import Pagination from "./Pagination";
 import CompareBar from "./CompareBar";
+import ProviderDetailsDrawer from "./ProviderDetailsDrawer";
 import { useProviders } from "../hooks/useProviders";
 import { FavouritesProvider } from "../hooks/useFavouritesStore";
 import { Button, Icon } from "../../ui";
@@ -25,6 +27,7 @@ function ProvidersListInner() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPageState] = useState(5);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [activeProvider, setActiveProvider] = useState(null);
 
   const {
     providers,
@@ -37,8 +40,7 @@ function ProvidersListInner() {
 
   const safeProviders = Array.isArray(providers) ? providers : [];
 
-  /* ---------------- Effects ---------------- */
-
+  /* ---------- Apply filters ---------- */
   useEffect(() => {
     applyFilters(filters);
     setPage(1);
@@ -53,20 +55,9 @@ function ProvidersListInner() {
     setPage(1);
   }, [perPage]);
 
-  /* ---------------- Compare map ---------------- */
-
-  const providersMap = useMemo(() => {
-    return Object.fromEntries(
-      safeProviders.map((p) => [p.id, p])
-    );
-  }, [safeProviders]);
-
-  /* ---------------- Render ---------------- */
-
+  /* ---------- Render ---------- */
   return (
     <div className="providers-block">
-
-      {/* MOBILE FILTER BUTTON */}
       <div className="providers-mobile-toggle">
         <Button
           variant="outline"
@@ -79,32 +70,36 @@ function ProvidersListInner() {
         </Button>
       </div>
 
-      {/* MOBILE FILTERS */}
       {showMobileFilters && (
         <div className="providers-mobile-filters">
-          <Filters onChange={setFilters} initial={filters} />
+          <Filters
+            onChange={setFilters}
+            initial={filters}
+          />
         </div>
       )}
 
-      {/* MAIN GRID */}
       <div className="providers-grid">
-
-        {/* DESKTOP FILTERS */}
         <div className="providers-filters-desktop">
-          <Filters onChange={setFilters} initial={filters} />
+          <Filters
+            onChange={setFilters}
+            initial={filters}
+          />
         </div>
 
-        {/* PROVIDERS LIST */}
         <div className="providers-results">
           {loading && <p>Loading...</p>}
-
           {!loading && safeProviders.length === 0 && (
             <p>No providers found.</p>
           )}
 
           <div className="providers-cards">
             {safeProviders.map((provider) => (
-              <ProviderCard key={provider.id} provider={provider} />
+              <ProviderCard
+                key={provider.id}
+                provider={provider}
+                onOpen={setActiveProvider}
+              />
             ))}
           </div>
 
@@ -118,8 +113,17 @@ function ProvidersListInner() {
         </div>
       </div>
 
-      {/* 🔥 STICKY COMPARE BAR */}
-      <CompareBar providersMap={providersMap} />
+      <CompareBar
+        providersMap={Object.fromEntries(
+          safeProviders.map((p) => [p.id, p])
+        )}
+      />
+
+      <ProviderDetailsDrawer
+        provider={activeProvider}
+        open={!!activeProvider}
+        onClose={() => setActiveProvider(null)}
+      />
     </div>
   );
 }

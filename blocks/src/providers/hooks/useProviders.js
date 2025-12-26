@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getCache, setCache } from "../utils/cache";
 
 const FILTER_KEYS = [
@@ -26,11 +26,11 @@ export function useProviders() {
     per_page: 5,
   });
 
-  const lastQueryRef = useRef("");
   const requestId = useRef(0);
+  const didFirstFetch = useRef(false);
 
   /* -------------------------------------------------------
-     NORMALISE QUERY FOR CONSISTENT CACHE KEYS
+     NORMALIZE PARAMS
   ------------------------------------------------------- */
   const normalizeParams = (p) => {
     const out = {};
@@ -53,39 +53,48 @@ export function useProviders() {
     new URLSearchParams(qp).toString();
 
   /* -------------------------------------------------------
-     APPLY FILTERS / PAGE / PER_PAGE
+     PUBLIC API
   ------------------------------------------------------- */
   const applyFilters = (filters) =>
-    setParams((prev) => ({ ...prev, ...filters, page: 1 }));
+    setParams((prev) => ({
+      ...prev,
+      ...filters,
+      page: 1,
+    }));
 
   const applyPage = (page) =>
     setParams((prev) => ({ ...prev, page }));
 
   const applyPerPage = (per_page) =>
-    setParams((prev) => ({ ...prev, per_page, page: 1 }));
+    setParams((prev) => ({
+      ...prev,
+      per_page,
+      page: 1,
+    }));
 
   /* -------------------------------------------------------
-     MAIN FETCH — WITH INSTANT DISPLAY ON CACHE HIT
+     MAIN FETCH (FAST + SAFE)
   ------------------------------------------------------- */
   const fetchProviders = async (p) => {
     const qp = normalizeParams(p);
     const queryKey = makeQueryKey(qp);
 
-    /* 🚀 INSTANT LOAD IF CACHED */
+    // 🚀 instant paint from cache
     const cached = getCache(queryKey);
     if (cached) {
       setProviders(cached.data || []);
       setTotal(cached.total || 0);
       setLoading(false);
-    } else {
-      setLoading(true);
+
+      if (!didFirstFetch.current) {
+        didFirstFetch.current = true;
+        return;
+      }
     }
 
-    /* 🚫 SKIP NETWORK IF SAME QUERY */
-    if (lastQueryRef.current === queryKey) return;
-    lastQueryRef.current = queryKey;
-
+    setLoading(true);
     const id = ++requestId.current;
+    didFirstFetch.current = true;
 
     try {
       const res = await fetch(queryKey, {
@@ -94,21 +103,22 @@ export function useProviders() {
       });
 
       const json = await res.json();
-
       if (id !== requestId.current) return;
 
-      if (json.success) {
+      if (json?.success) {
         setProviders(json.data || []);
         setTotal(json.total || 0);
         setCache(queryKey, json, 180);
       }
     } finally {
-      if (id === requestId.current) setLoading(false);
+      if (id === requestId.current) {
+        setLoading(false);
+      }
     }
   };
 
   /* -------------------------------------------------------
-     SMART PREFETCH — ONLY WHEN NEEDED
+     PREFETCH NEXT PAGE
   ------------------------------------------------------- */
   const prefetchNext = () => {
     const nextPage = params.page + 1;
@@ -122,23 +132,29 @@ export function useProviders() {
     })
       .then((r) => r.json())
       .then((json) => {
-        if (json.success) setCache(queryKey, json, 180);
+        if (json?.success) {
+          setCache(queryKey, json, 180);
+        }
       })
       .catch(() => {});
   };
 
   /* -------------------------------------------------------
-     TRIGGER FETCH ON PARAM CHANGES
+     TRIGGERS
   ------------------------------------------------------- */
   useEffect(() => {
     fetchProviders(params);
   }, [params]);
 
-  /* Background fetch only after new data arrives */
   useEffect(() => {
-    prefetchNext();
+    if (providers.length) {
+      prefetchNext();
+    }
   }, [providers]);
 
+  /* -------------------------------------------------------
+     RETURN API
+  ------------------------------------------------------- */
   return {
     providers,
     total,
