@@ -1,5 +1,5 @@
 // ProvidersList.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Filters from "./Filters";
 import ProviderCard from "./ProviderCard";
 import Pagination from "./Pagination";
@@ -9,6 +9,8 @@ import { useProviders } from "../hooks/useProviders";
 import { FavouritesProvider } from "../hooks/useFavouritesStore";
 import { Button, Icon } from "../../ui";
 import { CompareProvider } from "../../context/CompareContext";
+import { useCompareCart } from "../../context/CompareContext";
+
 
 const FILTER_ICON = "M3 5h18M6 12h12M10 19h4";
 
@@ -29,6 +31,12 @@ function ProvidersListInner() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [activeProvider, setActiveProvider] = useState(null);
 
+  const { clear } = useCompareCart(); // 👈 ADD THIS
+
+  useEffect(() => {
+    clear(); // 👈 ADD THIS
+  }, []);
+
   const {
     providers,
     total,
@@ -39,6 +47,15 @@ function ProvidersListInner() {
   } = useProviders();
 
   const safeProviders = Array.isArray(providers) ? providers : [];
+
+  // 🔑 GLOBAL PROVIDER CACHE (persists across pagination)
+  const allProvidersRef = useRef(new Map());
+
+  useEffect(() => {
+    safeProviders.forEach((p) => {
+      allProvidersRef.current.set(p.id, p);
+    });
+  }, [safeProviders]);
 
   /* ---------- Apply filters ---------- */
   useEffect(() => {
@@ -72,23 +89,17 @@ function ProvidersListInner() {
 
       {showMobileFilters && (
         <div className="providers-mobile-filters">
-          <Filters
-            onChange={setFilters}
-            initial={filters}
-          />
+          <Filters onChange={setFilters} initial={filters} />
         </div>
       )}
 
       <div className="providers-grid">
         <div className="providers-filters-desktop">
-          <Filters
-            onChange={setFilters}
-            initial={filters}
-          />
+          <Filters onChange={setFilters} initial={filters} />
         </div>
 
         <div className="providers-results">
-          {loading && <p>Loading...</p>}
+          {loading && safeProviders.length === 0 && <p>Loading...</p>}
           {!loading && safeProviders.length === 0 && (
             <p>No providers found.</p>
           )}
@@ -113,10 +124,9 @@ function ProvidersListInner() {
         </div>
       </div>
 
+      {/* ✅ CompareBar now resolves providers globally */}
       <CompareBar
-        providersMap={Object.fromEntries(
-          safeProviders.map((p) => [p.id, p])
-        )}
+        getProviderById={(id) => allProvidersRef.current.get(id)}
       />
 
       <ProviderDetailsDrawer
